@@ -13,7 +13,8 @@ function getBaseUrl (name) {
   return xhr.status === okStatus ? xhr.responseText : null
 }
 
-const baseurl = getBaseUrl('baseurl.txt')
+//const baseurl = getBaseUrl('baseurl.txt')
+const baseurl = 'http://192.168.3.16:8008'
 
 const axiosInstance = axios.create({
   baseURL: baseurl,
