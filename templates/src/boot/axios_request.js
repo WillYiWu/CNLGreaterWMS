@@ -14,7 +14,7 @@ function getBaseUrl (name) {
 }
 
 //const baseurl = getBaseUrl('baseurl.txt')
-const baseurl = 'http://192.168.3.16:8008'
+const baseurl = 'http://192.168.3.24:8008'
 
 const axiosInstance = axios.create({
   baseURL: baseurl,
