@@ -5,6 +5,7 @@ class DnListModel(models.Model):
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
     #[Will] Add a new field to indicate total number of items in an order
     total_ordervolume = models.IntegerField(default=1, verbose_name="Total Ordervolume")
+    dn_complete = models.BooleanField(default=False)
     total_weight = models.FloatField(default=0, verbose_name="Total Weight")
     total_volume = models.FloatField(default=0, verbose_name="Total Volume")
     total_cost = models.FloatField(default=0, verbose_name="Total Cost")
