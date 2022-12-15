@@ -57,6 +57,11 @@ class BolListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
     filter_class = DnListFilter
+    #[Will]
+    dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
+    dndetaillist_url = "https://api.bol.com/retailer/orders"
+    client_id = "5e419ff0-25a1-40ba-bb02-69119993d03f"
+    client_secret = "qgVB.[P01sluE}!5xT7rabDQ2w60aI#EJe26Wini^I%RmJl%.6tDlHcs{v!3w)4,"
 
     def get_project(self):
         try:
@@ -77,11 +82,35 @@ class BolListViewSet(viewsets.ModelViewSet):
         else:
             return self.http_method_not_allowed(request=self.request)
 
+    #[Will]New function to pull order data from BOL and store to DNList and DNDetailList
     def create(self, request, *args, **kwargs):
-        api_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
-        client_id = "5e419ff0-25a1-40ba-bb02-69119993d03f"
-        client_secret = "qgVB.[P01sluE}!5xT7rabDQ2w60aI#EJe26Wini^I%RmJl%.6tDlHcs{v!3w)4,"
-        orderitem_quantity = 0
+
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token.json()["access_token"],
+            "Accept": "application/vnd.retailer.v8+json"
+        }
+        response = requests.get(dnlist_url, headers=headers)
+        json_obj = response.json()
+        #A loop to extract all order, and generate DN per order, and count orderitem number for each order
+        for order in json_obj["orders"]:
+            orderitem_quantity = 0
+            dn_complete = True
+            for orderitem in order["orderItems"]:
+                dn_complete = check_item_integrity(self, order["orderId"])
+                orderitem_quantity=orderitem["quantity"]+orderitem_quantity
+
+            DnListModel.objects.create(dn_code=order["orderID"],
+                                       total_ordervolume=orderitem_quantity,
+                                       dn_complete=dn_complete,
+                                       create_time=order["orderPlaceDateTime"])
+
+        return Response("BOL order fetch success")
+
+    #Check AEN and availability of product in stock
+    def check_item_integrity(self, orderid):
+        #check AEN match with product ID in WMS
+
+    def obtain_access_token(self):
         credential = client_id + ":" + client_secret
         credential_encoded = base64.b64encode(credential.encode())
         oauth_header = {
@@ -89,23 +118,7 @@ class BolListViewSet(viewsets.ModelViewSet):
             "Accept": "application/json"
         }
         access_token = requests.post("https://login.bol.com/token?grant_type=client_credentials", headers=oauth_header)
-        headers = {
-            "Authorization": "Bearer " + access_token.json()["access_token"],
-            "Accept": "application/vnd.retailer.v8+json"
-        }
-        response = requests.get(api_url, headers=headers)
-        json_obj = response.json()
-        #A loop to extract all order, and generate DN per order, and count orderitem number for each order
-        for order in json_obj["orders"]:
-            orderitem_quantity = 0
-            for orderitem in order["orderItems"]:
-                orderitem_quantity=orderitem["quantity"]+orderitem_quantity
-            DnListModel.objects.create(dn_code=order["orderID"],
-                                       total_ordervolume=orderitem_quantity,
-                                       create_time=order["orderPlaceDateTime"])
-
-        return Response("BOL order fetch success")
-
+        return access_token
 
 class DnListViewSet(viewsets.ModelViewSet):
     """
