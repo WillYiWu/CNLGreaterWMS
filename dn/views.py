@@ -32,6 +32,80 @@ from django.utils import timezone
 from .files import FileListRenderCN, FileListRenderEN, FileDetailRenderCN, FileDetailRenderEN
 from rest_framework.settings import api_settings
 from staff.models import ListModel as staff
+#[Will] Add library requests in order to obtain data from BOL Restful API
+import requests
+import json
+import base64
+
+#[Will] Add new model class to handle request fetching data from BOL
+class BolListViewSet(viewsets.ModelViewSet):
+    """
+        retrieve:
+            Response a data list（get）
+
+        list:
+            Response a data list（all）
+
+        create:
+            Create a data line（post）
+
+        delete:
+            Delete a data line（delete)
+
+    """
+    pagination_class = MyPageNumberPaginationDNList
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = DnListFilter
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve', 'destroy']:
+            return serializers.DNListGetSerializer
+        elif self.action in ['create']:
+            return serializers.DNListPostSerializer
+        elif self.action in ['update']:
+            return serializers.DNListUpdateSerializer
+        elif self.action in ['partial_update']:
+            return serializers.DNListPartialUpdateSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def create(self, request, *args, **kwargs):
+        api_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
+        client_id = "5e419ff0-25a1-40ba-bb02-69119993d03f"
+        client_secret = "qgVB.[P01sluE}!5xT7rabDQ2w60aI#EJe26Wini^I%RmJl%.6tDlHcs{v!3w)4,"
+        orderitem_quantity = 0
+        credential = client_id + ":" + client_secret
+        credential_encoded = base64.b64encode(credential.encode())
+        oauth_header = {
+            "Authorization": f"Basic {credential_encoded.decode()}",
+            "Accept": "application/json"
+        }
+        access_token = requests.post("https://login.bol.com/token?grant_type=client_credentials", headers=oauth_header)
+        headers = {
+            "Authorization": "Bearer " + access_token.json()["access_token"],
+            "Accept": "application/vnd.retailer.v8+json"
+        }
+        response = requests.get(api_url, headers=headers)
+        json_obj = response.json()
+        #A loop to extract all order, and generate DN per order, and count orderitem number for each order
+        for order in json_obj["orders"]:
+            orderitem_quantity = 0
+            for orderitem in order["orderItems"]:
+                orderitem_quantity=orderitem["quantity"]+orderitem_quantity
+            DnListModel.objects.create(dn_code=order["orderID"],
+                                       total_ordervolume=orderitem_quantity,
+                                       create_time=order["orderPlaceDateTime"])
+
+        return Response("BOL order fetch success")
+
 
 class DnListViewSet(viewsets.ModelViewSet):
     """

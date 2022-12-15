@@ -2,6 +2,8 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
+#[Will] add new router to link request from frontend to obtain order data from BOL
+path(r'bollist/', views.BolListViewSet.as_view({"get": "list", "post": "create"}), name="bollist"),
 path(r'list/', views.DnListViewSet.as_view({"get": "list", "post": "create"}), name="dnlist"),
 re_path(r'^list/(?P<pk>\d+)/$', views.DnListViewSet.as_view({
     'get': 'retrieve',
