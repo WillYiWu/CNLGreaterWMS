@@ -36,6 +36,39 @@ from staff.models import ListModel as staff
 import requests
 import json
 import base64
+import os
+
+# [Will]
+dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
+dnorder_url = "https://api.bol.com/retailer/orders/"
+
+# Check AEN and availability of product in stock
+def check_item_inventory(orderId):
+    # Check product availability in stock
+    headers = {
+        "Authorization": "Bearer " + obtain_access_token().json(),
+        "Accept": "application/vnd.retailer.v8+json"
+    }
+    response = requests.get(dnorder_url+orderId, headers=headers)
+    json_obj = response.json()
+
+    # Check whether ordered item is sufficient in stock
+    return
+
+def obtain_access_token():
+    path = os.path.abspath('token.json')
+    with open(path, 'r') as f:
+        config = json.load(f)
+    client_id = config['token']['client_id']
+    client_secret = config['token']['client_secret']
+    credential = client_id + ":" + client_secret
+    credential_encoded = base64.b64encode(credential.encode())
+    oauth_header = {
+        "Authorization": f"Basic {credential_encoded.decode()}",
+        "Accept": "application/json"
+    }
+    access_token = requests.post("https://login.bol.com/token?grant_type=client_credentials", headers=oauth_header)
+    return access_token.json()["access_token"]
 
 #[Will] Add new model class to handle request fetching data from BOL
 class BolListViewSet(viewsets.ModelViewSet):
@@ -57,11 +90,6 @@ class BolListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
     filter_class = DnListFilter
-    #[Will]
-    dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
-    dndetaillist_url = "https://api.bol.com/retailer/orders"
-    client_id = "5e419ff0-25a1-40ba-bb02-69119993d03f"
-    client_secret = "qgVB.[P01sluE}!5xT7rabDQ2w60aI#EJe26Wini^I%RmJl%.6tDlHcs{v!3w)4,"
 
     def get_project(self):
         try:
@@ -84,41 +112,54 @@ class BolListViewSet(viewsets.ModelViewSet):
 
     #[Will]New function to pull order data from BOL and store to DNList and DNDetailList
     def create(self, request, *args, **kwargs):
-
         headers = {
-            "Authorization": "Bearer " + obtain_access_token.json()["access_token"],
+            "Authorization": "Bearer " + obtain_access_token(),
             "Accept": "application/vnd.retailer.v8+json"
         }
-        response = requests.get(dnlist_url, headers=headers)
-        json_obj = response.json()
-        #A loop to extract all order, and generate DN per order, and count orderitem number for each order
-        for order in json_obj["orders"]:
+        response_list = requests.get(dnlist_url, headers=headers)
+        json_obj_list = response_list.json()
+        #staff_name = staff.objects.filter(openid=self.request.auth.openid, id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+        #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
+        for order in json_obj_list["orders"]:
             orderitem_quantity = 0
-            dn_complete = True
+            dn_complete = 2
+            incomplete_reason = ""
+            response_detail = requests.get(dnorder_url+order["orderId"], headers=headers)
+            json_obj_detail = response_detail.json()
             for orderitem in order["orderItems"]:
-                dn_complete = check_item_integrity(self, order["orderId"])
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
+                ean = orderitem["ean"]
+                orderitem_postdata_list = []
+                if not goods.objects.filter(goods_code=ean).exists():
+                    incomplete_reason = "Unmatched EAN" + ean
+                    dn_complete = 0
+                    orderitem_postdata_list = None
+                    break
+                else:
+                    goods_code = goods.object.filter(goods_ean=ean).first().goods_code
+                    if stocklist.objects.filter(goods_code=goods_code).can_order_stock < orderitem["quantity"]:
+                        incomplete_reason = "insufficient stock" + ean
+                        dn_complete = 1
+                    post_data = DnDetailModel(openid=self.request.auth.openid,
+                                              dn_code=order["orderId"],
+                                              customer=json_obj_detail["shipmentDetails"]["firstName"],
+                                              goods_code=ean,
+                                              goods_qty=orderitem["quantity"])
+                                              #creater=str(staff_name))
+                    orderitem_postdata_list.append(post_data)
 
-            DnListModel.objects.create(dn_code=order["orderID"],
-                                       total_ordervolume=orderitem_quantity,
-                                       dn_complete=dn_complete,
-                                       create_time=order["orderPlaceDateTime"])
+            DnDetailModel.objects.bulk_create(orderitem_postdata_list, batch_size=100)
+
+
+            if not DnListModel.objects.filter(dn_code=order["orderId"]).exists():
+                DnListModel.objects.create(dn_code=order["orderId"],
+                                           total_orderquantity=orderitem_quantity,
+                                           dn_complete=dn_complete,
+                                           customer=json_obj_detail["shipmentDetails"]["firstName"],
+                                           create_time=order["orderPlacedDateTime"])
 
         return Response("BOL order fetch success")
 
-    #Check AEN and availability of product in stock
-    def check_item_integrity(self, orderid):
-        #check AEN match with product ID in WMS
-
-    def obtain_access_token(self):
-        credential = client_id + ":" + client_secret
-        credential_encoded = base64.b64encode(credential.encode())
-        oauth_header = {
-            "Authorization": f"Basic {credential_encoded.decode()}",
-            "Accept": "application/json"
-        }
-        access_token = requests.post("https://login.bol.com/token?grant_type=client_credentials", headers=oauth_header)
-        return access_token
 
 class DnListViewSet(viewsets.ModelViewSet):
     """

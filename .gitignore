@@ -9,3 +9,4 @@ delete.py
 *.xlsx
 logs/
 templates/dist/spa/
+token.json
