@@ -118,6 +118,7 @@ class BolListViewSet(viewsets.ModelViewSet):
         }
         response_list = requests.get(dnlist_url, headers=headers)
         json_obj_list = response_list.json()
+        #orderitem_postdata_list = []
         #staff_name = staff.objects.filter(openid=self.request.auth.openid, id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
         for order in json_obj_list["orders"]:
@@ -129,27 +130,27 @@ class BolListViewSet(viewsets.ModelViewSet):
             for orderitem in order["orderItems"]:
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
-                orderitem_postdata_list = []
                 if not goods.objects.filter(goods_code=ean).exists():
                     incomplete_reason = "Unmatched EAN" + ean
                     dn_complete = 0
                     orderitem_postdata_list = None
                     break
                 else:
-                    goods_code = goods.object.filter(goods_ean=ean).first().goods_code
-                    if stocklist.objects.filter(goods_code=goods_code).can_order_stock < orderitem["quantity"]:
+                    if stocklist.objects.filter(goods_code=ean).exists():
+                        if stocklist.objects.filter(goods_code=ean).first().can_order_stock < orderitem["quantity"]:
+                            incomplete_reason = "insufficient stock" + ean
+                            dn_complete = 1
+                    else:
                         incomplete_reason = "insufficient stock" + ean
                         dn_complete = 1
-                    post_data = DnDetailModel(openid=self.request.auth.openid,
+
+                    DnDetailModel.objects.create(openid=self.request.auth.openid,
                                               dn_code=order["orderId"],
                                               customer=json_obj_detail["shipmentDetails"]["firstName"],
                                               goods_code=ean,
                                               goods_qty=orderitem["quantity"])
-                                              #creater=str(staff_name))
-                    orderitem_postdata_list.append(post_data)
-
-            DnDetailModel.objects.bulk_create(orderitem_postdata_list, batch_size=100)
-
+                                                # creater=str(staff_name))
+                    #orderitem_postdata_list.append(post_data)
 
             if not DnListModel.objects.filter(dn_code=order["orderId"]).exists():
                 DnListModel.objects.create(dn_code=order["orderId"],
@@ -157,6 +158,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                            dn_complete=dn_complete,
                                            customer=json_obj_detail["shipmentDetails"]["firstName"],
                                            create_time=order["orderPlacedDateTime"])
+        #DnDetailModel.objects.bulk_create(orderitem_postdata_list, batch_size=100)
 
         return Response("BOL order fetch success")
 

@@ -8,5 +8,5 @@ db.sqlite3
 delete.py
 *.xlsx
 logs/
-templates/dist/spa/
+templates/dist/spa/js/
 token.json
