@@ -32,21 +32,8 @@
             >
               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('newtip') }}</q-tooltip>
             </q-btn>
-            <q-btn :label="$t('refresh')" icon="refresh" @click="reFresh()">
-              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('refreshtip') }}</q-tooltip>
-            </q-btn>
-            <q-btn
-              v-show="
-                $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                  $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                  $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                  $q.localStorage.getItem('staff_type') !== 'StockControl'
-              "
-              :label="$t('release')"
-              icon="img:statics/outbound/orderrelease.png"
-              @click="orderreleaseAllData()"
-            >
-              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('releaseallorder') }}</q-tooltip>
+            <q-btn :label="$t('fetch')" icon="refresh" @click="reFresh()">
+              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('fetchtip') }}</q-tooltip>
             </q-btn>
           </q-btn-group>
           <q-space />
@@ -59,9 +46,8 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td key="dn_code" :props="props">{{ props.row.dn_code }}</q-td>
-            <q-td key="dn_status" :props="props">{{ props.row.dn_status }}</q-td>
-            <q-td key="total_weight" :props="props">{{ props.row.total_weight.toFixed(4) }}</q-td>
-            <q-td key="total_volume" :props="props">{{ props.row.total_volume.toFixed(4) }}</q-td>
+            <q-td key="dn_complete" :props="props">{{ props.row.dn_complete }}</q-td>
+            <q-td key="total_orderquantity" :props="props">{{ props.row.total_orderquantity }}</q-td>
             <q-td key="customer" :props="props">{{ props.row.customer }}</q-td>
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
             <q-td key="create_time" :props="props">{{ props.row.create_time }}</q-td>
@@ -77,25 +63,9 @@
                 round
                 flat
                 push
-                color="info"
-                icon="visibility"
-                @click="viewData(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('printthisdn') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
                 color="positive"
                 icon="img:statics/outbound/order.png"
-                @click="neworderData(props.row)"
+                @click="navigateToDetail(props.row.dn_complete, props.row.dn_code)"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmorder') }}</q-tooltip>
               </q-btn>
@@ -111,105 +81,9 @@
                 push
                 color="positive"
                 icon="img:statics/outbound/orderrelease.png"
-                @click="orderreleaseData(props.row)"
+                @click="handle3TypeOrder(props.row.dn_complete, props.row.dn_code)"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('releaseorder') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="secondary"
-                icon="print"
-                @click="PrintPickingList(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('print') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="purple"
-                icon="img:statics/outbound/picked.png"
-                @click="pickedData(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmpicked') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="dark"
-                icon="rv_hookup"
-                @click="DispatchDN(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('dispatch') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="info"
-                icon="img:statics/outbound/receiving.png"
-                @click="PODData(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.pod') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="purple"
-                icon="edit"
-                @click="editData(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('edit') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                v-show="
-                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                    $q.localStorage.getItem('staff_type') !== 'StockControl'
-                "
-                round
-                flat
-                push
-                color="dark"
-                icon="delete"
-                @click="deleteData(props.row)"
-              >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('delete') }}</q-tooltip>
               </q-btn>
             </q-td>
             <template v-if="props.row.transportation_fee.detail !== []">
@@ -654,10 +528,10 @@
             <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
           </q-btn>
         </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('deletetip') }}</q-card-section>
+        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="deleteDataCancel()">{{ $t('cancel') }}</q-btn>
-          <q-btn color="primary" @click="deleteDataSubmit()">{{ $t('submit') }}</q-btn>
+          <q-btn color="primary" @click="cancelOrder()">{{ $t('submit') }}</q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -670,10 +544,10 @@
             <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
           </q-btn>
         </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('deletetip') }}</q-card-section>
+        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="neworderDataCancel()">{{ $t('cancel') }}</q-btn>
-          <q-btn color="primary" @click="neworderDataSubmit()">{{ $t('submit') }}</q-btn>
+          <q-btn color="primary" @click="cancelOrder()">{{ $t('submit') }}</q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -686,10 +560,10 @@
             <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
           </q-btn>
         </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('deletetip') }}</q-card-section>
+        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.generate_pickup_tip') }}</q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="orderreleaseDataCancel()">{{ $t('cancel') }}</q-btn>
-          <q-btn color="primary" @click="orderreleaseDataSubmit()">{{ $t('submit') }}</q-btn>
+          <q-btn color="primary" @click="generatePickupList(props.row.dn_code)">{{ $t('submit') }}</q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -905,6 +779,7 @@ export default {
     return {
       openid: '',
       login_name: '',
+      dn_code: '',
       authin: '0',
       pathname: 'dn/',
       pathname_previous: '',
@@ -924,9 +799,8 @@ export default {
       customer_detail: {},
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
-        { name: 'dn_status', label: this.$t('outbound.view_dn.dn_status'), field: 'dn_status', align: 'center' },
-        { name: 'total_weight', label: this.$t('outbound.view_dn.total_weight'), field: 'total_weight', align: 'center' },
-        { name: 'total_volume', label: this.$t('outbound.view_dn.total_volume'), field: 'total_volume', align: 'center' },
+        { name: 'dn_complete', label: this.$t('outbound.view_dn.dn_complete'), field: 'dn_complete', align: 'center' },
+        { name: 'total_orderquantity', label: this.$t('outbound.view_dn.total_orderquantity'), field: 'total_orderquantity', align: 'center' },
         { name: 'customer', label: this.$t('outbound.view_dn.customer'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
@@ -1028,6 +902,53 @@ export default {
         this.isError2 = true
       }
     },
+    navigateToDetail(dn_complete, dn_code){
+      var _this = this
+      if (dn_complete === _this.$t('outbound.view_dn.dn_sufficientstock')) {
+        _this.$router.push({name: 'neworderbycode', params:{dn_code}})
+      } else if (dn_complete === _this.$t('outbound.view_dn.dn_insufficientstock')) {
+        _this.$router.push({name: 'backorderbycode', params:{dn_code}})
+      } else if (dn_complete === _this.$t('outbound.view_dn.dn_unmatchEAN')) {
+        _this.$router.push({name: 'freshorderbycode', params:{dn_code}})
+      }
+    },
+    handle3TypeOrder(dn_complete, dn_code){
+      var _this = this
+      _this.dn_code = dn_code
+      if (dn_complete === _this.$t('outbound.view_dn.dn_sufficientstock')) {
+        _this.orderreleaseForm = true
+      } else if (dn_complete === _this.$t('outbound.view_dn.dn_insufficientstock')) {
+        _this.neworderForm = true
+      } else if (dn_complete === _this.$t('outbound.view_dn.dn_unmatchEAN')) {
+        _this.deleteForm = true
+      }
+    },
+    generatePickupList(dn_code){
+    },
+    cancelOrder(){
+      var _this = this
+      if (LocalStorage.has('auth')){
+        deleteauth(_this.pathname + 'bollist/' + _this.dn_code)
+          .then(res=>{
+            _this.deleteForm = false
+            _this.getList()
+            if (!res.detail) {
+              _this.$q.notify({
+                message: 'Order Cancel Success',
+                icon: 'check',
+                color: 'green'
+              })
+            }
+          })
+          .catch(err => {
+            _this.$q.notify({
+              message: err.detail,
+              icon: 'close',
+              color: 'negative'
+            })
+          })
+      }
+    },
     getList () {
       var _this = this
       if (LocalStorage.has('auth')) {
@@ -1036,7 +957,7 @@ export default {
             _this.table_list = []
             res.results.forEach(item => {
               if (item.dn_status === 1) {
-                item.dn_status = _this.$t('outbound.freshorder')
+                item.dn_status = _this.$t('outbound.wrongorder')
               } else if (item.dn_status === 2) {
                 item.dn_status = _this.$t('outbound.neworder')
               } else if (item.dn_status === 3) {
@@ -1047,6 +968,15 @@ export default {
                 item.dn_status = _this.$t('outbound.shippedstock')
               } else if (item.dn_status === 6) {
                 item.dn_status = _this.$t('outbound.received')
+              } else {
+                item.dn_status = 'N/A'
+              }
+              if (item.dn_complete === 2) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_sufficientstock')
+              } else if (item.dn_complete === 1) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_insufficientstock')
+              } else if (item.dn_complete === 0) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_unmatchEAN')
               } else {
                 item.dn_status = 'N/A'
               }
@@ -1080,7 +1010,7 @@ export default {
             _this.table_list = []
             res.results.forEach(item => {
               if (item.dn_status === 1) {
-                item.dn_status = _this.$t('outbound.freshorder')
+                item.dn_status = _this.$t('outbound.wrongorder')
               } else if (item.dn_status === 2) {
                 item.dn_status = _this.$t('outbound.neworder')
               } else if (item.dn_status === 3) {
@@ -1119,7 +1049,7 @@ export default {
             _this.table_list = []
             res.results.forEach(item => {
               if (item.dn_status === 1) {
-                item.dn_status = _this.$t('outbound.freshorder')
+                item.dn_status = _this.$t('outbound.wrongorder')
               } else if (item.dn_status === 2) {
                 item.dn_status = _this.$t('outbound.neworder')
               } else if (item.dn_status === 3) {
@@ -1158,7 +1088,7 @@ export default {
             _this.table_list = []
             res.results.forEach(item => {
               if (item.dn_status === 1) {
-                item.dn_status = _this.$t('outbound.freshorder')
+                item.dn_status = _this.$t('outbound.wrongorder')
               } else if (item.dn_status === 2) {
                 item.dn_status = _this.$t('outbound.neworder')
               } else if (item.dn_status === 3) {
@@ -1191,8 +1121,24 @@ export default {
     },
     reFresh () {
       var _this = this
-      _this.table_list = []
-      _this.getList()
+      postauth(_this.pathname + 'bollist/')
+        .then(res => {
+          _this.getList()
+          if (!res.detail) {
+            _this.$q.notify({
+              message: 'BOL Order Fetch Success',
+              icon: 'check',
+              color: 'green'
+            })
+          }
+        })
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
     },
     newFormOpen () {
       var _this = this
@@ -1300,9 +1246,9 @@ export default {
       var _this = this
       _this.isEdit = true
       _this.goodsDataClear()
-      if (e.dn_status !== _this.$t('outbound.freshorder')) {
+      if (e.dn_status !== _this.$t('outbound.wrongorder')) {
         _this.$q.notify({
-          message: e.dn_code + ' DN Status Not ' + _this.$t('outbound.freshorder'),
+          message: e.dn_code + ' DN Status Not ' + _this.$t('outbound.wrongorder'),
           icon: 'close',
           color: 'negative'
         })
@@ -1397,9 +1343,9 @@ export default {
     },
     deleteData (e) {
       var _this = this
-      if (e.dn_status !== _this.$t('outbound.freshorder')) {
+      if (e.dn_status !== _this.$t('outbound.wrongorder')) {
         _this.$q.notify({
-          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.freshorder'),
+          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.wrongorder'),
           icon: 'close',
           color: 'negative'
         })
@@ -1438,9 +1384,9 @@ export default {
     },
     neworderData (e) {
       var _this = this
-      if (e.dn_status !== _this.$t('outbound.freshorder')) {
+      if (e.dn_status !== _this.$t('outbound.wrongorder')) {
         _this.$q.notify({
-          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.freshorder'),
+          message: e.dn_code + ' DN Status Is Not ' + _this.$t('outbound.wrongorder'),
           icon: 'close',
           color: 'negative'
         })
@@ -1489,28 +1435,6 @@ export default {
         _this.orderreleaseForm = true
         _this.orderreleaseid = e.id
       }
-    },
-    orderreleaseAllData () {
-      var _this = this
-      postauth(_this.pathname + 'orderrelease/', {})
-        .then(res => {
-          _this.table_list = []
-          _this.getList()
-          if (!res.detail) {
-            _this.$q.notify({
-              message: 'Success Release All Order',
-              icon: 'check',
-              color: 'green'
-            })
-          }
-        })
-        .catch(err => {
-          _this.$q.notify({
-            message: err.detail,
-            icon: 'close',
-            color: 'negative'
-          })
-        })
     },
     orderreleaseDataSubmit () {
       var _this = this

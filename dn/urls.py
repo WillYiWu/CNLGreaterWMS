@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
 #[Will] add new router to link request from frontend to obtain order data from BOL
 path(r'bollist/', views.BolListViewSet.as_view({"get": "list", "post": "create"}), name="bollist"),
+path('bollist/<str:dn_code>', views.BolListViewSet.as_view({"delete": "destroy"}), name="bollist2"),
 path(r'list/', views.DnListViewSet.as_view({"get": "list", "post": "create"}), name="dnlist"),
 re_path(r'^list/(?P<pk>\d+)/$', views.DnListViewSet.as_view({
     'get': 'retrieve',
@@ -12,6 +13,8 @@ re_path(r'^list/(?P<pk>\d+)/$', views.DnListViewSet.as_view({
     'delete': 'destroy'
 }), name="dnlist_1"),
 path(r'detail/', views.DnDetailViewSet.as_view({"get": "list", "post": "create", 'put': 'update'}), name="dndetail"),
+#[Will] add new entry to query dn detail list by dn_code
+path('detail/<str:dn_code>/', views.DnDetailViewSet.as_view({"get": "list"}), name="dndetail_2"),
 re_path(r'^detail/(?P<pk>\d+)/$', views.DnDetailViewSet.as_view({
     'get': 'retrieve',
     'delete': 'destroy'

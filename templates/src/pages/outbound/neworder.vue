@@ -24,6 +24,19 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
+             <q-btn
+              v-show="
+                $q.localStorage.getItem('staff_type') !== 'Supplier' &&
+                  $q.localStorage.getItem('staff_type') !== 'Customer' &&
+                  $q.localStorage.getItem('staff_type') !== 'Inbound' &&
+                  $q.localStorage.getItem('staff_type') !== 'StockControl'
+              "
+              :label="$t('release')"
+              icon="img:statics/outbound/orderrelease.png"
+              @click="orderreleaseAllData()"
+            >
+              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('releaseallorder') }}</q-tooltip>
+            </q-btn>
            </q-btn-group>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
@@ -97,7 +110,9 @@ export default {
       openid: '',
       login_name: '',
       authin: '0',
-      pathname: 'dn/detail/?dn_status=2',
+      dn_code: '',
+      pathname: 'dn/detail/',
+      param: '?dn_complete=2',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -130,7 +145,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname, {
+        getauth(_this.pathname + _this.dn_code + _this.param, {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -204,8 +219,31 @@ export default {
       _this.getList()
     }
   },
+    orderreleaseAllData () {
+      var _this = this
+      postauth(_this.pathname + 'orderrelease/', {})
+        .then(res => {
+          _this.table_list = []
+          _this.getList()
+          if (!res.detail) {
+            _this.$q.notify({
+              message: 'Success Release All Order',
+              icon: 'check',
+              color: 'green'
+            })
+          }
+        })
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
+    },
   created () {
     var _this = this
+    _this.dn_code = _this.$route.params.dn_code
     if (_this.$q.localStorage.has('openid')) {
       _this.openid = _this.$q.localStorage.getItem('openid')
     } else {

@@ -58,18 +58,6 @@
              <q-td key="update_time" :props="props">
                {{ props.row.update_time }}
              </q-td>
-             <q-td key="action" :props="props" style="width: 50px">
-               <q-btn v-show="$q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                              $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                              $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                              $q.localStorage.getItem('staff_type') !== 'Outbound'
-                             "
-                      round flat push color="dark" icon="delete" @click="deleteData(props.row)">
-                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                   {{ $t('deletebackorder') }}
-                </q-tooltip>
-               </q-btn>
-             </q-td>
            </q-tr>
          </template>
       </q-table>
@@ -121,7 +109,9 @@ export default {
       openid: '',
       login_name: '',
       authin: '0',
-      pathname: 'dn/detail/?dn_status=2&back_order_label=true',
+      dn_code: '',
+      pathname: 'dn/detail/',
+      param: '?dn_complete=1',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -140,7 +130,6 @@ export default {
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
-        { name: 'action', label: this.$t('action'), align: 'right' }
       ],
       deleteForm: false,
       filter: '',
@@ -154,7 +143,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname, {
+        getauth(_this.pathname + _this.dn_code + _this.param, {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -229,7 +218,7 @@ export default {
     },
     deleteData (e) {
       var _this = this
-      if (e.dn_status !== 2 && e.back_order_label !== 'true') {
+      if (e.dn_status !== 2 && e.dn_complete !== 1) {
         _this.$q.notify({
           message: e.dn_code + ' Not A Back Order',
           icon: 'close',
@@ -266,6 +255,7 @@ export default {
   },
   created () {
     var _this = this
+    _this.dn_code = _this.$route.params.dn_code
     if (_this.$q.localStorage.has('openid')) {
       _this.openid = _this.$q.localStorage.getItem('openid')
     } else {

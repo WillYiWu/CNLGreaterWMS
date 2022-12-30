@@ -2,6 +2,7 @@ from django.db import models
 
 class DnListModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
+    #[Will] 1:created/imported; 2:pickup list generated; 3:cancelled; 4: delivered
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
     #[Will] Add a new field to indicate total number of items in an order
     total_orderquantity = models.IntegerField(default=1, verbose_name="Total Ordervolume")
@@ -29,6 +30,9 @@ class DnListModel(models.Model):
 class DnDetailModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
+    # 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
+    dn_complete = models.IntegerField(default=2, verbose_name="DN Incomplete")
+    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
     customer = models.CharField(max_length=255, verbose_name="DN Customer")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     goods_desc = models.CharField(max_length=255, verbose_name="Goods Description")

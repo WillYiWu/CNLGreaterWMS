@@ -10,13 +10,13 @@
           <q-route-tab name="dn" :label="$t('outbound.dn')" icon="img:statics/outbound/dnlist.png" :to="{ name: 'dn' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="freshorder" :label="$t('outbound.freshorder')" icon="img:statics/outbound/freshorder.png" :to="{ name: 'freshorder' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="neworder" :label="$t('outbound.neworder')" icon="img:statics/outbound/order.png" :to="{ name: 'neworder' }" exact/>
+          <q-route-tab name="freshorder" :label="$t('outbound.wrongorder')" icon="img:statics/outbound/freshorder.png" :to="{ name: 'freshorder' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="backorder" :label="$t('outbound.backorder')" icon="img:statics/outbound/backorder.png" :to="{ name: 'backorder' }" exact/>
+        </transition>
+        <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="neworder" :label="$t('outbound.neworder')" icon="img:statics/outbound/order.png" :to="{ name: 'neworder' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="pickstock" :label="$t('outbound.pickstock')" icon="img:statics/outbound/pickstock.png" :to="{ name: 'pickstock' }" exact/>
@@ -29,9 +29,6 @@
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="shippedstock" :label="$t('outbound.shippedstock')" icon="img:statics/outbound/outbound.png" :to="{ name: 'shippedstock' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="pod" :label="$t('outbound.pod')" icon="img:statics/outbound/receiving.png" :to="{ name: 'pod' }" exact/>
         </transition>
       </q-tabs>
     </div>
@@ -52,6 +49,25 @@ export default {
     }
   },
   methods: {
+    updateSelectedTab(){
+      if (this.$route.name === 'dn'){
+        this.selectedTab = 0
+      } else if (this.$route.name === 'freshorderbycode'){
+        this.selectedTab = 1
+      } else if (this.$route.name === 'backorderbycode'){
+        this.selectedTab = 2
+      } else if (this.$route.name === 'neworderbycode'){
+        this.selectedTab = 3
+      } else {
+        this.selectedTab =0
+      }
+    }
+  },
+  created(){
+    this.updateSelectedTab()
+  },
+  watch: {
+    '$route': 'updateSelectedTab'
   }
 }
 </script>

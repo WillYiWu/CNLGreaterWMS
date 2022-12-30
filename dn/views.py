@@ -37,23 +37,13 @@ import requests
 import json
 import base64
 import os
+from rest_framework.decorators import action
 
 # [Will]
 dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
 dnorder_url = "https://api.bol.com/retailer/orders/"
-
-# Check AEN and availability of product in stock
-def check_item_inventory(orderId):
-    # Check product availability in stock
-    headers = {
-        "Authorization": "Bearer " + obtain_access_token().json(),
-        "Accept": "application/vnd.retailer.v8+json"
-    }
-    response = requests.get(dnorder_url+orderId, headers=headers)
-    json_obj = response.json()
-
-    # Check whether ordered item is sufficient in stock
-    return
+cancelorder_url = "https://api.bol.com/retailer-demo/orders/cancellation"
+#cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
 
 def obtain_access_token():
     path = os.path.abspath('token.json')
@@ -124,43 +114,70 @@ class BolListViewSet(viewsets.ModelViewSet):
         for order in json_obj_list["orders"]:
             orderitem_quantity = 0
             dn_complete = 2
-            incomplete_reason = ""
             response_detail = requests.get(dnorder_url+order["orderId"], headers=headers)
             json_obj_detail = response_detail.json()
             for orderitem in order["orderItems"]:
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
                 if not goods.objects.filter(goods_code=ean).exists():
-                    incomplete_reason = "Unmatched EAN" + ean
                     dn_complete = 0
-                    orderitem_postdata_list = None
-                    break
                 else:
-                    if stocklist.objects.filter(goods_code=ean).exists():
-                        if stocklist.objects.filter(goods_code=ean).first().can_order_stock < orderitem["quantity"]:
-                            incomplete_reason = "insufficient stock" + ean
-                            dn_complete = 1
-                    else:
-                        incomplete_reason = "insufficient stock" + ean
+                    if stocklist.objects.filter(goods_code=ean).first().can_order_stock < orderitem["quantity"]:
                         dn_complete = 1
 
-                    DnDetailModel.objects.create(openid=self.request.auth.openid,
+                DnDetailModel.objects.create(openid=self.request.auth.openid,
                                               dn_code=order["orderId"],
+                                              orderitem_id=order["orderItemId"],
+                                              dn_complete=dn_complete,
                                               customer=json_obj_detail["shipmentDetails"]["firstName"],
                                               goods_code=ean,
                                               goods_qty=orderitem["quantity"])
                                                 # creater=str(staff_name))
-                    #orderitem_postdata_list.append(post_data)
+
 
             if not DnListModel.objects.filter(dn_code=order["orderId"]).exists():
-                DnListModel.objects.create(dn_code=order["orderId"],
+                DnListModel.objects.create(openid=self.request.auth.openid,
+                                           dn_code=order["orderId"],
                                            total_orderquantity=orderitem_quantity,
                                            dn_complete=dn_complete,
                                            customer=json_obj_detail["shipmentDetails"]["firstName"],
                                            create_time=order["orderPlacedDateTime"])
-        #DnDetailModel.objects.bulk_create(orderitem_postdata_list, batch_size=100)
 
         return Response("BOL order fetch success")
+
+    #[Will] When EAN is not matching or stock is insufficient, cancel order and inform BOL
+    def destroy(self, request, *args, **kwargs):
+        dn_code = self.kwargs.get('dn_code', None)
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token(),
+            "Accept": "application/vnd.retailer.v8+json",
+            "Content-Type": "application/vnd.retailer.v8+json"
+        }
+        orderItems = []
+        if dn_code == 'undefined':
+            detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
+                                            is_delete=False)
+        else:
+            detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
+                                            is_delete=False,
+                                            dn_code=dn_code)
+        if detail_list.exists():
+            for i in range(len(detail_list)):
+                orderItems.append({'orderItemId': detail_list[i].orderitem_id,
+                                  'reasonCode': "OUT_OF_STOCK"})
+                cancel_data = {"orderItems": orderItems}
+                detail_list[i].is_delete = True
+                detail_list[i].save()
+                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code)
+                if dn_list.exists():
+                    dn_list.first().is_delete = True
+                    dn_list.first().dn_status = 3
+                    dn_list.first().save()
+            response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
+            return Response({"detail": "Deletion is successful"}, status=200)
+        else:
+            return Response({"detail": "nothing to delete"}, status=200)
+
 
 
 class DnListViewSet(viewsets.ModelViewSet):
@@ -203,7 +220,7 @@ class DnListViewSet(viewsets.ModelViewSet):
                         empty_qs[i].delete()
             if id is None:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, is_delete=False) & ~Q(customer=''))
+                    Q(openid=self.request.auth.openid, is_delete=False) & ~Q(customer='')).order_by('dn_complete')
             else:
                 return DnListModel.objects.filter(
                     Q(openid=self.request.auth.openid, id=id, is_delete=False) & ~Q(customer=''))
@@ -295,15 +312,63 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         except:
             return None
 
+
+    @action(detail=False, methods=['list'])
+    def query_byorder(self, request, dn_code):
+        dn_complete = self.request.query_params.get('dn_complete', None)
+        if dn_code is not None:
+            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                  dn_complete=dn_complete, dn_code=dn_code)
+        else:
+            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                  dn_complete=dn_complete)
+
     def get_queryset(self):
-        id = self.get_project()
-        if self.request.user:
-            if id is None:
+        #[Will] update status of back order and wrong order in case seller has corrected the EAN or stock issue
+        dn_code = self.kwargs.get('dn_code', None)
+        dn_complete = self.request.query_params.get('dn_complete', None)
+        if dn_complete is not None:
+            orderlist_set = DnListModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1)
+            dn_complete_internal = 0
+            if len(orderlist_set) > 0:
+                for i in range(len(orderlist_set)):
+                    orderitem_set = DnDetailModel.objects.filter(dn_code=orderlist_set[i].dn_code)
+                    if len(orderitem_set) > 0:
+                        for item_number in range(len(orderitem_set)):
+                            if goods.objects.filter(goods_code=orderitem_set[item_number].goods_code).exists():
+                                ean = orderitem_set[item_number].goods_code
+                                if not stocklist.objects.filter(goods_code=ean).exists():
+                                    continue
+                                stock_dataset = stocklist.objects.filter(goods_code=ean).first()
+                                if stock_dataset.can_order_stock > orderitem_set[item_number].goods_qty:
+                                      dn_complete_internal = 2
+                                      orderitem_set[item_number].dn_complete = dn_complete_internal
+                                      orderitem_set[item_number].save()
+                                else:
+                                    dn_complete_internal = 1
+                                    orderitem_set[item_number].dn_complete = dn_complete_internal
+                                    orderitem_set[item_number].save()
+                                    break
+                            else:
+                                dn_complete_internal = 0
+                                orderitem_set[item_number].dn_complete = dn_complete_internal
+                                orderitem_set[item_number].save()
+                                break
+                    orderlist_set[i].dn_complete = dn_complete_internal
+                    orderlist_set[i].save()
+            if dn_code != 'undefined':
+                result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                      dn_complete=dn_complete, dn_code=dn_code)
+            else:
+                result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                      dn_complete=dn_complete)
+            return result
+        else:
+            if dn_code != 'undefined':
                 return DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
             else:
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
-        else:
-            return DnDetailModel.objects.none()
+                return DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_code=dn_code)
+
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve', 'destroy']:
