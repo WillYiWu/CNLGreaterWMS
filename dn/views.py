@@ -40,9 +40,10 @@ import os
 from rest_framework.decorators import action
 
 # [Will]
-dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=ALL"
-dnorder_url = "https://api.bol.com/retailer/orders/"
+dnlist_url = "https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR&state=ALL"
+dnorder_url = "https://api.bol.com/retailer-demo/orders/"
 cancelorder_url = "https://api.bol.com/retailer-demo/orders/cancellation"
+shipment_url = "https://api.bol.com/retailer-demo/orders/shipment"
 #cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
 
 def obtain_access_token():
@@ -108,8 +109,10 @@ class BolListViewSet(viewsets.ModelViewSet):
         }
         response_list = requests.get(dnlist_url, headers=headers)
         json_obj_list = response_list.json()
-        #orderitem_postdata_list = []
-        #staff_name = staff.objects.filter(openid=self.request.auth.openid, id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+        if len(json_obj_list) == 0:
+            return Response("No order is fetched")
+        staff_name = staff.objects.filter(openid=self.request.auth.openid,
+                                          id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
         for order in json_obj_list["orders"]:
             orderitem_quantity = 0
@@ -119,29 +122,62 @@ class BolListViewSet(viewsets.ModelViewSet):
             for orderitem in order["orderItems"]:
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
-                if not goods.objects.filter(goods_code=ean).exists():
+                goods_desc = ''
+                can_order_stock = 0
+                if not goods.objects.filter(goods_code=ean, is_delete=False).exists():
                     dn_complete = 0
                 else:
-                    if stocklist.objects.filter(goods_code=ean).first().can_order_stock < orderitem["quantity"]:
-                        dn_complete = 1
+                    if dn_complete != 0:
+                        if not stocklist.objects.filter(goods_code=ean).exists():
+                            dn_complete = 1
+                        else:
+                            can_order_stock = stocklist.objects.filter(goods_code=ean).first().can_order_stock
+                            if can_order_stock < orderitem["quantity"]:
+                                dn_complete = 1
+                            else:
+                                if dn_complete != 1:
+                                    dn_complete = 2
 
-                DnDetailModel.objects.create(openid=self.request.auth.openid,
+                    goods_desc = goods.objects.filter(goods_code=ean, is_delete=False).first().goods_desc
+
+                if not DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).exists():
+                    DnDetailModel.objects.create(openid=self.request.auth.openid,
                                               dn_code=order["orderId"],
-                                              orderitem_id=order["orderItemId"],
+                                              dn_status=1,
+                                              goods_desc=goods_desc,
+                                              stock_qty=can_order_stock,
+                                              orderitem_id=orderitem["orderItemId"],
                                               dn_complete=dn_complete,
                                               customer=json_obj_detail["shipmentDetails"]["firstName"],
                                               goods_code=ean,
-                                              goods_qty=orderitem["quantity"])
-                                                # creater=str(staff_name))
+                                              goods_qty=orderitem["quantity"],
+                                              creater=str(staff_name))
+                else:
+                    if orderitem["cancellationRequest"] != False:
+                        dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
+                        dn_complete = 3
+                        dndetail_list.dn_complete = dn_complete
+                        dndetail_list.save()
 
+            dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False)
+            for i in range(len(dndetail_list)):
+                dndetail_list[i].dn_complete = dn_complete
+                dndetail_list[i].save()
 
-            if not DnListModel.objects.filter(dn_code=order["orderId"]).exists():
+            if not DnListModel.objects.filter(dn_code=order["orderId"], is_delete=False).exists():
                 DnListModel.objects.create(openid=self.request.auth.openid,
                                            dn_code=order["orderId"],
+                                           dn_status=1,
                                            total_orderquantity=orderitem_quantity,
                                            dn_complete=dn_complete,
                                            customer=json_obj_detail["shipmentDetails"]["firstName"],
-                                           create_time=order["orderPlacedDateTime"])
+                                           create_time=order["orderPlacedDateTime"],
+                                           creater=str(staff_name))
+            else:
+                dn_list = DnListModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
+                dn_list.dn_complete = dn_complete
+                dn_list.save()
+
 
         return Response("BOL order fetch success")
 
@@ -163,7 +199,11 @@ class BolListViewSet(viewsets.ModelViewSet):
                                             dn_code=dn_code)
         if detail_list.exists():
             for i in range(len(detail_list)):
-                orderItems.append({'orderItemId': detail_list[i].orderitem_id,
+                if detail_list[i].dn_complete == 3:
+                    orderItems.append({'orderItemId': detail_list[i].orderitem_id,
+                                  'reasonCode': "REQUESTED_BY_CUSTOMER"})
+                else:
+                    orderItems.append({'orderItemId': detail_list[i].orderitem_id,
                                   'reasonCode': "OUT_OF_STOCK"})
                 cancel_data = {"orderItems": orderItems}
                 detail_list[i].is_delete = True
@@ -173,6 +213,10 @@ class BolListViewSet(viewsets.ModelViewSet):
                     dn_list.first().is_delete = True
                     dn_list.first().dn_status = 3
                     dn_list.first().save()
+                dn_picking_list = PickingListModel.objects.filter(dn_code=detail_list[i].dn_code)
+                if dn_picking_list.exists():
+                    dn_picking_list.first().is_delete = True
+                    dn_picking_list.first().save()
             response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
             return Response({"detail": "Deletion is successful"}, status=200)
         else:
@@ -220,7 +264,7 @@ class DnListViewSet(viewsets.ModelViewSet):
                         empty_qs[i].delete()
             if id is None:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, is_delete=False) & ~Q(customer='')).order_by('dn_complete')
+                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False) & ~Q(customer='')).order_by('dn_complete')
             else:
                 return DnListModel.objects.filter(
                     Q(openid=self.request.auth.openid, id=id, is_delete=False) & ~Q(customer=''))
@@ -312,23 +356,13 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         except:
             return None
 
-
-    @action(detail=False, methods=['list'])
-    def query_byorder(self, request, dn_code):
-        dn_complete = self.request.query_params.get('dn_complete', None)
-        if dn_code is not None:
-            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                  dn_complete=dn_complete, dn_code=dn_code)
-        else:
-            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                  dn_complete=dn_complete)
-
     def get_queryset(self):
         #[Will] update status of back order and wrong order in case seller has corrected the EAN or stock issue
         dn_code = self.kwargs.get('dn_code', None)
         dn_complete = self.request.query_params.get('dn_complete', None)
+        dn_status = self.request.query_params.get('dn_status', None)
         if dn_complete is not None:
-            orderlist_set = DnListModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1)
+            orderlist_set = DnListModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=dn_status)
             dn_complete_internal = 0
             if len(orderlist_set) > 0:
                 for i in range(len(orderlist_set)):
@@ -358,16 +392,16 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     orderlist_set[i].save()
             if dn_code != 'undefined':
                 result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                      dn_complete=dn_complete, dn_code=dn_code)
+                                                      dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code)
             else:
                 result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                      dn_complete=dn_complete)
+                                                      dn_complete=dn_complete, dn_status=dn_status)
             return result
         else:
             if dn_code != 'undefined':
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
+                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status=dn_status, is_delete=False)
             else:
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_code=dn_code)
+                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status=dn_status, is_delete=False, dn_code=dn_code)
 
 
     def get_serializer_class(self):
@@ -582,26 +616,43 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         else:
             raise APIException({"detail": "DN Code has been Confirmed or does not exists"})
 
-    def destroy(self, request, pk):
-        qs = self.get_object()
-        if qs.openid != self.request.auth.openid:
-            raise APIException({"detail": "Cannot delete data which not yours"})
-        else:
-            if qs.dn_status == 2 and qs.back_order_label:
-                qs.is_delete = True
-                goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                            goods_code=str(qs.goods_code)).first()
-                goods_qty_change.back_order_stock = goods_qty_change.back_order_stock - int(qs.goods_qty)
-                goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - int(qs.goods_qty)
-                goods_qty_change.save()
-                qs.save()
-                if DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code, is_delete=False).exists():
-                    pass
+    def destroy(self, request):
+        #[Will] rewrite this function, this function will only be called for
+        #bulk order cancelling for Wrong EAN and out of stock orders
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token(),
+            "Accept": "application/vnd.retailer.v8+json",
+            "Content-Type": "application/vnd.retailer.v8+json"
+        }
+        dn_complete = self.request.query_params.get('dn_complete', None)
+        dn_status = self.request.query_params.get('dn_status', None)
+        detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
+                                                 dn_complete=dn_complete,
+                                                 dn_status=dn_status,
+                                                 is_delete=False)
+
+        orderItems = []
+        if detail_list.exists():
+            for i in range(len(detail_list)):
+                if detail_list[i].dn_complete == 3:
+                    orderItems.append({'orderItemId': detail_list[i].orderitem_id,
+                                  'reasonCode': "REQUESTED_BY_CUSTOMER"})
                 else:
-                    DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code).update(is_delete=True)
-                return Response({"detail": "success"}, status=200)
-            else:
-                raise APIException({"detail": "This order has Confirmed or Deliveried"})
+                    orderItems.append({'orderItemId': detail_list[i].orderitem_id,
+                                  'reasonCode': "OUT_OF_STOCK"})
+                cancel_data = {"orderItems": orderItems}
+                detail_list[i].is_delete = True
+                detail_list[i].save()
+                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code)
+                if dn_list.exists():
+                    dn_list.first().is_delete = True
+                    dn_list.first().dn_status = 3
+                    dn_list.first().save()
+            response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
+            return Response({"detail": "Deletion is successful"}, status=200)
+        else:
+            return Response({"detail": "nothing to delete"}, status=200)
+
 
 class DnViewPrintViewSet(viewsets.ModelViewSet):
     """
@@ -772,456 +823,76 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
             return self.http_method_not_allowed(request=self.request)
 
     def create(self, request, *args, **kwargs):
-        qs = self.get_queryset()
+        #[Will] Rewrite the whole create function of pickinglist, to generate pickinglist with data from DNDetaillist and Bin info
+        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1, dn_complete=2)
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
-        for v in range(len(qs)):
-            dn_detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_code=qs[v].dn_code,
-                                                          dn_status=2, is_delete=False)
-            picking_list = []
-            picking_list_label = 0
-            back_order_list = []
-            back_order_list_label = 0
-            back_order_goods_weight_list = []
-            back_order_goods_volume_list = []
-            back_order_goods_cost_list = []
-            back_order_base_code = DnListModel.objects.filter(openid=self.request.auth.openid,
-                                                              is_delete=False).order_by('-id').first().dn_code
-            dn_last_code = re.findall(r'\d+', str(back_order_base_code), re.IGNORECASE)
-            back_order_dn_code = 'DN' + str(int(dn_last_code[0]) + 1).zfill(8)
-            bar_code = Md5.md5(back_order_dn_code)
-            total_weight = qs[v].total_weight
-            total_volume = qs[v].total_volume
-            total_cost = qs[v].total_cost
-            for i in range(len(dn_detail_list)):
-                goods_detail = goods.objects.filter(openid=self.request.auth.openid,
-                                                    goods_code=str(dn_detail_list[i].goods_code),
-                                                    is_delete=False).first()
-                if stocklist.objects.filter(openid=self.request.auth.openid,
-                                            goods_code=str(dn_detail_list[i].goods_code)).exists():
-                    pass
-                else:
-                    stocklist.objects.create(openid=self.request.auth.openid,
-                                             goods_code=str(goods_detail.goods_code),
-                                             goods_desc=goods_detail.goods_desc,
-                                             dn_stock=int(dn_detail_list[i].goods_qty))
-                goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                            goods_code=str(
-                                                                dn_detail_list[i].goods_code)).first()
-                goods_bin_stock_list = stockbin.objects.filter(openid=self.request.auth.openid,
-                                                               goods_code=str(dn_detail_list[i].goods_code),
-                                                               bin_property="Normal").order_by('id')
-                can_pick_qty = goods_qty_change.onhand_stock - \
-                               goods_qty_change.inspect_stock - \
-                               goods_qty_change.hold_stock - \
-                               goods_qty_change.damage_stock - \
-                               goods_qty_change.pick_stock - \
-                               goods_qty_change.picked_stock
-                if can_pick_qty > 0:
-                    if dn_detail_list[i].goods_qty > can_pick_qty:
-                        if qs[v].back_order_label == False:
-                            dn_pick_qty = dn_detail_list[i].pick_qty
-                            for j in range(len(goods_bin_stock_list)):
-                                bin_can_pick_qty = goods_bin_stock_list[j].goods_qty - \
-                                                   goods_bin_stock_list[j].pick_qty - \
-                                                   goods_bin_stock_list[j].picked_qty
-                                if bin_can_pick_qty > 0:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[
-                                                                           j].pick_qty + bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_pick_qty = dn_pick_qty + bin_can_pick_qty
-                                    goods_qty_change.save()
-                                    goods_bin_stock_list[j].save()
-                                elif bin_can_pick_qty == 0:
-                                    continue
-                                else:
-                                    continue
-                            dn_detail_list[i].pick_qty = dn_pick_qty
-                            dn_back_order_qty = dn_detail_list[i].goods_qty - \
-                                                dn_detail_list[i].pick_qty - \
-                                                dn_detail_list[i].picked_qty
-                            dn_detail_list[i].goods_qty = dn_pick_qty
-                            dn_detail_list[i].dn_status = 3
-                            goods_qty_change.back_order_stock = goods_qty_change.back_order_stock + \
-                                                                dn_back_order_qty
-                            back_order_goods_volume = round(goods_detail.unit_volume * dn_back_order_qty, 4)
-                            back_order_goods_weight = round(
-                                (goods_detail.goods_weight * dn_back_order_qty) / 1000, 4)
-                            back_order_goods_cost = round(goods_detail.goods_price * dn_back_order_qty, 2)
-                            back_order_list.append(DnDetailModel(dn_code=back_order_dn_code,
-                                                                 dn_status=2,
-                                                                 customer=qs[v].customer,
-                                                                 goods_code=dn_detail_list[i].goods_code,
-                                                                 goods_qty=dn_back_order_qty,
-                                                                 goods_weight=back_order_goods_weight,
-                                                                 goods_volume=back_order_goods_volume,
-                                                                 goods_cost=back_order_goods_cost,
-                                                                 creater=str(staff_name),
-                                                                 back_order_label=True,
-                                                                 openid=self.request.auth.openid,
-                                                                 create_time=dn_detail_list[i].create_time))
-                            back_order_list_label = 1
-                            total_weight = total_weight - back_order_goods_weight
-                            total_volume = total_volume - back_order_goods_volume
-                            total_cost = total_cost - back_order_goods_cost
-                            dn_detail_list[i].goods_weight = dn_detail_list[i].goods_weight - \
-                                                             back_order_goods_weight
-                            dn_detail_list[i].goods_volume = dn_detail_list[i].goods_volume - \
-                                                             back_order_goods_volume
-                            dn_detail_list[i].goods_cost = dn_detail_list[i].goods_cost - \
-                                                             back_order_goods_cost
-                            back_order_goods_weight_list.append(back_order_goods_weight)
-                            back_order_goods_volume_list.append(back_order_goods_volume)
-                            back_order_goods_cost_list.append(back_order_goods_cost)
-                            goods_qty_change.save()
-                            dn_detail_list[i].save()
-                        else:
-                            dn_pick_qty = dn_detail_list[i].pick_qty
-                            for j in range(len(goods_bin_stock_list)):
-                                bin_can_pick_qty = goods_bin_stock_list[j].goods_qty - \
-                                                   goods_bin_stock_list[j].pick_qty - \
-                                                   goods_bin_stock_list[j].picked_qty
-                                if bin_can_pick_qty > 0:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[
-                                                                           j].pick_qty + bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_pick_qty = dn_pick_qty + bin_can_pick_qty
-                                    goods_qty_change.save()
-                                    goods_bin_stock_list[j].save()
-                                elif bin_can_pick_qty == 0:
-                                    continue
-                                else:
-                                    continue
-                            dn_detail_list[i].pick_qty = dn_pick_qty
-                            dn_back_order_qty = dn_detail_list[i].goods_qty - \
-                                                dn_detail_list[i].pick_qty - \
-                                                dn_detail_list[i].picked_qty
-                            dn_detail_list[i].goods_qty = dn_pick_qty
-                            dn_detail_list[i].dn_status = 3
-                            back_order_goods_volume = round(goods_detail.unit_volume * dn_back_order_qty, 4)
-                            back_order_goods_weight = round(
-                                (goods_detail.goods_weight * dn_back_order_qty) / 1000, 4)
-                            back_order_goods_cost = round(goods_detail.goods_price * dn_back_order_qty, 2)
-                            back_order_list.append(DnDetailModel(dn_code=back_order_dn_code,
-                                                                 dn_status=2,
-                                                                 customer=qs[v].customer,
-                                                                 goods_code=dn_detail_list[i].goods_code,
-                                                                 goods_qty=dn_back_order_qty,
-                                                                 goods_weight=back_order_goods_weight,
-                                                                 goods_volume=back_order_goods_volume,
-                                                                 goods_cost=back_order_goods_cost,
-                                                                 creater=str(staff_name),
-                                                                 back_order_label=True,
-                                                                 openid=self.request.auth.openid,
-                                                                 create_time=dn_detail_list[i].create_time))
-                            back_order_list_label = 1
-                            total_weight = total_weight - back_order_goods_weight
-                            total_volume = total_volume - back_order_goods_volume
-                            total_cost = total_cost - back_order_goods_cost
-                            dn_detail_list[i].goods_weight = dn_detail_list[i].goods_weight - \
-                                                             back_order_goods_weight
-                            dn_detail_list[i].goods_volume = dn_detail_list[i].goods_volume - \
-                                                             back_order_goods_volume
-                            dn_detail_list[i].goods_cost = dn_detail_list[i].goods_cost - \
-                                                             back_order_goods_cost
-                            back_order_goods_weight_list.append(back_order_goods_weight)
-                            back_order_goods_volume_list.append(back_order_goods_volume)
-                            back_order_goods_cost_list.append(back_order_goods_cost)
-                            dn_detail_list[i].save()
-                    elif dn_detail_list[i].goods_qty == can_pick_qty:
-                        for j in range(len(goods_bin_stock_list)):
-                            bin_can_pick_qty = goods_bin_stock_list[j].goods_qty - goods_bin_stock_list[
-                                j].pick_qty - \
-                                               goods_bin_stock_list[j].picked_qty
-                            if bin_can_pick_qty > 0:
-                                dn_need_pick_qty = dn_detail_list[i].goods_qty - dn_detail_list[i].pick_qty - \
-                                                   dn_detail_list[i].picked_qty
-                                if dn_need_pick_qty > bin_can_pick_qty:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[
-                                                                           j].pick_qty + bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_detail_list[i].pick_qty = dn_detail_list[i].pick_qty + bin_can_pick_qty
-                                    goods_bin_stock_list[j].save()
-                                    goods_qty_change.save()
-                                elif dn_need_pick_qty == bin_can_pick_qty:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[
-                                                                           j].pick_qty + bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_detail_list[i].pick_qty = dn_detail_list[i].pick_qty + bin_can_pick_qty
-                                    dn_detail_list[i].dn_status = 3
-                                    dn_detail_list[i].save()
-                                    goods_bin_stock_list[j].save()
-                                    goods_qty_change.save()
-                                    break
-                                else:
-                                    break
-                            elif bin_can_pick_qty == 0:
-                                continue
-                            else:
-                                continue
-                    elif dn_detail_list[i].goods_qty < can_pick_qty:
-                        for j in range(len(goods_bin_stock_list)):
-                            bin_can_pick_qty = goods_bin_stock_list[j].goods_qty - \
-                                               goods_bin_stock_list[j].pick_qty - \
-                                               goods_bin_stock_list[j].picked_qty
-                            if bin_can_pick_qty > 0:
-                                dn_need_pick_qty = dn_detail_list[i].goods_qty - \
-                                                   dn_detail_list[i].pick_qty - \
-                                                   dn_detail_list[i].picked_qty
-                                if dn_need_pick_qty > bin_can_pick_qty:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[j].pick_qty + \
-                                                                       bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - \
-                                                                     bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + \
-                                                                  bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_detail_list[i].pick_qty = dn_detail_list[i].pick_qty + \
-                                                                 bin_can_pick_qty
-                                    dn_detail_list[i].save()
-                                    goods_bin_stock_list[j].save()
-                                    goods_qty_change.save()
-                                elif dn_need_pick_qty == bin_can_pick_qty:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[
-                                                                           j].pick_qty + bin_can_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - bin_can_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + bin_can_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=bin_can_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_detail_list[i].pick_qty = dn_detail_list[i].pick_qty + bin_can_pick_qty
-                                    dn_detail_list[i].dn_status = 3
-                                    dn_detail_list[i].save()
-                                    goods_bin_stock_list[j].save()
-                                    goods_qty_change.save()
-                                    break
-                                elif dn_need_pick_qty < bin_can_pick_qty:
-                                    goods_bin_stock_list[j].pick_qty = goods_bin_stock_list[j].pick_qty + \
-                                                                       dn_need_pick_qty
-                                    goods_qty_change.ordered_stock = goods_qty_change.ordered_stock - \
-                                                                     dn_need_pick_qty
-                                    goods_qty_change.pick_stock = goods_qty_change.pick_stock + \
-                                                                  dn_need_pick_qty
-                                    picking_list.append(PickingListModel(openid=self.request.auth.openid,
-                                                                         dn_code=dn_detail_list[i].dn_code,
-                                                                         bin_name=goods_bin_stock_list[j].bin_name,
-                                                                         goods_code=goods_bin_stock_list[
-                                                                             j].goods_code,
-                                                                         pick_qty=dn_need_pick_qty,
-                                                                         creater=str(staff_name),
-                                                                         t_code=goods_bin_stock_list[j].t_code))
-                                    picking_list_label = 1
-                                    dn_detail_list[i].pick_qty = dn_detail_list[i].pick_qty + dn_need_pick_qty
-                                    dn_detail_list[i].dn_status = 3
-                                    dn_detail_list[i].save()
-                                    goods_bin_stock_list[j].save()
-                                    goods_qty_change.save()
-                                    break
-                                else:
-                                    break
-                            elif bin_can_pick_qty == 0:
-                                continue
-                            else:
-                                continue
+        for i in range(len(normalorder_set)):
+            bin_set = stockbin.objects.filter(goods_code=normalorder_set[i].goods_code, bin_property='Normal')
+            tobepick_amount = normalorder_set[i].goods_qty
+            picked_amount = 0
+            for j in range(len(bin_set)):
+                tobepick_amount = tobepick_amount - picked_amount
+                if bin_set[j].goods_qty >= tobepick_amount:
+                    picked_amount = tobepick_amount
+                    if PickingListModel.objects.filter(dn_code=normalorder_set[i].dn_code,
+                                                      is_delete=False).exists():
+                        PickingListModel.objects.update(dn_code=normalorder_set[i].dn_code,
+                                                    goods_code=normalorder_set[i].goods_code,
+                                                    goods_desc=normalorder_set[i].goods_desc,
+                                                    picking_status=0,
+                                                    orderitem_id=normalorder_set[i].orderitem_id,
+                                                    customer=normalorder_set[i].customer,
+                                                    pick_qty=picked_amount,
+                                                    bin_name=bin_set[j].bin_name,
+                                                    openid=self.request.auth.openid,
+                                                    creater=str(staff_name))
                     else:
-                        continue
-                elif can_pick_qty == 0:
-                    if qs[v].back_order_label == False:
-                        goods_qty_change.back_order_stock = goods_qty_change.back_order_stock + dn_detail_list[
-                            i].goods_qty
-                        back_order_goods_volume = round(goods_detail.unit_volume * dn_detail_list[i].goods_qty, 4)
-                        back_order_goods_weight = round(
-                            (goods_detail.goods_weight * dn_detail_list[i].goods_qty) / 1000, 4)
-                        back_order_goods_cost = round(goods_detail.goods_price * dn_detail_list[i].goods_qty, 2)
-                        back_order_list.append(DnDetailModel(dn_code=back_order_dn_code,
-                                                             dn_status=2,
-                                                             customer=qs[v].customer,
-                                                             goods_code=dn_detail_list[i].goods_code,
-                                                             goods_qty=dn_detail_list[i].goods_qty,
-                                                             goods_weight=back_order_goods_weight,
-                                                             goods_volume=back_order_goods_volume,
-                                                             goods_cost=back_order_goods_cost,
-                                                             creater=str(staff_name),
-                                                             back_order_label=True,
-                                                             openid=self.request.auth.openid,
-                                                             create_time=dn_detail_list[i].create_time))
-                        back_order_list_label = 1
-                        total_weight = total_weight - back_order_goods_weight
-                        total_volume = total_volume - back_order_goods_volume
-                        total_cost = total_cost - back_order_goods_cost
-                        back_order_goods_weight_list.append(back_order_goods_weight)
-                        back_order_goods_volume_list.append(back_order_goods_volume)
-                        back_order_goods_cost_list.append(back_order_goods_cost)
-                        dn_detail_list[i].is_delete = True
-                        dn_detail_list[i].save()
-                        goods_qty_change.save()
+                        PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
+                                                    goods_code=normalorder_set[i].goods_code,
+                                                    goods_desc=normalorder_set[i].goods_desc,
+                                                    picking_status=0,
+                                                    orderitem_id=normalorder_set[i].orderitem_id,
+                                                    customer=normalorder_set[i].customer,
+                                                    pick_qty=picked_amount,
+                                                    bin_name=bin_set[j].bin_name,
+                                                    openid=self.request.auth.openid,
+                                                    creater=str(staff_name))
+
+                    dn_list = DnListModel.objects.filter(dn_code=normalorder_set[i].dn_code).first()
+                    dn_list.dn_status = 2
+                    dn_list.save()
+                    normalorder_set[i].dn_status = 2
+                    normalorder_set[i].save()
+                    break
+                else:
+                    picked_amount = bin_set[j].goods_qty
+                    if PickingListModel.objects.filter(dn_code=normalorder_set[i].dn_code,
+                                                      is_delete=False).exists():
+                        PickingListModel.objects.update(dn_code=normalorder_set[i].dn_code,
+                                            goods_code=normalorder_set[i].goods_code,
+                                            goods_desc=normalorder_set[i].goods_desc,
+                                            picking_status=0,
+                                            orderitem_id=normalorder_set[i].orderitem_id,
+                                            customer=normalorder_set[i].customer,
+                                            pick_qty=picked_amount,
+                                            bin_name=bin_set[j].bin_name,
+                                            openid=self.request.auth.openid,
+                                            creater=str(staff_name))
                     else:
-                        continue
-                else:
-                    continue
-            if picking_list_label == 1:
-                if back_order_list_label == 1:
-                    back_order_total_volume = sumOfList(back_order_goods_volume_list,
-                                                        len(back_order_goods_volume_list))
-                    back_order_total_weight = sumOfList(back_order_goods_weight_list,
-                                                        len(back_order_goods_weight_list))
-                    back_order_total_cost = sumOfList(back_order_goods_cost_list,
-                                                        len(back_order_goods_cost_list))
-                    customer_city = customer.objects.filter(openid=self.request.auth.openid,
-                                                            customer_name=str(qs[v].customer),
-                                                            is_delete=False).first().customer_city
-                    warehouse_city = warehouse.objects.filter(
-                        openid=self.request.auth.openid).first().warehouse_city
-                    transportation_fee = transportation.objects.filter(
-                        Q(openid=self.request.auth.openid, send_city__icontains=warehouse_city,
-                          receiver_city__icontains=customer_city,
-                          is_delete=False) | Q(openid='init_data', send_city__icontains=warehouse_city,
-                                               receiver_city__icontains=customer_city,
-                                               is_delete=False))
-                    transportation_res = {
-                        "detail": []
-                    }
-                    transportation_back_order_res = {
-                        "detail": []
-                    }
-                    if len(transportation_fee) >= 1:
-                        transportation_list = []
-                        transportation_back_order_list = []
-                        for k in range(len(transportation_fee)):
-                            transportation_cost = transportation_calculate(total_weight,
-                                                                           total_volume,
-                                                                           transportation_fee[k].weight_fee,
-                                                                           transportation_fee[k].volume_fee,
-                                                                           transportation_fee[k].min_payment)
-                            transportation_back_order_cost = transportation_calculate(back_order_total_weight,
-                                                                                      back_order_total_volume,
-                                                                                      transportation_fee[
-                                                                                          k].weight_fee,
-                                                                                      transportation_fee[
-                                                                                          k].volume_fee,
-                                                                                      transportation_fee[
-                                                                                          k].min_payment)
-                            transportation_detail = {
-                                "transportation_supplier": transportation_fee[k].transportation_supplier,
-                                "transportation_cost": transportation_cost
-                            }
-                            transportation_back_order_detail = {
-                                "transportation_supplier": transportation_fee[k].transportation_supplier,
-                                "transportation_cost": transportation_back_order_cost
-                            }
-                            transportation_list.append(transportation_detail)
-                            transportation_back_order_list.append(transportation_back_order_detail)
-                        transportation_res['detail'] = transportation_list
-                        transportation_back_order_res['detail'] = transportation_back_order_list
-                    DnListModel.objects.create(openid=self.request.auth.openid,
-                                               dn_code=back_order_dn_code,
-                                               dn_status=2,
-                                               total_weight=back_order_total_weight,
-                                               total_volume=back_order_total_volume,
-                                               total_cost=back_order_total_cost,
-                                               customer=qs[v].customer,
-                                               creater=str(staff_name),
-                                               bar_code=bar_code,
-                                               back_order_label=True,
-                                               transportation_fee=transportation_back_order_res,
-                                               create_time=qs[v].create_time)
-                    scanner.objects.create(openid=self.request.auth.openid, mode="DN", code=back_order_dn_code,
-                                           bar_code=bar_code)
-                    PickingListModel.objects.bulk_create(picking_list, batch_size=100)
-                    DnDetailModel.objects.bulk_create(back_order_list, batch_size=100)
-                    qs[v].total_weight = total_weight
-                    qs[v].total_volume = total_volume
-                    qs[v].total_cost = total_cost
-                    qs[v].transportation_fee = transportation_res
-                    qs[v].dn_status = 3
-                    qs[v].save()
-                elif back_order_list_label == 0:
-                    PickingListModel.objects.bulk_create(picking_list, batch_size=100)
-                    qs[v].dn_status = 3
-                    qs[v].save()
-                else:
-                    continue
-            elif picking_list_label == 0:
-                if back_order_list_label == 1:
-                    DnDetailModel.objects.bulk_create(back_order_list, batch_size=100)
-                    DnListModel.objects.create(openid=self.request.auth.openid,
-                                               dn_code=back_order_dn_code,
-                                               dn_status=2,
-                                               total_weight=qs[v].total_weight,
-                                               total_volume=qs[v].total_volume,
-                                               total_cost=qs[v].total_cost,
-                                               customer=qs[v].customer,
-                                               creater=str(staff_name),
-                                               bar_code=bar_code,
-                                               back_order_label=True,
-                                               transportation_fee=qs[v].transportation_fee,
-                                               create_time=qs[v].create_time)
-                    scanner.objects.create(openid=self.request.auth.openid, mode="DN", code=back_order_dn_code,
-                                           bar_code=bar_code)
-                    qs[v].is_delete = True
-                    qs[v].dn_status = 3
-                    qs[v].save()
-                elif back_order_list_label == 0:
-                    continue
-                else:
-                    continue
-            else:
-                continue
-        return Response({"detail": "success"}, status=200)
+                        PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
+                                            goods_code=normalorder_set[i].goods_code,
+                                            goods_desc=normalorder_set[i].goods_desc,
+                                            picking_status=0,
+                                            orderitem_id=normalorder_set[i].orderitem_id,
+                                            customer=normalorder_set[i].customer,
+                                            pick_qty=picked_amount,
+                                            bin_name=bin_set[j].bin_name,
+                                            openid=self.request.auth.openid,
+                                            creater=str(staff_name))
+
+
+        return Response({'detail': 'PickingList successfully generated'}, status=200)
 
     def update(self, request, pk):
         qs = self.get_object()
@@ -1709,7 +1380,9 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user:
-            return PickingListModel.objects.filter(openid=self.request.auth.openid)
+            return PickingListModel.objects.filter(openid=self.request.auth.openid,
+                                                   picking_status=0,
+                                                   is_delete=False)
         else:
             return PickingListModel.objects.none()
 
@@ -1718,6 +1391,35 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             return serializers.DNPickingCheckGetSerializer
         else:
             return self.http_method_not_allowed(request=self.request)
+
+    def create(self, request, *args, **kwargs):
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token(),
+            "Accept": "application/vnd.retailer.v8+json",
+            "Content-Type": "application/vnd.retailer.v8+json"
+        }
+        pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0)
+        orderItems = []
+        for i in range(len(pick_list)):
+            pick_list[i].picking_status = 1
+            pick_list[i].picked_qty = pick_list[i].pick_qty
+            pick_list[i].intransit_qty = pick_list[i].pick_qty
+            pick_list[i].save()
+            orderItems.append({'orderItemId': pick_list[i].orderitem_id})
+        shipment_data = {"orderItems": orderItems }
+        result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
+
+        dn_list = DnListModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
+        for i in range(len(dn_list)):
+            dn_list[i].dn_status = 4
+            dn_list[i].save()
+            dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
+            for j in range(len(dn_detail)):
+                dn_detail[j].dn_status = 4
+                dn_detail[j].save()
+
+        return Response("All item picked and packed!")
+
 
 class DnPickedViewSet(viewsets.ModelViewSet):
     """
