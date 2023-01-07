@@ -24,6 +24,11 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
+             <q-btn :label="$t('outbound.cancelallorder')" icon="delete" @click="cancelallorder()">
+               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
+                 {{ $t('outbound.canceloutstock_tip') }}
+               </q-tooltip>
+             </q-btn>
            </q-btn-group>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
@@ -45,6 +50,9 @@
                </q-td>
                <q-td key="goods_qty" :props="props">
                  {{ props.row.goods_qty }}
+               </q-td>
+               <q-td key="stock_qty" :props="props">
+                 {{ props.row.stock_qty }}
                </q-td>
              <q-td key="customer" :props="props">
                {{ props.row.customer }}
@@ -111,7 +119,7 @@ export default {
       authin: '0',
       dn_code: '',
       pathname: 'dn/detail/',
-      param: '?dn_complete=1',
+      param: '?dn_complete=1&dn_status=1',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -125,7 +133,8 @@ export default {
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
         { name: 'goods_code', label: this.$t('goods.view_goodslist.goods_code'), field: 'goods_code', align: 'center' },
         { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
-        { name: 'goods_qty', label: this.$t('stock.view_stocklist.back_order_stock'), field: 'goods_qty', align: 'center' },
+        { name: 'goods_qty', label: this.$t('outbound.view_dn.goods_qty'), field: 'goods_qty', align: 'center' },
+        { name: 'stock_qty', label: this.$t('stock.view_stocklist.can_order_stock'), field: 'stock_qty', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
@@ -157,6 +166,10 @@ export default {
         })
       } else {
       }
+    },
+    cancelallorder (){
+      var _this = this
+      _this.deleteForm = true
     },
     getSearchList () {
       var _this = this
@@ -216,22 +229,10 @@ export default {
       var _this = this
       _this.getList()
     },
-    deleteData (e) {
-      var _this = this
-      if (e.dn_status !== 2 && e.dn_complete !== 1) {
-        _this.$q.notify({
-          message: e.dn_code + ' Not A Back Order',
-          icon: 'close',
-          color: 'negative'
-        })
-      } else {
-        _this.deleteForm = true
-        _this.deleteid = e.id
-      }
-    },
     deleteDataSubmit () {
       var _this = this
-      deleteauth('dn/detail/' + _this.deleteid + '/').then(res => {
+      _this.url = _this.pathname + _this.param
+      deleteauth( _this.url ).then(res => {
         _this.deleteDataCancel()
         _this.getList()
         _this.$q.notify({

@@ -108,6 +108,16 @@ const routes = [{
             component: () => import('pages/outbound/backorder.vue')
           },
           {
+            path: 'customercancel/:dn_code',
+            name: 'customercancelbycode',
+            component: () => import('pages/outbound/customercancel.vue')
+          },
+          {
+            path: 'customercancel',
+            name: 'customercancel',
+            component: () => import('pages/outbound/customercancel.vue')
+          },
+          {
             path: 'neworder',
             name: 'neworder',
             component: () => import('pages/outbound/neworder.vue')

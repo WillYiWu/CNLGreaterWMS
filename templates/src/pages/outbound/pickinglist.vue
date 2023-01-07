@@ -24,6 +24,16 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
+             <q-btn :label="$t('print')" icon="print" @click="PrintPickingList()">
+               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
+                 {{ $t('print') }}
+               </q-tooltip>
+             </q-btn>
+             <q-btn :label="$t('outbound.confirmpicked')" icon="refresh" @click="confirmallpicked()">
+               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
+                 {{ $t('outbound.confirm_pick_tip') }}
+               </q-tooltip>
+             </q-btn>
            </q-btn-group>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
@@ -40,8 +50,11 @@
                <q-td key="bin_name" :props="props">
                  {{ props.row.bin_name }}
                </q-td>
-               <q-td key="goods_code" :props="props">
-                 {{ props.row.goods_code }}
+               <q-td key="goods_desc" :props="props">
+                 {{ props.row.goods_desc }}
+               </q-td>
+               <q-td key="customer" :props="props">
+                 {{ props.row.customer }}
                </q-td>
                <q-td key="pick_qty" :props="props">
                  {{ props.row.pick_qty }}
@@ -77,12 +90,47 @@
           <q-btn v-show="!pathname_previous && !pathname_next" flat push color="dark" :label="$t('no_data')"></q-btn>
         </div>
       </template>
+      <q-dialog v-model="viewPLForm">
+        <q-card id="printPL">
+          <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
+            <div>{{ $t('print') }}</div>
+            <q-space />
+          </q-bar>
+          <div class="col-4" style="margin-top: 5%;"><img :src="bar_code" style="width: 21%;margin-left: 70%" /></div>
+          <q-markup-table>
+            <thead>
+              <tr>
+                <th class="text-left">{{ $t('outbound.view_dn.dn_code') }}</th>
+                <th class="text-right">{{ $t('warehouse.view_binset.bin_name') }}</th>
+                <th class="text-right">{{ $t('goods.view_goodslist.goods_desc') }}</th>
+                <th class="text-right">{{ $t('baseinfo.view_customer.customer_name') }}</th>
+                <th class="text-right">{{ $t('outbound.pickstock') }}</th>
+                <th class="text-right">{{ $t('outbound.pickedstock') }}</th>
+                <th class="text-right">Comments</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in pickinglist_print_table">
+                <td class="text-left">{{ item.dn_code }}</td>
+                <td class="text-right">{{ item.bin_name }}</td>
+                <td class="text-right">{{ item.goods_desc }}</td>
+                <td class="text-right">{{ item.customer }}</td>
+                <td class="text-right">{{ item.pick_qty }}</td>
+                <td class="text-right" v-show="picklist_check === 0"></td>
+                <td class="text-right" v-show="picklist_check > 0">{{ item.picked_qty }}</td>
+                <td class="text-right"></td>
+              </tr>
+            </tbody>
+          </q-markup-table>
+        </q-card>
+        <div style="float: right; padding: 15px 15px 15px 0"><q-btn color="primary" icon="print" v-print="printPL">print</q-btn></div>
+      </q-dialog>
     </div>
 </template>
-    <router-view />
+<router-view />
 
 <script>
-import { getauth } from 'boot/axios_request'
+import { getauth, postauth } from 'boot/axios_request'
 
 export default {
   name: 'Pagednprepick',
@@ -92,6 +140,14 @@ export default {
       login_name: '',
       authin: '0',
       pathname: 'dn/pickinglistfilter/',
+      viewPLForm: false,
+      pickinglist_print_table: [],
+      pickinglist_check: 0,
+      bar_code: '',
+      printPL: {
+        id: 'printPL',
+        popTitle: this.$t('outbound.pickinglist')
+      },
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -104,7 +160,8 @@ export default {
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
         { name: 'bin_name', label: this.$t('warehouse.view_binset.bin_name'), field: 'bin_name', align: 'center' },
-        { name: 'goods_code', label: this.$t('goods.view_goodslist.goods_code'), field: 'goods_code', align: 'center' },
+        { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
+        { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'pick_qty', label: this.$t('stock.view_stocklist.pick_stock'), field: 'pick_qty', align: 'center' },
         { name: 'picked_qty', label: this.$t('stock.view_stocklist.picked_stock'), field: 'picked_qty', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
@@ -136,6 +193,23 @@ export default {
         })
       } else {
       }
+    },
+    PrintPickingList () {
+      var _this = this
+      _this.viewPLForm = true
+      getauth(_this.pathname)
+        .then(res => {
+          _this.pickinglist_print_table = []
+          _this.picklist_check = 0
+          _this.pickinglist_print_table = res.results
+        })
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
     },
     getSearchList () {
       var _this = this
@@ -194,6 +268,28 @@ export default {
     reFresh () {
       var _this = this
       _this.getList()
+    },
+    confirmallpicked(){
+      var _this = this
+      postauth(_this.pathname, {})
+        .then(res => {
+          _this.table_list = []
+          _this.getList()
+          if (!res.detail) {
+            _this.$q.notify({
+              message: 'Success Shipped All Order',
+              icon: 'check',
+              color: 'green'
+            })
+          }
+        })
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
     }
   },
   created () {

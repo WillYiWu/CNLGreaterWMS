@@ -59,12 +59,6 @@
                <q-td key="goods_qty" :props="props">
                  {{ props.row.goods_qty }}
                </q-td>
-               <q-td key="goods_weight" :props="props">
-                 {{ props.row.goods_weight }}
-               </q-td>
-             <q-td key="goods_volume" :props="props">
-               {{ props.row.goods_volume }}
-             </q-td>
              <q-td key="customer" :props="props">
                {{ props.row.customer }}
              </q-td>
@@ -101,7 +95,7 @@
     <router-view />
 
 <script>
-import { getauth } from 'boot/axios_request'
+import { getauth, postauth } from 'boot/axios_request'
 
 export default {
   name: 'Pagednneworder',
@@ -112,7 +106,8 @@ export default {
       authin: '0',
       dn_code: '',
       pathname: 'dn/detail/',
-      param: '?dn_complete=2',
+      pathorderrelease: 'dn/orderrelease/',
+      param: '?dn_complete=2&dn_status=1',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -127,8 +122,6 @@ export default {
         { name: 'goods_code', label: this.$t('goods.view_goodslist.goods_code'), field: 'goods_code', align: 'center' },
         { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
         { name: 'goods_qty', label: this.$t('outbound.view_dn.goods_qty'), field: 'goods_qty', align: 'center' },
-        { name: 'goods_weight', label: this.$t('outbound.view_dn.total_weight'), field: 'goods_weight', align: 'center' },
-        { name: 'goods_volume', label: this.$t('outbound.view_dn.total_volume'), field: 'empty_label', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
@@ -217,11 +210,10 @@ export default {
     reFresh () {
       var _this = this
       _this.getList()
-    }
-  },
+    },
     orderreleaseAllData () {
       var _this = this
-      postauth(_this.pathname + 'orderrelease/', {})
+      postauth(_this.pathorderrelease, {})
         .then(res => {
           _this.table_list = []
           _this.getList()
@@ -240,7 +232,8 @@ export default {
             color: 'negative'
           })
         })
-    },
+    }
+  },
   created () {
     var _this = this
     _this.dn_code = _this.$route.params.dn_code

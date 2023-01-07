@@ -79,11 +79,11 @@
                 round
                 flat
                 push
-                color="positive"
-                icon="img:statics/outbound/orderrelease.png"
+                color="dark"
+                icon="delete"
                 @click="handle3TypeOrder(props.row.dn_complete, props.row.dn_code)"
               >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('releaseorder') }}</q-tooltip>
+                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-tooltip>
               </q-btn>
             </q-td>
             <template v-if="props.row.transportation_fee.detail !== []">
@@ -528,42 +528,10 @@
             <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
           </q-btn>
         </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-card-section>
+        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.cancel_order_confirm') }}</q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="deleteDataCancel()">{{ $t('cancel') }}</q-btn>
           <q-btn color="primary" @click="cancelOrder()">{{ $t('submit') }}</q-btn>
-        </div>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="neworderForm">
-      <q-card class="shadow-24">
-        <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
-          <div>{{ $t('confirmorder') }}</div>
-          <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
-            <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
-          </q-btn>
-        </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-card-section>
-        <div style="float: right; padding: 15px 15px 15px 0">
-          <q-btn color="white" text-color="black" style="margin-right: 25px" @click="neworderDataCancel()">{{ $t('cancel') }}</q-btn>
-          <q-btn color="primary" @click="cancelOrder()">{{ $t('submit') }}</q-btn>
-        </div>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="orderreleaseForm">
-      <q-card class="shadow-24">
-        <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
-          <div>{{ $t('releaseorder') }}</div>
-          <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
-            <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
-          </q-btn>
-        </q-bar>
-        <q-card-section style="max-height: 325px; width: 400px" class="scroll">{{ $t('outbound.view_dn.generate_pickup_tip') }}</q-card-section>
-        <div style="float: right; padding: 15px 15px 15px 0">
-          <q-btn color="white" text-color="black" style="margin-right: 25px" @click="orderreleaseDataCancel()">{{ $t('cancel') }}</q-btn>
-          <q-btn color="primary" @click="generatePickupList(props.row.dn_code)">{{ $t('submit') }}</q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -915,15 +883,7 @@ export default {
     handle3TypeOrder(dn_complete, dn_code){
       var _this = this
       _this.dn_code = dn_code
-      if (dn_complete === _this.$t('outbound.view_dn.dn_sufficientstock')) {
-        _this.orderreleaseForm = true
-      } else if (dn_complete === _this.$t('outbound.view_dn.dn_insufficientstock')) {
-        _this.neworderForm = true
-      } else if (dn_complete === _this.$t('outbound.view_dn.dn_unmatchEAN')) {
-        _this.deleteForm = true
-      }
-    },
-    generatePickupList(dn_code){
+      _this.deleteForm = true
     },
     cancelOrder(){
       var _this = this
@@ -977,6 +937,8 @@ export default {
                 item.dn_complete = _this.$t('outbound.view_dn.dn_insufficientstock')
               } else if (item.dn_complete === 0) {
                 item.dn_complete = _this.$t('outbound.view_dn.dn_unmatchEAN')
+              } else if (item.dn_complete === 3) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_cancelled')
               } else {
                 item.dn_status = 'N/A'
               }
@@ -1024,6 +986,15 @@ export default {
               } else {
                 item.dn_status = 'N/A'
               }
+              if (item.dn_complete === 2) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_sufficientstock')
+              } else if (item.dn_complete === 1) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_insufficientstock')
+              } else if (item.dn_complete === 0) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_unmatchEAN')
+              } else {
+                item.dn_status = 'N/A'
+              }
               _this.table_list.push(item)
             })
             _this.customer_list = res.customer_list
@@ -1060,6 +1031,15 @@ export default {
                 item.dn_status = _this.$t('outbound.shippedstock')
               } else if (item.dn_status === 6) {
                 item.dn_status = _this.$t('outbound.received')
+              } else {
+                item.dn_status = 'N/A'
+              }
+              if (item.dn_complete === 2) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_sufficientstock')
+              } else if (item.dn_complete === 1) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_insufficientstock')
+              } else if (item.dn_complete === 0) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_unmatchEAN')
               } else {
                 item.dn_status = 'N/A'
               }
@@ -1102,6 +1082,15 @@ export default {
               } else {
                 item.dn_status = 'N/A'
               }
+              if (item.dn_complete === 2) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_sufficientstock')
+              } else if (item.dn_complete === 1) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_insufficientstock')
+              } else if (item.dn_complete === 0) {
+                item.dn_complete = _this.$t('outbound.view_dn.dn_unmatchEAN')
+              } else {
+                item.dn_status = 'N/A'
+              }
               _this.table_list.push(item)
             })
             _this.customer_list = res.customer_list
@@ -1121,7 +1110,8 @@ export default {
     },
     reFresh () {
       var _this = this
-      postauth(_this.pathname + 'bollist/')
+      _this.newdn.creater = _this.login_name
+      postauth(_this.pathname + 'bollist/', _this.newdn)
         .then(res => {
           _this.getList()
           if (!res.detail) {

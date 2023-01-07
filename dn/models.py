@@ -30,13 +30,15 @@ class DnListModel(models.Model):
 class DnDetailModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
-    # 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
+    # 3:cancelled by customer; 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
     dn_complete = models.IntegerField(default=2, verbose_name="DN Incomplete")
     orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
     customer = models.CharField(max_length=255, verbose_name="DN Customer")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     goods_desc = models.CharField(max_length=255, verbose_name="Goods Description")
     goods_qty = models.BigIntegerField(default=0, verbose_name="Goods QTY")
+    #[Will] Adds stock quantity to show how many short in back order
+    stock_qty = models.BigIntegerField(default=0, verbose_name="Stock QTY")
     pick_qty = models.BigIntegerField(default=0, verbose_name="Goods Pre Pick QTY")
     picked_qty = models.BigIntegerField(default=0, verbose_name="Goods Picked QTY")
     intransit_qty = models.BigIntegerField(default=0, verbose_name="Intransit QTY")
@@ -64,6 +66,11 @@ class PickingListModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
     bin_name = models.CharField(max_length=255, verbose_name="Bin Name")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
+    #[Will] Add goods description and customer name and orderitem_id
+    goods_desc = models.CharField(max_length=255, default='', verbose_name="Goods Code")
+    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
+    is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    customer = models.CharField(max_length=255, default='', verbose_name="DN Customer")
     picking_status = models.SmallIntegerField(default=0, verbose_name="Picking Status")
     pick_qty = models.BigIntegerField(default=0, verbose_name="Goods Pre Pick QTY")
     picked_qty = models.BigIntegerField(default=0, verbose_name="Picked QTY")

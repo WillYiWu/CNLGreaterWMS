@@ -12,7 +12,7 @@ re_path(r'^list/(?P<pk>\d+)/$', views.DnListViewSet.as_view({
     'patch': 'partial_update',
     'delete': 'destroy'
 }), name="dnlist_1"),
-path(r'detail/', views.DnDetailViewSet.as_view({"get": "list", "post": "create", 'put': 'update'}), name="dndetail"),
+path(r'detail/', views.DnDetailViewSet.as_view({"get": "list", "post": "create", 'put': 'update', 'delete': 'destroy'}), name="dndetail"),
 #[Will] add new entry to query dn detail list by dn_code
 path('detail/<str:dn_code>/', views.DnDetailViewSet.as_view({"get": "list"}), name="dndetail_2"),
 re_path(r'^detail/(?P<pk>\d+)/$', views.DnDetailViewSet.as_view({
@@ -29,7 +29,7 @@ path(r'orderrelease/', views.DnOrderReleaseViewSet.as_view({"post": "create"}), 
 re_path(r'^orderrelease/(?P<pk>\d+)/$', views.DnOrderReleaseViewSet.as_view({
     'put': 'update',
 }), name="orderrelease_1"),
-path(r'pickinglistfilter/', views.DnPickingListFilterViewSet.as_view({"get": "list"}), name="pickinglistfilter"),
+path(r'pickinglistfilter/', views.DnPickingListFilterViewSet.as_view({"get": "list", "post": "create"}), name="pickinglistfilter"),
 re_path(r'^pickinglist/(?P<pk>\d+)/$', views.DnPickingListViewSet.as_view({
     'get': 'retrieve',
 }), name="pickinglist_1"),

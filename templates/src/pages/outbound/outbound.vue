@@ -13,16 +13,13 @@
           <q-route-tab name="freshorder" :label="$t('outbound.wrongorder')" icon="img:statics/outbound/freshorder.png" :to="{ name: 'freshorder' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="customercancel" :label="$t('outbound.customercancel')" icon="img:statics/outbound/pickstock.png" :to="{ name: 'customercancel' }" exact/>
+        </transition>
+        <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="backorder" :label="$t('outbound.backorder')" icon="img:statics/outbound/backorder.png" :to="{ name: 'backorder' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="neworder" :label="$t('outbound.neworder')" icon="img:statics/outbound/order.png" :to="{ name: 'neworder' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="pickstock" :label="$t('outbound.pickstock')" icon="img:statics/outbound/pickstock.png" :to="{ name: 'pickstock' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="pickedstock" :label="$t('outbound.pickedstock')" icon="img:statics/outbound/picked.png" :to="{ name: 'pickedstock' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="pickinglist" :label="$t('outbound.pickinglist')" icon="img:statics/outbound/pickinglist.png" :to="{ name: 'pickinglist' }" exact/>

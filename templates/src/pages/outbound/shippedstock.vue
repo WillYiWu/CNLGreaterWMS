@@ -94,7 +94,8 @@ export default {
       openid: '',
       login_name: '',
       authin: '0',
-      pathname: 'dn/detail/?dn_status=5&intransit_qty__gte=0',
+      pathname: 'dn/detail/?dn_status=4&dn_complete=2',
+      dn_code: '',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -126,7 +127,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname, {
+        getauth(_this.pathname + _this.dn_code, {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous

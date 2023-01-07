@@ -357,52 +357,22 @@ class DnDetailViewSet(viewsets.ModelViewSet):
             return None
 
     def get_queryset(self):
-        #[Will] update status of back order and wrong order in case seller has corrected the EAN or stock issue
+        #[Will] Show DNDetailList either by all or by dn_code
         dn_code = self.kwargs.get('dn_code', None)
-        dn_complete = self.request.query_params.get('dn_complete', None)
-        dn_status = self.request.query_params.get('dn_status', None)
-        if dn_complete is not None:
-            orderlist_set = DnListModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=dn_status)
-            dn_complete_internal = 0
-            if len(orderlist_set) > 0:
-                for i in range(len(orderlist_set)):
-                    orderitem_set = DnDetailModel.objects.filter(dn_code=orderlist_set[i].dn_code)
-                    if len(orderitem_set) > 0:
-                        for item_number in range(len(orderitem_set)):
-                            if goods.objects.filter(goods_code=orderitem_set[item_number].goods_code).exists():
-                                ean = orderitem_set[item_number].goods_code
-                                if not stocklist.objects.filter(goods_code=ean).exists():
-                                    continue
-                                stock_dataset = stocklist.objects.filter(goods_code=ean).first()
-                                if stock_dataset.can_order_stock > orderitem_set[item_number].goods_qty:
-                                      dn_complete_internal = 2
-                                      orderitem_set[item_number].dn_complete = dn_complete_internal
-                                      orderitem_set[item_number].save()
-                                else:
-                                    dn_complete_internal = 1
-                                    orderitem_set[item_number].dn_complete = dn_complete_internal
-                                    orderitem_set[item_number].save()
-                                    break
-                            else:
-                                dn_complete_internal = 0
-                                orderitem_set[item_number].dn_complete = dn_complete_internal
-                                orderitem_set[item_number].save()
-                                break
-                    orderlist_set[i].dn_complete = dn_complete_internal
-                    orderlist_set[i].save()
-            if dn_code != 'undefined':
-                result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                      dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code)
-            else:
-                result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                      dn_complete=dn_complete, dn_status=dn_status)
+        dn_complete = int(self.request.query_params.get('dn_complete', None))
+        dn_status = int(self.request.query_params.get('dn_status', None))
+        if dn_status == 4:
+            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                dn_complete=dn_complete, dn_status=dn_status)
             return result
-        else:
-            if dn_code != 'undefined':
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status=dn_status, is_delete=False)
-            else:
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status=dn_status, is_delete=False, dn_code=dn_code)
 
+        if dn_code != 'undefined':
+            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code)
+        else:
+            result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
+                                                dn_complete=dn_complete, dn_status=dn_status)
+        return result
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve', 'destroy']:
@@ -835,18 +805,21 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                 tobepick_amount = tobepick_amount - picked_amount
                 if bin_set[j].goods_qty >= tobepick_amount:
                     picked_amount = tobepick_amount
-                    if PickingListModel.objects.filter(dn_code=normalorder_set[i].dn_code,
+                    if PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
                                                       is_delete=False).exists():
-                        PickingListModel.objects.update(dn_code=normalorder_set[i].dn_code,
-                                                    goods_code=normalorder_set[i].goods_code,
-                                                    goods_desc=normalorder_set[i].goods_desc,
-                                                    picking_status=0,
-                                                    orderitem_id=normalorder_set[i].orderitem_id,
-                                                    customer=normalorder_set[i].customer,
-                                                    pick_qty=picked_amount,
-                                                    bin_name=bin_set[j].bin_name,
-                                                    openid=self.request.auth.openid,
-                                                    creater=str(staff_name))
+                       pick_list = PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
+                                                      is_delete=False).first()
+                       pick_list.dn_code=normalorder_set[i].dn_code
+                       pick_list.goods_code=normalorder_set[i].goods_code
+                       pick_list.goods_desc=normalorder_set[i].goods_desc
+                       pick_list.picking_status=0
+                       pick_list.orderitem_id=normalorder_set[i].orderitem_id
+                       pick_list.customer=normalorder_set[i].customer
+                       pick_list.pick_qty=picked_amount
+                       pick_list.bin_name=bin_set[j].bin_name
+                       pick_list.openid=self.request.auth.openid
+                       pick_list.creater=str(staff_name)
+                       pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
                                                     goods_code=normalorder_set[i].goods_code,
@@ -867,18 +840,21 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                     break
                 else:
                     picked_amount = bin_set[j].goods_qty
-                    if PickingListModel.objects.filter(dn_code=normalorder_set[i].dn_code,
+                    if PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
                                                       is_delete=False).exists():
-                        PickingListModel.objects.update(dn_code=normalorder_set[i].dn_code,
-                                            goods_code=normalorder_set[i].goods_code,
-                                            goods_desc=normalorder_set[i].goods_desc,
-                                            picking_status=0,
-                                            orderitem_id=normalorder_set[i].orderitem_id,
-                                            customer=normalorder_set[i].customer,
-                                            pick_qty=picked_amount,
-                                            bin_name=bin_set[j].bin_name,
-                                            openid=self.request.auth.openid,
-                                            creater=str(staff_name))
+                        pick_list = PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
+                                                                    is_delete=False).first()
+                        pick_list.dn_code = normalorder_set[i].dn_code
+                        pick_list.goods_code = normalorder_set[i].goods_code
+                        pick_list.goods_desc = normalorder_set[i].goods_desc
+                        pick_list.picking_status = 0
+                        pick_list.orderitem_id = normalorder_set[i].orderitem_id
+                        pick_list.customer = normalorder_set[i].customer
+                        pick_list.pick_qty = picked_amount
+                        pick_list.bin_name = bin_set[j].bin_name
+                        pick_list.openid = self.request.auth.openid
+                        pick_list.creater = str(staff_name)
+                        pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
                                             goods_code=normalorder_set[i].goods_code,
@@ -1399,15 +1375,16 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             "Content-Type": "application/vnd.retailer.v8+json"
         }
         pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0)
-        orderItems = []
+
         for i in range(len(pick_list)):
             pick_list[i].picking_status = 1
             pick_list[i].picked_qty = pick_list[i].pick_qty
             pick_list[i].intransit_qty = pick_list[i].pick_qty
             pick_list[i].save()
+            orderItems = []
             orderItems.append({'orderItemId': pick_list[i].orderitem_id})
-        shipment_data = {"orderItems": orderItems }
-        result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
+            shipment_data = {"orderItems": orderItems }
+            result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
 
         dn_list = DnListModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
         for i in range(len(dn_list)):

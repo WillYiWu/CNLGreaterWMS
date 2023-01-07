@@ -24,6 +24,11 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
+             <q-btn :label="$t('outbound.cancelallorder')" icon="delete" @click="cancelallorder()">
+               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
+                 {{ $t('outbound.cancelwrongorder_tip') }}
+               </q-tooltip>
+             </q-btn>
            </q-btn-group>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
@@ -77,12 +82,30 @@
           <q-btn v-show="!pathname_previous && !pathname_next" flat push color="dark" :label="$t('no_data')"></q-btn>
         </div>
       </template>
+      <q-dialog v-model="deleteForm">
+       <q-card class="shadow-24">
+         <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
+           <div>{{ $t('delete') }}</div>
+           <q-space />
+           <q-btn dense flat icon="close" v-close-popup>
+             <q-tooltip>{{ $t('index.close') }}</q-tooltip>
+           </q-btn>
+         </q-bar>
+         <q-card-section style="max-height: 325px; width: 400px" class="scroll">
+           {{ $t('deletetip') }}
+         </q-card-section>
+         <div style="float: right; padding: 15px 15px 15px 0">
+           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="deleteDataCancel()">{{ $t('cancel') }}</q-btn>
+           <q-btn color="primary" @click="deleteDataSubmit()">{{ $t('submit') }}</q-btn>
+         </div>
+       </q-card>
+     </q-dialog>
     </div>
 </template>
     <router-view />
 
 <script>
-import { getauth } from 'boot/axios_request'
+import { getauth, deleteauth } from 'boot/axios_request'
 
 export default {
   name: 'Pagednneworder',
@@ -94,7 +117,8 @@ export default {
       login_name: '',
       authin: '0',
       pathname: 'dn/detail/',
-      param: '?dn_complete=0',
+      param: '?dn_complete=0&dn_status=1',
+      deleteForm: 'false',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -140,6 +164,10 @@ export default {
         })
       } else {
       }
+    },
+    cancelallorder (){
+      var _this = this
+      _this.deleteForm = true
     },
     getSearchList () {
       var _this = this
@@ -198,6 +226,30 @@ export default {
     reFresh () {
       var _this = this
       _this.getList()
+    },
+    deleteDataSubmit () {
+      var _this = this
+      _this.url = _this.pathname + _this.param
+      deleteauth( _this.url ).then(res => {
+        _this.deleteDataCancel()
+        _this.getList()
+        _this.$q.notify({
+          message: 'Success Edit Data',
+          icon: 'check',
+          color: 'green'
+        })
+      }).catch(err => {
+        _this.$q.notify({
+          message: err.detail,
+          icon: 'close',
+          color: 'negative'
+        })
+      })
+    },
+    deleteDataCancel () {
+      var _this = this
+      _this.deleteForm = false
+      _this.deleteid = 0
     }
   },
   created () {
