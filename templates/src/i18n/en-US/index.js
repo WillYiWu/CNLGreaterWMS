@@ -174,7 +174,7 @@ export default {
     }
   },
   dashboards: {
-    outbound_statements: 'Outbound',
+    outbound_statements: 'Sales',
     inbound_statements: 'Inbound',
     inbound_and_outbound_statements: 'Inbound And Outbound',
     total_sales: 'Total Sales',

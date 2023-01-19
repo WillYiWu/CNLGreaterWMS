@@ -169,7 +169,7 @@ export default {
     }
   },
   dashboards: {
-    outbound_statements: '出库报表',
+    outbound_statements: '销售报表',
     inbound_statements: '收货报表',
     inbound_and_outbound_statements: '收发货报表',
     total_sales: '总销量',

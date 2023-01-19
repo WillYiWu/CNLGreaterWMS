@@ -60,7 +60,7 @@ def ObtainfinanceData():
                                                 logistic_cost=logistic_cost,
                                                 product_cost=product_cost,
                                                 selling_date=selling_date)
-                    dndetail_list[i].revenue_counted = True
-                    dndetail_list[i].save()
+                    dndetail_list[i+j].revenue_counted = True
+                    dndetail_list[i+j].save()
 
             i = i + len(response_list['orderItems'])

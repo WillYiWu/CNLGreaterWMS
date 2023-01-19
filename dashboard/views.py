@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from asn.models import AsnDetailModel
 from dn.models import DnDetailModel
+from payment.models import FinanceListModel
 from asn import serializers as asnserializers
 from dn import serializers as dnserializers
 from utils.page import MyPageNumberPagination
@@ -12,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from asn.filter import AsnDetailFilter
 from dn.filter import DnDetailFilter
+from payment.filter import FinanceListFilter
 from rest_framework.exceptions import APIException
 from django.shortcuts import render
 from dateutil.relativedelta import relativedelta
@@ -120,7 +122,7 @@ class SalesViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnDetailFilter
+    filter_class = FinanceListFilter
 
     def get_project(self):
         try:
@@ -133,15 +135,13 @@ class SalesViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status__gte=4,
-                                                    create_time__gte=timezone.now().date() - relativedelta(days=14),
+                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=14),
                                                     is_delete=False)
             else:
-                return DnDetailModel.objects.filter(openid=self.request.auth.openid, dn_status__gte=4,
-                                                    create_time__gte=timezone.now().date() - relativedelta(days=14),
+                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=14),
                                                     id=id, is_delete=False)
         else:
-            return DnDetailModel.objects.none()
+            return FinanceListModel.objects.none()
 
     def get_serializer_class(self):
         if self.action in ['list']:
@@ -174,8 +174,8 @@ class SalesViewSet(viewsets.ModelViewSet):
               }
             }
           }
-        receipt_res = qs.annotate(month=ExtractMonth('create_time'), day=ExtractDay('create_time')) \
-            .values('month', 'day').order_by('month', 'day').annotate(number=Sum('goods_cost'))
+        receipt_res = qs.annotate(month=ExtractMonth('selling_date'), day=ExtractDay('selling_date')) \
+            .values('month', 'day').order_by('month', 'day').annotate(number=Sum('selling_price'))
         # qty_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_qty'))
         # rank_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_cost'))
         receipt_res_dict = {
