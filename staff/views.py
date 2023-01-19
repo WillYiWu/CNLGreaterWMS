@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import ListModel, TypeListModel
+from .models import ListModel, TypeListModel, AccountListModel
 from . import serializers
 from utils.page import MyPageNumberPagination
 from rest_framework.filters import OrderingFilter
@@ -227,3 +227,58 @@ class FileDownloadView(viewsets.ModelViewSet):
         response['Content-Disposition'] = "attachment; filename='staff_{}.csv'".format(
             str(dt.strftime('%Y%m%d%H%M%S%f')))
         return response
+
+class AccountViewSet(viewsets.ModelViewSet):
+
+    pagination_class = MyPageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        id = self.get_project()
+        if self.request.user:
+            if id is None:
+                return AccountListModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
+            else:
+                return AccountListModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
+        else:
+            return AccountListModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve', 'destroy']:
+            return serializers.AccountGetSerializer
+        elif self.action in ['create']:
+            return serializers.AccountPostSerializer
+        elif self.action in ['update']:
+            return serializers.AccountUpdateSerializer
+        elif self.action in ['partial_update']:
+            return serializers.AccountPartialUpdateSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def create(self, request, *args, **kwargs):
+        data = self.request.data
+        data['openid'] = self.request.auth.openid
+        if AccountListModel.objects.filter(openid=data['openid'], account_name=data['account_name'], is_delete=False).exists():
+            raise APIException({"detail": "Data exists"})
+        else:
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.get_project()
+        if AccountListModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False).exists():
+            account_data = AccountListModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False).first()
+            account_data.is_delete = True
+            account_data.save()
+        return Response("Account destroyed")

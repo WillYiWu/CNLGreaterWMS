@@ -12,6 +12,9 @@
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="freight" :label="$t('finance.freight')" icon="img:statics/capital/freight.png" :to="{ name: 'freight' }" exact/>
         </transition>
+        <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="PNL" :label="$t('finance.pnl')" icon="img:statics/capital/revenue.png" :to="{ name: 'PNL' }" exact/>
+        </transition>
       </q-tabs>
     </div>
   </div>

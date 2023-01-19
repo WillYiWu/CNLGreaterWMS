@@ -235,11 +235,13 @@ export default {
       deleteauth( _this.url ).then(res => {
         _this.deleteDataCancel()
         _this.getList()
-        _this.$q.notify({
-          message: 'Success Edit Data',
-          icon: 'check',
-          color: 'green'
-        })
+        if (res.detail==='success') {
+          _this.$q.notify({
+            message: 'All orders are cancelled',
+            icon: 'check',
+            color: 'green'
+          })
+        }
       }).catch(err => {
         _this.$q.notify({
           message: err.detail,

@@ -37,22 +37,26 @@ import requests
 import json
 import base64
 import os
+from staff.models import AccountListModel as account
+from payment.crontask import ObtainfinanceData
+from payment.models import FinanceListModel
 from rest_framework.decorators import action
 
 # [Will]
-dnlist_url = "https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR&state=ALL"
+dnlist_url = "https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR&state=OPEN"
 dnorder_url = "https://api.bol.com/retailer-demo/orders/"
 cancelorder_url = "https://api.bol.com/retailer-demo/orders/cancellation"
 shipment_url = "https://api.bol.com/retailer-demo/orders/shipment"
 #cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
 
-def obtain_access_token():
-    path = os.path.abspath('token.json')
-    with open(path, 'r') as f:
-        config = json.load(f)
-    client_id = config['token']['client_id']
-    client_secret = config['token']['client_secret']
-    credential = client_id + ":" + client_secret
+def obtain_access_token(account_name):
+    # path = os.path.abspath('token.json')
+    # with open(path, 'r') as f:
+    #     config = json.load(f)
+    # client_id = config['token']['client_id']
+    # client_secret = config['token']['client_secret']
+    account_info = account.objects.filter(account_name=account_name, is_delete=False).first()
+    credential = account_info.client_id + ":" + account_info.client_secret
     credential_encoded = base64.b64encode(credential.encode())
     oauth_header = {
         "Authorization": f"Basic {credential_encoded.decode()}",
@@ -103,8 +107,10 @@ class BolListViewSet(viewsets.ModelViewSet):
 
     #[Will]New function to pull order data from BOL and store to DNList and DNDetailList
     def create(self, request, *args, **kwargs):
+        data = self.request.data
+        account_name = data['account_name']
         headers = {
-            "Authorization": "Bearer " + obtain_access_token(),
+            "Authorization": "Bearer " + obtain_access_token(account_name),
             "Accept": "application/vnd.retailer.v8+json"
         }
         response_list = requests.get(dnlist_url, headers=headers)
@@ -145,6 +151,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                               dn_code=order["orderId"],
                                               dn_status=1,
                                               goods_desc=goods_desc,
+                                              account_name=account_name,
                                               stock_qty=can_order_stock,
                                               orderitem_id=orderitem["orderItemId"],
                                               dn_complete=dn_complete,
@@ -168,6 +175,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 DnListModel.objects.create(openid=self.request.auth.openid,
                                            dn_code=order["orderId"],
                                            dn_status=1,
+                                           account_name=account_name,
                                            total_orderquantity=orderitem_quantity,
                                            dn_complete=dn_complete,
                                            customer=json_obj_detail["shipmentDetails"]["firstName"],
@@ -179,16 +187,12 @@ class BolListViewSet(viewsets.ModelViewSet):
                 dn_list.save()
 
 
-        return Response("BOL order fetch success")
+        return Response({"detail": "success"}, status=200)
 
     #[Will] When EAN is not matching or stock is insufficient, cancel order and inform BOL
     def destroy(self, request, *args, **kwargs):
         dn_code = self.kwargs.get('dn_code', None)
-        headers = {
-            "Authorization": "Bearer " + obtain_access_token(),
-            "Accept": "application/vnd.retailer.v8+json",
-            "Content-Type": "application/vnd.retailer.v8+json"
-        }
+        account_name = ''
         orderItems = []
         if dn_code == 'undefined':
             detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
@@ -206,19 +210,29 @@ class BolListViewSet(viewsets.ModelViewSet):
                     orderItems.append({'orderItemId': detail_list[i].orderitem_id,
                                   'reasonCode': "OUT_OF_STOCK"})
                 cancel_data = {"orderItems": orderItems}
+                dn_code = detail_list[i].dn_code
                 detail_list[i].is_delete = True
+                detail_list[i].dn_status = 3
+                account_name = detail_list[i].account_name
                 detail_list[i].save()
-                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code)
-                if dn_list.exists():
-                    dn_list.first().is_delete = True
-                    dn_list.first().dn_status = 3
-                    dn_list.first().save()
-                dn_picking_list = PickingListModel.objects.filter(dn_code=detail_list[i].dn_code)
+
+                if DnListModel.objects.filter(dn_code=dn_code).exists():
+                    dn_list = DnListModel.objects.filter(dn_code=dn_code).first()
+                    dn_list.is_delete = True
+                    dn_list.dn_status = 3
+                    dn_list.save()
+
+                dn_picking_list = PickingListModel.objects.filter(dn_code=dn_code)
                 if dn_picking_list.exists():
                     dn_picking_list.first().is_delete = True
                     dn_picking_list.first().save()
+            headers = {
+                "Authorization": "Bearer " + obtain_access_token(account_name),
+                "Accept": "application/vnd.retailer.v8+json",
+                "Content-Type": "application/vnd.retailer.v8+json"
+            }
             response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
-            return Response({"detail": "Deletion is successful"}, status=200)
+            return Response({"detail": "success"}, status=200)
         else:
             return Response({"detail": "nothing to delete"}, status=200)
 
@@ -589,18 +603,14 @@ class DnDetailViewSet(viewsets.ModelViewSet):
     def destroy(self, request):
         #[Will] rewrite this function, this function will only be called for
         #bulk order cancelling for Wrong EAN and out of stock orders
-        headers = {
-            "Authorization": "Bearer " + obtain_access_token(),
-            "Accept": "application/vnd.retailer.v8+json",
-            "Content-Type": "application/vnd.retailer.v8+json"
-        }
         dn_complete = self.request.query_params.get('dn_complete', None)
         dn_status = self.request.query_params.get('dn_status', None)
         detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                  dn_complete=dn_complete,
                                                  dn_status=dn_status,
-                                                 is_delete=False)
+                                                 is_delete=False).order_by('account_name')
 
+        account_name = ''
         orderItems = []
         if detail_list.exists():
             for i in range(len(detail_list)):
@@ -612,14 +622,21 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                   'reasonCode': "OUT_OF_STOCK"})
                 cancel_data = {"orderItems": orderItems}
                 detail_list[i].is_delete = True
+                account_name = detail_list[i].account_name
                 detail_list[i].save()
                 dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code)
                 if dn_list.exists():
                     dn_list.first().is_delete = True
                     dn_list.first().dn_status = 3
                     dn_list.first().save()
+
+            headers = {
+                "Authorization": "Bearer " + obtain_access_token(account_name),
+                "Accept": "application/vnd.retailer.v8+json",
+                "Content-Type": "application/vnd.retailer.v8+json"
+            }
             response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
-            return Response({"detail": "Deletion is successful"}, status=200)
+            return Response({"detail": "success"}, status=200)
         else:
             return Response({"detail": "nothing to delete"}, status=200)
 
@@ -814,6 +831,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list.goods_desc=normalorder_set[i].goods_desc
                        pick_list.picking_status=0
                        pick_list.orderitem_id=normalorder_set[i].orderitem_id
+                       pick_list.account_name=normalorder_set[i].account_name
                        pick_list.customer=normalorder_set[i].customer
                        pick_list.pick_qty=picked_amount
                        pick_list.bin_name=bin_set[j].bin_name
@@ -826,6 +844,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                     goods_desc=normalorder_set[i].goods_desc,
                                                     picking_status=0,
                                                     orderitem_id=normalorder_set[i].orderitem_id,
+                                                    account_name=normalorder_set[i].account_name,
                                                     customer=normalorder_set[i].customer,
                                                     pick_qty=picked_amount,
                                                     bin_name=bin_set[j].bin_name,
@@ -849,6 +868,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                         pick_list.goods_desc = normalorder_set[i].goods_desc
                         pick_list.picking_status = 0
                         pick_list.orderitem_id = normalorder_set[i].orderitem_id
+                        pick_list.account_name = normalorder_set[i].account_name
                         pick_list.customer = normalorder_set[i].customer
                         pick_list.pick_qty = picked_amount
                         pick_list.bin_name = bin_set[j].bin_name
@@ -861,6 +881,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                             goods_desc=normalorder_set[i].goods_desc,
                                             picking_status=0,
                                             orderitem_id=normalorder_set[i].orderitem_id,
+                                            account_name=normalorder_set[i].account_name,
                                             customer=normalorder_set[i].customer,
                                             pick_qty=picked_amount,
                                             bin_name=bin_set[j].bin_name,
@@ -868,7 +889,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                             creater=str(staff_name))
 
 
-        return Response({'detail': 'PickingList successfully generated'}, status=200)
+        return Response({'detail': 'success'}, status=200)
 
     def update(self, request, pk):
         qs = self.get_object()
@@ -1369,11 +1390,6 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             return self.http_method_not_allowed(request=self.request)
 
     def create(self, request, *args, **kwargs):
-        headers = {
-            "Authorization": "Bearer " + obtain_access_token(),
-            "Accept": "application/vnd.retailer.v8+json",
-            "Content-Type": "application/vnd.retailer.v8+json"
-        }
         pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0)
 
         for i in range(len(pick_list)):
@@ -1384,6 +1400,11 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             orderItems = []
             orderItems.append({'orderItemId': pick_list[i].orderitem_id})
             shipment_data = {"orderItems": orderItems }
+            headers = {
+                "Authorization": "Bearer " + obtain_access_token(pick_list[i].account_name),
+                "Accept": "application/vnd.retailer.v8+json",
+                "Content-Type": "application/vnd.retailer.v8+json"
+            }
             result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
 
         dn_list = DnListModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
@@ -1395,7 +1416,9 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
                 dn_detail[j].dn_status = 4
                 dn_detail[j].save()
 
-        return Response("All item picked and packed!")
+        ObtainfinanceData()
+
+        return Response({"detail": "success"}, status=200)
 
 
 class DnPickedViewSet(viewsets.ModelViewSet):

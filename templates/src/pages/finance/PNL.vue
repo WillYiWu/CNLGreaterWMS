@@ -24,11 +24,19 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
-             <q-btn :label="$t('outbound.cancelallorder')" icon="delete" @click="cancelallorder()">
-               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                 {{ $t('outbound.cancelwrongorder_tip') }}
-               </q-tooltip>
-             </q-btn>
+             <q-btn
+              v-show="
+                $q.localStorage.getItem('staff_type') !== 'Supplier' &&
+                  $q.localStorage.getItem('staff_type') !== 'Customer' &&
+                  $q.localStorage.getItem('staff_type') !== 'Inbound' &&
+                  $q.localStorage.getItem('staff_type') !== 'StockControl'
+              "
+              :label="$t('finance.view_pnl.fetch_financedata')"
+              icon="img:statics/capital/fetch.png"
+              @click="fetchfinancedata()"
+            >
+              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('finance.view_pnl.fetch_financedata') }}</q-tooltip>
+            </q-btn>
            </q-btn-group>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
@@ -39,32 +47,41 @@
          </template>
          <template v-slot:body="props">
            <q-tr :props="props">
-               <q-td key="dn_code" :props="props">
-                 {{ props.row.dn_code }}
-               </q-td>
                <q-td key="account_name" :props="props">
                  {{ props.row.account_name }}
                </q-td>
-               <q-td key="goods_code" :props="props">
-                 {{ props.row.goods_code }}
+               <q-td key="order_id" :props="props">
+                 {{ props.row.dn_code }}
+               </q-td>
+               <q-td key="orderitem_id" :props="props">
+                 {{ props.row.orderitem_id }}
                </q-td>
                <q-td key="goods_desc" :props="props">
                  {{ props.row.goods_desc }}
                </q-td>
-               <q-td key="goods_qty" :props="props">
-                 {{ props.row.goods_qty }}
+               <q-td key="quantity" :props="props">
+                 {{ props.row.shipped_qty }}
                </q-td>
-             <q-td key="customer" :props="props">
-               {{ props.row.customer }}
+             <q-td key="selling_price" :props="props">
+               {{ props.row.selling_price }}
              </q-td>
-             <q-td key="creater" :props="props">
-               {{ props.row.creater }}
+             <q-td key="btw_cost" :props="props">
+               {{ props.row.btw_cost }}
+             </q-td>
+             <q-td key="bol_commission" :props="props">
+               {{ props.row.bol_commission }}
+             </q-td>
+             <q-td key="logistic" :props="props">
+               {{ props.row.logistic_cost }}
+             </q-td>
+             <q-td key="product_cost" :props="props">
+               {{ props.row.product_cost }}
+             </q-td>
+             <q-td key="selling_date" :props="props">
+               {{ props.row.selling_date }}
              </q-td>
              <q-td key="create_time" :props="props">
                {{ props.row.create_time }}
-             </q-td>
-             <q-td key="update_time" :props="props">
-               {{ props.row.update_time }}
              </q-td>
            </q-tr>
          </template>
@@ -85,43 +102,23 @@
           <q-btn v-show="!pathname_previous && !pathname_next" flat push color="dark" :label="$t('no_data')"></q-btn>
         </div>
       </template>
-      <q-dialog v-model="deleteForm">
-       <q-card class="shadow-24">
-         <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
-           <div>{{ $t('delete') }}</div>
-           <q-space />
-           <q-btn dense flat icon="close" v-close-popup>
-             <q-tooltip>{{ $t('index.close') }}</q-tooltip>
-           </q-btn>
-         </q-bar>
-         <q-card-section style="max-height: 325px; width: 400px" class="scroll">
-           {{ $t('deletetip') }}
-         </q-card-section>
-         <div style="float: right; padding: 15px 15px 15px 0">
-           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="deleteDataCancel()">{{ $t('cancel') }}</q-btn>
-           <q-btn color="primary" @click="deleteDataSubmit()">{{ $t('submit') }}</q-btn>
-         </div>
-       </q-card>
-     </q-dialog>
     </div>
 </template>
     <router-view />
 
 <script>
-import { getauth, deleteauth } from 'boot/axios_request'
+import { getauth, postauth } from 'boot/axios_request'
 
 export default {
-  name: 'Pagednneworder',
+  name: 'Pagednpnl',
   data () {
     return {
-      dn_code: '',
-      url: '',
       openid: '',
       login_name: '',
       authin: '0',
-      pathname: 'dn/detail/',
-      param: '?dn_complete=0&dn_status=1',
-      deleteForm: 'false',
+      dn_code: '',
+      pathname: 'payment/pnl/',
+      param: '?dn_complete=2&dn_status=1',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -132,15 +129,18 @@ export default {
       bin_property_list: [],
       warehouse_list: [],
       columns: [
-        { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
-        { name: 'account_name', label: this.$t('outbound.view_dn.account_name'), field: 'account_name', align: 'center' },
-        { name: 'goods_code', label: this.$t('outbound.view_dn.ean_code'), field: 'goods_code', align: 'center' },
-        { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
-        { name: 'goods_qty', label: this.$t('outbound.view_dn.goods_qty'), field: 'goods_qty', align: 'center' },
-        { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
-        { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
-        { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
-        { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' }
+        { name: 'account_name', required: true, label: this.$t('outbound.view_dn.account_name'), align: 'left', field: 'account_name' },
+        { name: 'order_id', required: true, label: this.$t('finance.view_pnl.order_id'), align: 'left', field: 'order_id' },
+        { name: 'orderitem_id', label: this.$t('finance.view_pnl.order_item_id'), field: 'orderitem_id', align: 'center' },
+        { name: 'goods_desc', label: this.$t('finance.view_pnl.goods_desc'), field: 'goods_desc', align: 'center' },
+        { name: 'quantity', label: this.$t('finance.view_pnl.quantity'), field: 'quantity', align: 'center' },
+        { name: 'selling_price', label: this.$t('finance.view_pnl.selling_price'), field: 'selling_price', align: 'center' },
+        { name: 'btw_cost', label: this.$t('finance.view_pnl.btw'), field: 'btw_cost', align: 'center' },
+        { name: 'bol_commission', label: this.$t('finance.view_pnl.bol_commission'), field: 'bol_commission', align: 'center' },
+        { name: 'logistic', label: this.$t('finance.view_pnl.logistic_cost'), field: 'logistic', align: 'center' },
+        { name: 'product_cost', label: this.$t('finance.view_pnl.product_cost'), field: 'product_cost', align: 'center' },
+        { name: 'selling_date', label: this.$t('finance.view_pnl.selling_date'), field: 'selling_date', align: 'center' },
+        { name: 'create_time', label: this.$t('finance.view_pnl.create_time'), field: 'create_time', align: 'center' }
       ],
       filter: '',
       pagination: {
@@ -153,8 +153,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        _this.url = _this.pathname + _this.dn_code + _this.param
-        getauth(_this.url, {
+        getauth(_this.pathname, {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -168,10 +167,6 @@ export default {
         })
       } else {
       }
-    },
-    cancelallorder (){
-      var _this = this
-      _this.deleteForm = true
     },
     getSearchList () {
       var _this = this
@@ -231,31 +226,27 @@ export default {
       var _this = this
       _this.getList()
     },
-    deleteDataSubmit () {
+    fetchfinancedata () {
       var _this = this
-      _this.url = _this.pathname + _this.param
-      deleteauth( _this.url ).then(res => {
-        _this.deleteDataCancel()
-        _this.getList()
-        if (res.detail==='success') {
-          _this.$q.notify({
-            message: 'All orders are cancelled',
-            icon: 'check',
-            color: 'green'
-          })
-        }
-      }).catch(err => {
-        _this.$q.notify({
-          message: err.detail,
-          icon: 'close',
-          color: 'negative'
+      postauth(_this.pathname, {})
+        .then(res => {
+          _this.table_list = []
+          _this.getList()
+          if (!res.detail) {
+            _this.$q.notify({
+              message: 'Success Release All Order',
+              icon: 'check',
+              color: 'green'
+            })
+          }
         })
-      })
-    },
-    deleteDataCancel () {
-      var _this = this
-      _this.deleteForm = false
-      _this.deleteid = 0
+        .catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
     }
   },
   created () {

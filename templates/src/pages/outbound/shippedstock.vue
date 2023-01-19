@@ -18,13 +18,41 @@
         bordered
       >
          <template v-slot:top>
+         <div class="flex items-center">
+            <div class="q-mr-md">{{ $t("download_center.createTime") }}</div>
+            <q-input
+              readonly
+              outlined
+              dense
+              v-model="createDate2"
+              :placeholder="interval"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    ref="qDateProxy"
+                    transition-show="scale"
+                    transition-hide="scale"
+                    ><q-date v-model="createDate1" range
+                  /></q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
            <q-btn-group push>
-             <q-btn :label="$t('refresh')" icon="refresh" @click="reFresh()">
-               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                 {{ $t('refreshtip') }}
-               </q-tooltip>
-             </q-btn>
+              <q-btn
+                :label="$t('download_center.reset')"
+                icon="img:statics/downloadcenter/reset.svg"
+                @click="reset()"
+              >
+                <q-tooltip
+                  content-class="bg-amber text-black shadow-4"
+                  :offset="[10, 10]"
+                  content-style="font-size: 12px"
+                  >{{ $t("download_center.reset") }}</q-tooltip
+                >
+              </q-btn>
            </q-btn-group>
+           </div>
            <q-space />
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
              <template v-slot:append>
@@ -36,6 +64,9 @@
            <q-tr :props="props">
                <q-td key="dn_code" :props="props">
                  {{ props.row.dn_code }}
+               </q-td>
+               <q-td key="account_name" :props="props">
+                 {{ props.row.account_name }}
                </q-td>
                <q-td key="goods_code" :props="props">
                  {{ props.row.goods_code }}
@@ -95,6 +126,7 @@ export default {
       login_name: '',
       authin: '0',
       pathname: 'dn/detail/?dn_status=4&dn_complete=2',
+      pathnamedn: 'dn/',
       dn_code: '',
       pathname_previous: '',
       pathname_next: '',
@@ -107,6 +139,7 @@ export default {
       warehouse_list: [],
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
+        { name: 'account_name', label: this.$t('outbound.view_dn.account_name'), field: 'account_name', align: 'center' },
         { name: 'goods_code', label: this.$t('goods.view_goodslist.goods_code'), field: 'goods_code', align: 'center' },
         { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
         { name: 'goods_qty', label: this.$t('outbound.view_dn.goods_qty'), field: 'goods_qty', align: 'center' },
@@ -120,6 +153,32 @@ export default {
       pagination: {
         page: 1,
         rowsPerPage: '30'
+      },
+      createDate1: '',
+      createDate2: '',
+      date_range: '',
+      searchUrl: ''
+    }
+  },
+  watch: {
+    createDate1(val) {
+      if (val) {
+        if (val.to) {
+          this.createDate2 = `${val.from} - ${val.to}`;
+          this.date_range = `${val.from},${val.to} 23:59:59`;
+          this.searchUrl = this.pathnamedn + 'detail/?' + 'create_time__range=' + this.date_range
+          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'create_time__range=' + this.date_range
+          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'create_time__range=' + this.date_range
+        } else {
+          this.createDate2 = `${val}`;
+          this.dateArray = val.split('/');
+          this.searchUrl = this.pathnamedn + 'detail/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+        }
+        this.date_range = this.date_range.replace(/\//g, '-');
+        this.getSearchList();
+        this.$refs.qDateProxy.hide();
       }
     }
   },
@@ -127,7 +186,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname + _this.dn_code, {
+        getauth(_this.pathname, {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -145,7 +204,7 @@ export default {
     getSearchList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname + '&dn_code__icontains=' + _this.filter, {
+        getauth(_this.searchUrl + '&dn_status=4&dn_complete=2', {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -199,6 +258,12 @@ export default {
     reFresh () {
       var _this = this
       _this.getList()
+    },
+    reset(){
+        this.getList();
+        this.downloadUrl = 'dn/filelist/';
+        this.downloadDetailUrl = 'dn/filedetail/';
+        this.createDate2 = '';
     }
   },
   created () {

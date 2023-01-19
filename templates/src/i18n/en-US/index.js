@@ -78,7 +78,7 @@ export default {
   new: 'new',
   newtip: 'New A Data',
   fetch: 'Fetch',
-  fetchtip: 'Fetch Orders From BOL',
+  fetchtip: 'Fetch Orders From This BOL Account',
   refresh: 'Refresh',
   refreshtip: 'Refresh Order Status',
   edit: 'Edit This Data',
@@ -198,6 +198,7 @@ export default {
   finance: {
     capital: 'Capital',
     freight: 'Freight',
+    pnl: 'Revenue&Profit',
     view_capital: {
       capital_name: 'Cpaital Name',
       capital_qty: 'Capital Qty',
@@ -219,6 +220,20 @@ export default {
       error4: 'Weight Fee must greater than 0',
       error5: 'Volume Fee must greater than 0',
       error6: 'Min Payment must greater than 0'
+    },
+    view_pnl: {
+      fetch_financedata: 'Fetch Data',
+      order_id: 'DN Code',
+      order_item_id: 'DN Item Code',
+      goods_desc: 'Goods Desc',
+      quantity: 'Volume',
+      selling_price: 'Selling Price',
+      btw: 'BTW',
+      bol_commission: 'BOL Commission',
+      logistic_cost: 'Logistic Cost',
+      product_cost: 'Product Cost',
+      selling_date: 'Shipment Date',
+      create_time : 'Create Time'
     }
   },
   driver: {
@@ -373,6 +388,7 @@ export default {
     canceloutstock_tip: 'Cancel all out of stock orders',
     view_dn: {
       dn_code: 'DN Code',
+      account_name: 'Account Name',
       dn_status: 'DN Status',
       ean_code: 'EAN Code',
       dn_complete: 'Order Status',
@@ -398,6 +414,7 @@ export default {
   staff: {
     staff: 'Staff',
     check_code: 'Check Code',
+    site_account: 'Site Account',
     view_staff: {
       staff_name: 'Staff Name',
       staff_type: 'Staff Type',
@@ -405,6 +422,11 @@ export default {
       error2: 'Please Enter The Staff Type',
       lock: 'lock',
       unlock: 'unlock'
+    },
+    view_account: {
+      account_name: 'Site Account Name',
+      client_id: 'Client ID',
+      client_secret: 'Client Secret'
     }
   },
   stock: {

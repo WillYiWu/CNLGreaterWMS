@@ -47,6 +47,9 @@
                <q-td key="dn_code" :props="props">
                  {{ props.row.dn_code }}
                </q-td>
+               <q-td key="account_name" :props="props">
+                 {{ props.row.account_name }}
+               </q-td>
                <q-td key="bin_name" :props="props">
                  {{ props.row.bin_name }}
                </q-td>
@@ -159,6 +162,7 @@ export default {
       warehouse_list: [],
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
+        { name: 'account_name', label: this.$t('outbound.view_dn.account_name'), field: 'account_name', align: 'center' },
         { name: 'bin_name', label: this.$t('warehouse.view_binset.bin_name'), field: 'bin_name', align: 'center' },
         { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
@@ -275,7 +279,7 @@ export default {
         .then(res => {
           _this.table_list = []
           _this.getList()
-          if (!res.detail) {
+          if (res.detail==='success') {
             _this.$q.notify({
               message: 'Success Shipped All Order',
               icon: 'check',

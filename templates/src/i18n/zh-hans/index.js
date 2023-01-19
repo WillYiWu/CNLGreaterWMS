@@ -73,7 +73,7 @@ export default {
   new: '新增',
   newtip: '新增一条数据',
   fetch: '获取',
-  fetchtip: '获取所有BOL订单',
+  fetchtip: '获取此BOL账号订单',
   refresh: '刷新',
   refreshtip: '刷新订单状态',
   edit: '编辑这条数据',
@@ -195,6 +195,7 @@ export default {
   finance: {
     capital: '固定资产',
     freight: '运费管理',
+    pnl: '收入利润管理',
     view_capital: {
       capital_name: '固定资产名称',
       capital_qty: '数量',
@@ -216,6 +217,20 @@ export default {
       error4: '单公斤运费用必须大于0',
       error5: '单立方米运费用必须大于0',
       error6: '最小运费必须大于0'
+    },
+    view_pnl: {
+      fetch_financedata: '获取数据',
+      order_id: '订单号',
+      order_item_id: '订单物品号',
+      goods_desc: '商品描述',
+      quantity: '订单数量',
+      selling_price: '销售价格',
+      btw: '增值税',
+      bol_commission: 'BOL费用',
+      logistic_cost: '物流费用',
+      product_cost: '产品成本',
+      selling_date: '销售日期',
+      create_time: '创建时间'
     }
   },
   driver: {
@@ -370,6 +385,7 @@ export default {
     canceloutstock_tip: '取消所有库存不足订单',
     view_dn: {
       dn_code: '发货单号',
+      account_name: '账户名',
       dn_status: '发货单状态',
       ean_code: 'EAN编码',
       dn_complete: '订单状态',
@@ -396,6 +412,7 @@ export default {
   staff: {
     staff: '员工列表',
     check_code: '验证码',
+    site_account: '站点账号',
     view_staff: {
       staff_name: '员工名称',
       staff_type: '员工类型',
@@ -403,6 +420,11 @@ export default {
       error2: '请输入员工类型',
       lock: '锁定',
       unlock: '解锁'
+    },
+    view_account: {
+      account_name: '站点账户名',
+      client_id: '客户ID',
+      client_secret: '客户Secret'
     }
   },
   stock: {

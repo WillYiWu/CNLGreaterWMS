@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TransportationFeeListModel
+from .models import TransportationFeeListModel, FinanceListModel
 from utils import datasolve
 
 class FreightGetSerializer(serializers.ModelSerializer):
@@ -11,9 +11,28 @@ class FreightGetSerializer(serializers.ModelSerializer):
     creater = serializers.CharField(read_only=True, required=False)
     create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     update_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+
     class Meta:
         model = TransportationFeeListModel
         exclude = ['openid', 'is_delete', ]
+        read_only_fields = ['id']
+
+class FinanceGetSerializer(serializers.ModelSerializer):
+    dn_code = serializers.CharField(read_only=True, required=False)
+    orderitem_id = serializers.CharField(read_only=True, required=False)
+    goods_code = serializers.CharField(read_only=True, required=False)
+    goods_desc = serializers.CharField(read_only=True, required=False)
+    shipped_qty = serializers.IntegerField(read_only=True, required=False)
+    selling_price = serializers.DecimalField(read_only=True, required=False, max_digits=10, decimal_places=2)
+    btw_cost = serializers.DecimalField(read_only=True, required=False, max_digits=10, decimal_places=2)
+    bol_commission = serializers.DecimalField(read_only=True, required=False, max_digits=10, decimal_places=2)
+    logistic_cost = serializers.DecimalField(read_only=True, required=False, max_digits=10, decimal_places=2)
+    product_cost = serializers.DecimalField(read_only=True, required=False,max_digits=10, decimal_places=2)
+    selling_date = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    class Meta:
+        model = FinanceListModel
+        exclude = ['is_delete', ]
         read_only_fields = ['id']
 
 class FreightPostSerializer(serializers.ModelSerializer):

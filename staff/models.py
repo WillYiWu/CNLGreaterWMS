@@ -28,3 +28,18 @@ class TypeListModel(models.Model):
         verbose_name = 'Staff Type'
         verbose_name_plural = "Staff Type"
         ordering = ['staff_type']
+
+class AccountListModel(models.Model):
+    account_name = models.CharField(max_length=255, verbose_name="Account Name")
+    openid = models.CharField(max_length=255, verbose_name="Openid")
+    client_id = models.CharField(max_length=255, verbose_name="Client ID")
+    client_secret = models.CharField(max_length=255, verbose_name="Client Secret")
+    is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
+    update_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
+
+    class Meta:
+        db_table = 'siteaccount'
+        verbose_name = 'Site Account'
+        verbose_name_plural = 'Site Account'
+        ordering = ['create_time']

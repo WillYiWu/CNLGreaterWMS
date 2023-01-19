@@ -15,6 +15,9 @@
         <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="stafftype" :label="$t('staff.view_staff.staff_type')" icon="img:statics/staff/stafftype.png" :to="{ name: 'stafftype' }" exact/>
         </transition>
+        <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="siteaccount" :label="$t('staff.site_account')" icon="img:statics/staff/account.png" :to="{ name: 'siteaccount' }" exact/>
+        </transition>
       </q-tabs>
     </div>
   </div>

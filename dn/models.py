@@ -8,6 +8,7 @@ class DnListModel(models.Model):
     total_orderquantity = models.IntegerField(default=1, verbose_name="Total Ordervolume")
     # 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
     dn_complete = models.IntegerField(default=2, verbose_name="DN Incomplete")
+    account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     total_weight = models.FloatField(default=0, verbose_name="Total Weight")
     total_volume = models.FloatField(default=0, verbose_name="Total Volume")
     total_cost = models.FloatField(default=0, verbose_name="Total Cost")
@@ -33,6 +34,7 @@ class DnDetailModel(models.Model):
     # 3:cancelled by customer; 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
     dn_complete = models.IntegerField(default=2, verbose_name="DN Incomplete")
     orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
+    account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     customer = models.CharField(max_length=255, verbose_name="DN Customer")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     goods_desc = models.CharField(max_length=255, verbose_name="Goods Description")
@@ -52,6 +54,7 @@ class DnDetailModel(models.Model):
     creater = models.CharField(max_length=255, verbose_name="Who Created")
     back_order_label = models.BooleanField(default=False, verbose_name='Back Order Label')
     openid = models.CharField(max_length=255, verbose_name="Openid")
+    revenue_counted = models.BooleanField(default=False, verbose_name='Revenue Counted')
     is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
     update_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
@@ -69,6 +72,7 @@ class PickingListModel(models.Model):
     #[Will] Add goods description and customer name and orderitem_id
     goods_desc = models.CharField(max_length=255, default='', verbose_name="Goods Code")
     orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
+    account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
     customer = models.CharField(max_length=255, default='', verbose_name="DN Customer")
     picking_status = models.SmallIntegerField(default=0, verbose_name="Picking Status")
@@ -85,3 +89,4 @@ class PickingListModel(models.Model):
         verbose_name = 'Picking List'
         verbose_name_plural = "Picking List"
         ordering = ['-id']
+

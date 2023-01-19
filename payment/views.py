@@ -1,13 +1,13 @@
 from django.http import StreamingHttpResponse
 from rest_framework import viewsets
 from rest_framework.settings import api_settings
-from .models import TransportationFeeListModel
+from .models import TransportationFeeListModel, FinanceListModel
 from . import serializers
 from utils.page import MyPageNumberPagination
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from .filter import TransportationFeeListFilter
+from .filter import TransportationFeeListFilter, FinanceListFilter
 from rest_framework.exceptions import APIException
 from .files import FreightfileRenderCN, FreightfileRenderEN
 
@@ -162,3 +162,38 @@ class FreightfileDownloadView(viewsets.ModelViewSet):
         )
         response['Content-Disposition'] = "attachment; filename='freight_{}.csv'".format(str(dt.strftime('%Y%m%d%H%M%S%f')))
         return response
+
+class FinanceListViewSet(viewsets.ModelViewSet):
+
+    pagination_class = MyPageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = FinanceListFilter
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        id = self.get_project()
+        if self.request.user:
+            if id is None:
+                return FinanceListModel.objects.filter(is_delete=False).order_by('account_name')
+            else:
+                return FinanceListModel.objects.filter(id=id, is_delete=False).order_by('account_name')
+        else:
+            return FinanceListModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve', 'destroy']:
+            return serializers.FinanceGetSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def create(self, request, *args, **kwargs):
+        return Response("Finance Data Fetch Success")
+
+

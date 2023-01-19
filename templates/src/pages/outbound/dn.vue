@@ -32,7 +32,7 @@
             >
               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('newtip') }}</q-tooltip>
             </q-btn>
-            <q-btn :label="$t('fetch')" icon="refresh" @click="reFresh()">
+            <q-btn v-for="account in account_table" :key="account.account_name" :label="account.account_name" icon="img:statics/outbound/fetch.png" @click="reFresh(account.account_name)">
               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('fetchtip') }}</q-tooltip>
             </q-btn>
           </q-btn-group>
@@ -46,6 +46,7 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td key="dn_code" :props="props">{{ props.row.dn_code }}</q-td>
+            <q-td key="account_name" :props="props">{{ props.row.account_name }}</q-td>
             <q-td key="dn_complete" :props="props">{{ props.row.dn_complete }}</q-td>
             <q-td key="total_orderquantity" :props="props">{{ props.row.total_orderquantity }}</q-td>
             <q-td key="customer" :props="props">{{ props.row.customer }}</q-td>
@@ -86,20 +87,6 @@
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.view_dn.cancel_order_tip') }}</q-tooltip>
               </q-btn>
             </q-td>
-            <template v-if="props.row.transportation_fee.detail !== []">
-              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                <q-list>
-                  <div v-for="(transportation_fee, index) in props.row.transportation_fee.detail" :key="index">
-                    <q-item v-ripple>
-                      <q-item-section>
-                        <q-item-label>{{ transportation_fee.transportation_supplier }}</q-item-label>
-                        <q-item-label>{{ $t('estimate') }}: {{ transportation_fee.transportation_cost }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </div>
-                </q-list>
-              </q-tooltip>
-            </template>
           </q-tr>
         </template>
       </q-table>
@@ -750,6 +737,7 @@ export default {
       dn_code: '',
       authin: '0',
       pathname: 'dn/',
+      path_account: 'staff/account',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -757,6 +745,7 @@ export default {
       height: '',
       table_list: [],
       viewprint_table: [],
+      account_table: [],
       bar_code: '',
       pickinglist_print_table: [],
       pickinglist_check: 0,
@@ -767,6 +756,7 @@ export default {
       customer_detail: {},
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
+        { name: 'account_name', label: this.$t('outbound.view_dn.account_name'), field: 'account_name', align: 'center' },
         { name: 'dn_complete', label: this.$t('outbound.view_dn.dn_complete'), field: 'dn_complete', align: 'center' },
         { name: 'total_orderquantity', label: this.$t('outbound.view_dn.total_orderquantity'), field: 'total_orderquantity', align: 'center' },
         { name: 'customer', label: this.$t('outbound.view_dn.customer'), field: 'customer', align: 'center' },
@@ -786,7 +776,7 @@ export default {
       listNumber: '',
       options: LocalStorage.getItem('goods_code_list'),
       driver_options: LocalStorage.getItem('driver_name_list'),
-      newdn: { creater: '' },
+      newdn: { account_name: '' },
       newFormData: {
         dn_code: '',
         customer: '',
@@ -892,7 +882,7 @@ export default {
           .then(res=>{
             _this.deleteForm = false
             _this.getList()
-            if (!res.detail) {
+            if (res.detail==='success') {
               _this.$q.notify({
                 message: 'Order Cancel Success',
                 icon: 'check',
@@ -961,6 +951,23 @@ export default {
               color: 'negative'
             })
           })
+      } else {
+      }
+    },
+    getAccountList () {
+      var _this = this
+      if (LocalStorage.has('auth')) {
+        getauth(_this.path_account, {
+        }).then(res => {
+          _this.account_table = []
+          _this.account_table = res.results
+        }).catch(err => {
+          _this.$q.notify({
+            message: err.detail,
+            icon: 'close',
+            color: 'negative'
+          })
+        })
       } else {
       }
     },
@@ -1108,13 +1115,13 @@ export default {
       } else {
       }
     },
-    reFresh () {
+    reFresh (account_name) {
       var _this = this
-      _this.newdn.creater = _this.login_name
+      _this.newdn.account_name = account_name
       postauth(_this.pathname + 'bollist/', _this.newdn)
         .then(res => {
           _this.getList()
-          if (!res.detail) {
+          if (res.detail === 'success') {
             _this.$q.notify({
               message: 'BOL Order Fetch Success',
               icon: 'check',
@@ -1763,6 +1770,7 @@ export default {
     } else {
       LocalStorage.set('goods_code_list', [])
     }
+    _this.getAccountList()
   },
   mounted () {
     var _this = this

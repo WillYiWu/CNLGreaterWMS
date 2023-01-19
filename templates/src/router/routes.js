@@ -306,6 +306,11 @@ const routes = [{
             path: 'freight',
             name: 'freight',
             component: () => import('pages/finance/freight.vue')
+          },
+          {
+            path: 'PNL',
+            name: 'PNL',
+            component: () => import('pages/finance/PNL.vue')
           }
           ]
         },
@@ -327,6 +332,11 @@ const routes = [{
             path: 'stafftype',
             name: 'stafftype',
             component: () => import('pages/staff/stafftype.vue')
+          },
+          {
+            path: 'siteaccount',
+            name: 'siteaccount',
+            component: () => import('pages/staff/account.vue')
           }
           ]
         },

@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'scanner.apps.ScannerConfig',
     'rest_framework',
     'django_filters',
-    'corsheaders'
+    'corsheaders',
+    'django_crontab'
 ]
 
 MIDDLEWARE = [
@@ -132,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'Asia/Shanghai'
+TIME_ZONE = 'Europe/Amsterdam'
 
 USE_I18N = True
 
@@ -326,6 +327,10 @@ CORS_ALLOW_HEADERS = (
     'app-id',
     'event-sign'
 )
+
+CRONJOBS = [
+    ('55 11 * * *', 'payment.crontask.ObtainfinanceData')
+]
 
 LAZY_RENDERING = True
 NATIVE_SCROLLBARS = True
