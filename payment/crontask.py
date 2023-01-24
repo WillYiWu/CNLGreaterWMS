@@ -45,6 +45,7 @@ def ObtainfinanceData():
                 bol_commission = orderitem['commission']
                 logistic_cost = transport_list.min_payment
                 product_cost = goods_list.goods_cost
+                profit = selling_price - btw_cost - bol_commission - logistic_cost - product_cost
                 selling_date = dndetail_list[i+j].update_time
 
                 if not FinanceListModel.objects.filter(orderitem_id=orderitem_id).exists():
@@ -59,6 +60,7 @@ def ObtainfinanceData():
                                                 bol_commission=bol_commission,
                                                 logistic_cost=logistic_cost,
                                                 product_cost=product_cost,
+                                                profit = profit,
                                                 selling_date=selling_date)
                     dndetail_list[i+j].revenue_counted = True
                     dndetail_list[i+j].save()

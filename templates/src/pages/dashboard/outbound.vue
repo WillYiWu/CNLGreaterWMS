@@ -32,8 +32,6 @@ export default {
         legend: {},
         tooltip: {},
         dataset: {
-          dimensions: [],
-          source: []
         },
         xAxis: {
           type: 'category',
@@ -64,7 +62,7 @@ export default {
       if (_this.$q.localStorage.has('auth')) {
         getauth(_this.pathname + 'sales/', {})
           .then(res => {
-            _this.barChartOption.dataset = res.dataset;
+            _this.barChartOption.xAxis.data = res.xAxis;
             _this.barChartOption.series = res.series;
           })
           .catch(err => {

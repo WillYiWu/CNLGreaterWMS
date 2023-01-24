@@ -17,7 +17,7 @@ from payment.filter import FinanceListFilter
 from rest_framework.exceptions import APIException
 from django.shortcuts import render
 from dateutil.relativedelta import relativedelta
-from django.db.models.functions import TruncMonth,TruncYear,ExtractDay,ExtractMonth
+from django.db.models.functions import TruncMonth,TruncYear,ExtractDay,ExtractMonth,ExtractYear
 from django.db.models import Count
 from django.db import connection
 from django.db.models import Q
@@ -174,29 +174,47 @@ class SalesViewSet(viewsets.ModelViewSet):
               }
             }
           }
-        receipt_res = qs.annotate(month=ExtractMonth('selling_date'), day=ExtractDay('selling_date')) \
-            .values('month', 'day').order_by('month', 'day').annotate(number=Sum('selling_price'))
+        receipt_res = qs.annotate(year=ExtractYear('selling_date'), month=ExtractMonth('selling_date')) \
+            .values('year', 'month').order_by('year', 'month').annotate(revenue=Sum('selling_price'), cost=Sum('product_cost'))
         # qty_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_qty'))
         # rank_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_cost'))
-        receipt_res_dict = {
+        # receipt_res_dict = {
+        # }
+        # # qty_res_dict = {
+        # # }
+        # # rank_res_dict = {
+        # # }
+        # for i in receipt_res:
+        #     series.append(bar_charts)
+        #     dimensions.append("%s" % (i['month']))
+        #     receipt_res_dict.update({"%s" % (i['month']): i['cost']})
+        # # for i in qty_res:
+        # #     qty_res_dict.update({i['goods_code']: i['number']})
+        # # for i in rank_res:
+        # #     rank_res_dict.update({i['goods_code']: i['number']})
+        # source.append(receipt_res_dict)
+        # # data_list.append(qty_res_dict)
+        # # data_list.append(rank_res_dict)
+        # dataset['source'] = source
+        # dataset['dimensions'] = dimensions
+        # context['dataset'] = dataset
+        # context['series'] = series
+
+        data = {
+            'xAxis': [str(dat['year'])+'.'+str(dat['month']) for dat in receipt_res],
+            'series':[
+                {
+                    'name': 'Revenue',
+                    'type': 'line',
+                    'data': [dat['revenue'] for dat in receipt_res]
+                },
+                {
+                    'name': 'Cost',
+                    'type': 'bar',
+                    'data': [dat['cost'] for dat in receipt_res]
+                }
+            ]
         }
-        # qty_res_dict = {
-        # }
-        # rank_res_dict = {
-        # }
-        for i in receipt_res:
-            series.append(bar_charts)
-            dimensions.append("%s-%s" % (i['month'], i['day']))
-            receipt_res_dict.update({"%s-%s" % (i['month'], i['day']): i['number']})
-        # for i in qty_res:
-        #     qty_res_dict.update({i['goods_code']: i['number']})
-        # for i in rank_res:
-        #     rank_res_dict.update({i['goods_code']: i['number']})
-        source.append(receipt_res_dict)
-        # data_list.append(qty_res_dict)
-        # data_list.append(rank_res_dict)
-        dataset['source'] = source
-        dataset['dimensions'] = dimensions
-        context['dataset'] = dataset
-        context['series'] = series
-        return Response(context)
+
+
+        return Response(data)

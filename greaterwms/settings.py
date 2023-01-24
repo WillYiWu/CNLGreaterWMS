@@ -60,8 +60,7 @@ INSTALLED_APPS = [
     'scanner.apps.ScannerConfig',
     'rest_framework',
     'django_filters',
-    'corsheaders',
-    'django_crontab'
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
