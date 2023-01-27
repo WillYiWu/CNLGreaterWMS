@@ -14,6 +14,7 @@ class DnListFilter(FilterSet):
             "creater": ['exact', 'iexact', 'contains', 'icontains'],
             "back_order_label": ['exact', 'iexact'],
             "is_delete": ['exact', 'iexact'],
+            "sending_date": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
             "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
             "update_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range']
         }
@@ -41,6 +42,7 @@ class DnDetailFilter(FilterSet):
             "creater": ['exact', 'iexact', 'contains', 'icontains'],
             "back_order_label": ['exact', 'iexact'],
             'is_delete': ['exact', 'iexact'],
+            "sending_date": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
             "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
             "update_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range']
         }

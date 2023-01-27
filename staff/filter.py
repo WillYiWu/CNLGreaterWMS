@@ -1,5 +1,5 @@
 from django_filters import FilterSet
-from .models import ListModel, TypeListModel
+from .models import ListModel, TypeListModel, AccountListModel
 
 class Filter(FilterSet):
     class Meta:
@@ -19,6 +19,18 @@ class TypeFilter(FilterSet):
         fields = {
             "id": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
             "staff_type": ['exact', 'iexact', 'contains', 'icontains'],
+            "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
+            "update_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range']
+        }
+
+class AccountFilter(FilterSet):
+    class Meta:
+        model = AccountListModel
+        fields = {
+            "id": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
+            "account_name": ['exact', 'iexact', 'contains', 'icontains'],
+            "client_id": ['exact', 'iexact', 'contains', 'icontains'],
+            "client_secret": ['exact', 'iexact', 'contains', 'icontains'],
             "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
             "update_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range']
         }

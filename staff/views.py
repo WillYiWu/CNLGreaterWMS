@@ -5,7 +5,7 @@ from utils.page import MyPageNumberPagination
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from .filter import Filter, TypeFilter
+from .filter import Filter, TypeFilter, AccountFilter
 from rest_framework.exceptions import APIException
 from .serializers import FileRenderSerializer
 from django.http import StreamingHttpResponse
@@ -233,6 +233,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = AccountFilter
 
     def get_project(self):
         try:
@@ -282,3 +283,27 @@ class AccountViewSet(viewsets.ModelViewSet):
             account_data.is_delete = True
             account_data.save()
         return Response("Account destroyed")
+
+    def update(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot Update Data Which Not Yours"})
+        else:
+            data = self.request.data
+            serializer = self.get_serializer(qs, data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
+    def partial_update(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot Partial Update Data Which Not Yours"})
+        else:
+            data = self.request.data
+            serializer = self.get_serializer(qs, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)

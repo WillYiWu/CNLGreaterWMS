@@ -84,6 +84,7 @@ class AccountPostSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'create_time', 'update_time', ]
 
 class AccountUpdateSerializer(serializers.ModelSerializer):
+    openid = serializers.CharField(read_only=False, required=False, validators=[datasolve.openid_validate])
     account_name = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     client_id = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     client_secret = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])

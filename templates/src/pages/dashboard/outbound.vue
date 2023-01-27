@@ -26,29 +26,29 @@ export default {
       height2: '',
       width: '100%',
       barChartOption: {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+          // Use axis to trigger tooltip
+          type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
+          }
+        },
         grid: {
-          bottom: '25%'
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
         },
         legend: {},
         tooltip: {},
         dataset: {
         },
         xAxis: {
-          type: 'category',
-          axisLabel: {
-            rotate: 45
-          },
-          nameLocation: 'middle',
-          nameGap: 78
+          type: 'value'
         },
         yAxis: {
-          type: 'value',
-          splitLine: {
-            show: true,
-            lineStyle: {
-              type: [30, 20]
-            }
-          }
+          type: 'category',
+          data: []
         },
         series: []
       },
@@ -62,7 +62,7 @@ export default {
       if (_this.$q.localStorage.has('auth')) {
         getauth(_this.pathname + 'sales/', {})
           .then(res => {
-            _this.barChartOption.xAxis.data = res.xAxis;
+            _this.barChartOption.yAxis.data = res.yAxis;
             _this.barChartOption.series = res.series;
           })
           .catch(err => {

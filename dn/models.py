@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class DnListModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
@@ -19,6 +20,7 @@ class DnListModel(models.Model):
     openid = models.CharField(max_length=255, verbose_name="Openid")
     transportation_fee = models.JSONField(default=dict, verbose_name="Transportation Fee")
     is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    sending_date = models.DateTimeField(default=timezone.now, verbose_name="Sending Date")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
     update_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
 
@@ -56,6 +58,7 @@ class DnDetailModel(models.Model):
     openid = models.CharField(max_length=255, verbose_name="Openid")
     revenue_counted = models.BooleanField(default=False, verbose_name='Revenue Counted')
     is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    sending_date = models.DateTimeField(default=timezone.now, verbose_name="Sending Date")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
     update_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
 

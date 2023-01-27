@@ -868,6 +868,8 @@ export default {
         _this.$router.push({name: 'backorderbycode', params:{dn_code}})
       } else if (dn_complete === _this.$t('outbound.view_dn.dn_unmatchEAN')) {
         _this.$router.push({name: 'freshorderbycode', params:{dn_code}})
+      }else if (dn_complete === _this.$t('outbound.view_dn.dn_cancelled')) {
+        _this.$router.push({name: 'customercancelbycode', params:{dn_code}})
       }
     },
     handle3TypeOrder(dn_complete, dn_code){

@@ -135,10 +135,10 @@ class SalesViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=14),
+                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=365),
                                                     is_delete=False)
             else:
-                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=14),
+                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=365),
                                                     id=id, is_delete=False)
         else:
             return FinanceListModel.objects.none()
@@ -175,7 +175,11 @@ class SalesViewSet(viewsets.ModelViewSet):
             }
           }
         receipt_res = qs.annotate(year=ExtractYear('selling_date'), month=ExtractMonth('selling_date')) \
-            .values('year', 'month').order_by('year', 'month').annotate(revenue=Sum('selling_price'), cost=Sum('product_cost'))
+            .values('year', 'month').order_by('year', 'month').annotate(product_cost=Sum('product_cost'),
+                                                                        logistic_cost=Sum('logistic_cost'),
+                                                                        bol_commission=Sum('bol_commission'),
+                                                                        btw_cost=Sum('btw_cost'),
+                                                                        profit=Sum('profit'))
         # qty_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_qty'))
         # rank_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_cost'))
         # receipt_res_dict = {
@@ -201,17 +205,67 @@ class SalesViewSet(viewsets.ModelViewSet):
         # context['series'] = series
 
         data = {
-            'xAxis': [str(dat['year'])+'.'+str(dat['month']) for dat in receipt_res],
+            'yAxis': [str(dat['year'])+'.'+str(dat['month']) for dat in receipt_res],
             'series':[
                 {
-                    'name': 'Revenue',
-                    'type': 'line',
-                    'data': [dat['revenue'] for dat in receipt_res]
+                    "name": 'Product Cost',
+                    "type": 'bar',
+                    "stack": 'total',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['product_cost'] for dat in receipt_res]
                 },
                 {
-                    'name': 'Cost',
-                    'type': 'bar',
-                    'data': [dat['cost'] for dat in receipt_res]
+                    "name": 'Logistic cost',
+                    "type": 'bar',
+                    "stack": 'total',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['logistic_cost'] for dat in receipt_res]
+                },
+                {
+                    "name": 'BOL Commission',
+                    "type": 'bar',
+                    "stack": 'total',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['bol_commission'] for dat in receipt_res]
+                },
+                {
+                    "name": 'BTW Cost',
+                    "type": 'bar',
+                    "stack": 'total',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['btw_cost'] for dat in receipt_res]
+                },
+                {
+                    "name": 'Profit',
+                    "type": 'bar',
+                    "stack": 'total',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['profit'] for dat in receipt_res]
                 }
             ]
         }

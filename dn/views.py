@@ -40,6 +40,8 @@ import os
 from staff.models import AccountListModel as account
 from payment.crontask import ObtainfinanceData
 from payment.models import FinanceListModel
+from datetime import datetime, timedelta
+import pandas as pd
 from rest_framework.decorators import action
 
 # [Will]
@@ -118,18 +120,29 @@ class BolListViewSet(viewsets.ModelViewSet):
         if len(json_obj_list) == 0:
             return Response("No order is fetched")
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                          id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                          id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
         for order in json_obj_list["orders"]:
             orderitem_quantity = 0
             dn_complete = 2
             response_detail = requests.get(dnorder_url+order["orderId"], headers=headers)
             json_obj_detail = response_detail.json()
+            if response_list is not None:
+                for j in range(len(json_obj_detail['orderItems'])):
+                    if "exactDeliveryDate" in json_obj_detail['orderItems'][j]["fulfilment"]:
+                        sending_date = pd.to_datetime(datetime.strptime(json_obj_detail['orderItems'][j]["fulfilment"]["exactDeliveryDate"],
+                                                 '%Y-%m-%d') - pd.offsets.BusinessDay(2))
+                    else:
+                        sending_date = pd.to_datetime(datetime.strptime(json_obj_detail['orderItems'][j]["fulfilment"]["latestDeliveryDate"],
+                                                 '%Y-%m-%d') - pd.offsets.BusinessDay(2))
+                    break
+
             for orderitem in order["orderItems"]:
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
                 goods_desc = ''
                 can_order_stock = 0
+
                 if not goods.objects.filter(goods_code=ean, is_delete=False).exists():
                     dn_complete = 0
                 else:
@@ -158,6 +171,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                               customer=json_obj_detail["shipmentDetails"]["firstName"],
                                               goods_code=ean,
                                               goods_qty=orderitem["quantity"],
+                                              sending_date=sending_date,
                                               creater=str(staff_name))
                 else:
                     if orderitem["cancellationRequest"] != False:
@@ -179,6 +193,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                            total_orderquantity=orderitem_quantity,
                                            dn_complete=dn_complete,
                                            customer=json_obj_detail["shipmentDetails"]["firstName"],
+                                           sending_date=sending_date,
                                            create_time=order["orderPlacedDateTime"],
                                            creater=str(staff_name))
             else:
@@ -216,16 +231,22 @@ class BolListViewSet(viewsets.ModelViewSet):
                 account_name = detail_list[i].account_name
                 detail_list[i].save()
 
-                if DnListModel.objects.filter(dn_code=dn_code).exists():
+                if DnListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
                     dn_list = DnListModel.objects.filter(dn_code=dn_code).first()
                     dn_list.is_delete = True
                     dn_list.dn_status = 3
                     dn_list.save()
 
-                dn_picking_list = PickingListModel.objects.filter(dn_code=dn_code)
-                if dn_picking_list.exists():
-                    dn_picking_list.first().is_delete = True
-                    dn_picking_list.first().save()
+                dn_picking_list = PickingListModel.objects.filter(dn_code=dn_code, is_delete=False)
+                for i in range(len(dn_picking_list)):
+                    dn_picking_list[i].is_delete = True
+                    dn_picking_list[i].save()
+
+                finance_list = FinanceListModel.objects.filter(dn_code=dn_code, is_delete=False)
+                for i in range(len(finance_list)):
+                    finance_list[i].is_delete = True
+                    finance_list[i].save()
+
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(account_name),
                 "Accept": "application/vnd.retailer.v8+json",
@@ -278,10 +299,10 @@ class DnListViewSet(viewsets.ModelViewSet):
                         empty_qs[i].delete()
             if id is None:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False) & ~Q(customer='')).order_by('dn_complete')
+                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=timezone.now()) & ~Q(customer='')).order_by('dn_complete')
             else:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, id=id, is_delete=False) & ~Q(customer=''))
+                    Q(openid=self.request.auth.openid, id=id, is_delete=False, sending_date__lte=timezone.now()) & ~Q(customer=''))
         else:
             return DnListModel.objects.none()
 
@@ -377,15 +398,15 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         dn_status = int(self.request.query_params.get('dn_status', None))
         if dn_status == 4:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status)
+                                                dn_complete=dn_complete, dn_status=dn_status,sending_date__lte=timezone.now())
             return result
 
         if dn_code != 'undefined':
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code)
+                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code, sending_date__lte=timezone.now())
         else:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status)
+                                                dn_complete=dn_complete, dn_status=dn_status, sending_date__lte=timezone.now())
         return result
 
     def get_serializer_class(self):
@@ -432,7 +453,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
                     goods_cost = round(goods_detail.goods_price * int(data['goods_qty'][j]), 2)
                     if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j]),
-                                                can_order_stock__gte=0).exists():
+                                                can_order_stock__gte=0, is_delete=False).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                     goods_code=str(data['goods_code'][j])).first()
                         goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
@@ -462,7 +483,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 customer_city = customer.objects.filter(openid=self.request.auth.openid,
                                                         customer_name=str(data['customer']),
                                                         is_delete=False).first().customer_city
-                warehouse_city = warehouse.objects.filter(openid=self.request.auth.openid).first().warehouse_city
+                warehouse_city = warehouse.objects.filter(openid=self.request.auth.openid, is_delete=False).first().warehouse_city
                 transportation_fee = transportation.objects.filter(
                     Q(openid=self.request.auth.openid, send_city__icontains=warehouse_city, receiver_city__icontains=customer_city,
                       is_delete=False) | Q(openid='init_data', send_city__icontains=warehouse_city, receiver_city__icontains=customer_city,
@@ -485,7 +506,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                         transportation_list.append(transportation_detail)
                     transportation_res['detail'] = transportation_list
                 DnDetailModel.objects.bulk_create(post_data_list, batch_size=100)
-                DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code'])).update(
+                DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code']), is_delete=False).update(
                     customer=str(data['customer']), total_weight=total_weight, total_volume=total_volume,
                     total_cost=total_cost, transportation_fee=transportation_res)
                 return Response({"detail": "success"}, status=200)
@@ -501,7 +522,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
             if customer.objects.filter(openid=self.request.auth.openid, customer_name=str(data['customer']),
                                        is_delete=False).exists():
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                                  id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                                  id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
                 for i in range(len(data['goods_code'])):
                     check_data = {
                         'openid': self.request.auth.openid,
@@ -536,7 +557,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
                     goods_cost = round(goods_detail.goods_price * int(data['goods_qty'][j]), 2)
                     if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j]),
-                                                can_order_stock__gt=0).exists():
+                                                can_order_stock__gt=0, is_delete=False).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                     goods_code=str(data['goods_code'][j])).first()
                         goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
@@ -566,7 +587,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 customer_city = customer.objects.filter(openid=self.request.auth.openid,
                                                         customer_name=str(data['customer']),
                                                         is_delete=False).first().customer_city
-                warehouse_city = warehouse.objects.filter(openid=self.request.auth.openid).first().warehouse_city
+                warehouse_city = warehouse.objects.filter(openid=self.request.auth.openid, is_delete=False).first().warehouse_city
                 transportation_fee = transportation.objects.filter(
                     Q(openid=self.request.auth.openid, send_city__icontains=warehouse_city,
                       receiver_city__icontains=customer_city,
@@ -591,7 +612,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                         transportation_list.append(transportation_detail)
                     transportation_res['detail'] = transportation_list
                 DnDetailModel.objects.bulk_create(post_data_list, batch_size=100)
-                DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code'])).update(
+                DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code']), is_delete=False).update(
                     customer=str(data['customer']), total_weight=total_weight, total_volume=total_volume,
                     total_cost=total_cost, transportation_fee=transportation_res)
                 return Response({"detail": "success"}, status=200)
@@ -624,7 +645,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 detail_list[i].is_delete = True
                 account_name = detail_list[i].account_name
                 detail_list[i].save()
-                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code)
+                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code, is_delete=False)
                 if dn_list.exists():
                     dn_list.first().is_delete = True
                     dn_list.first().dn_status = 3
@@ -686,8 +707,8 @@ class DnViewPrintViewSet(viewsets.ModelViewSet):
                                                           is_delete=False)
             dn_detail = serializers.DNDetailGetSerializer(dn_detail_list, many=True)
             customer_detail = customer.objects.filter(openid=self.request.auth.openid,
-                                                            customer_name=qs.customer).first()
-            warehouse_detail = warehouse.objects.filter(openid=self.request.auth.openid).first()
+                                                            customer_name=qs.customer, is_delete=False).first()
+            warehouse_detail = warehouse.objects.filter(openid=self.request.auth.openid, is_delete=False).first()
             context['dn_detail'] = dn_detail.data
             context['customer_detail'] = {
                 "customer_name": customer_detail.customer_name,
@@ -752,7 +773,7 @@ class DnNewOrderViewSet(viewsets.ModelViewSet):
                                                                     goods_code=str(dn_detail_list[i].goods_code)).exists():
                             pass
                         else:
-                            goods_detail = goods.objects.filter(openid=self.request.auth.openid, goods_code=str(dn_detail_list[i].goods_code)).first()
+                            goods_detail = goods.objects.filter(openid=self.request.auth.openid, goods_code=str(dn_detail_list[i].goods_code), is_delete=False).first()
                             stocklist.objects.create(openid=self.request.auth.openid,
                                                      goods_code=str(dn_detail_list[i].goods_code),
                                                      goods_desc=goods_detail.goods_desc,
@@ -811,7 +832,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         #[Will] Rewrite the whole create function of pickinglist, to generate pickinglist with data from DNDetaillist and Bin info
-        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1, dn_complete=2)
+        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1, dn_complete=2, sending_date__lte=timezone.now())
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         for i in range(len(normalorder_set)):
@@ -851,7 +872,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                     openid=self.request.auth.openid,
                                                     creater=str(staff_name))
 
-                    dn_list = DnListModel.objects.filter(dn_code=normalorder_set[i].dn_code).first()
+                    dn_list = DnListModel.objects.filter(dn_code=normalorder_set[i].dn_code, is_delete=False).first()
                     dn_list.dn_status = 2
                     dn_list.save()
                     normalorder_set[i].dn_status = 2
@@ -898,7 +919,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
         else:
             if qs.dn_status == 2:
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                                  id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                                  id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
                 dn_detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                               dn_code=qs.dn_code,
                                                               dn_status=2, is_delete=False)
@@ -1237,7 +1258,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                                 customer_name=str(qs.customer),
                                                                 is_delete=False).first().customer_city
                         warehouse_city = warehouse.objects.filter(
-                            openid=self.request.auth.openid).first().warehouse_city
+                            openid=self.request.auth.openid, is_delete=False).first().warehouse_city
                         transportation_fee = transportation.objects.filter(
                             Q(openid=self.request.auth.openid, send_city__icontains=warehouse_city,
                               receiver_city__icontains=customer_city,
@@ -1346,7 +1367,7 @@ class DnPickingListViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         id = self.get_project()
         if self.request.user:
-            return DnListModel.objects.filter(openid=self.request.auth.openid, id=id)
+            return DnListModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
         else:
             return DnListModel.objects.none()
 
@@ -1361,7 +1382,7 @@ class DnPickingListViewSet(viewsets.ModelViewSet):
         if qs.dn_status < 3:
             raise APIException({"detail": "No Picking List Been Created"})
         else:
-            picking_qs = PickingListModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code)
+            picking_qs = PickingListModel.objects.filter(openid=self.request.auth.openid, dn_code=qs.dn_code, is_delete=False)
             serializer = serializers.DNPickingListGetSerializer(picking_qs, many=True)
             return Response(serializer.data, status=200)
 
@@ -1390,7 +1411,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             return self.http_method_not_allowed(request=self.request)
 
     def create(self, request, *args, **kwargs):
-        pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0)
+        pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0, is_delete=False)
 
         for i in range(len(pick_list)):
             pick_list[i].picking_status = 1
@@ -1464,7 +1485,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                 pick_qty_change = PickingListModel.objects.filter(openid=self.request.auth.openid,
                                                                   dn_code=str(data['dn_code']),
                                                                   picking_status=0,
-                                                                  t_code=str(data['goodsData'][i].get('t_code'))).first()
+                                                                  t_code=str(data['goodsData'][i].get('t_code')), is_delete=False).first()
                 if int(data['goodsData'][i].get('pick_qty')) < 0:
                     raise APIException({"detail": str(data['goodsData'][i].get('goods_code')) + " Picked Qty Must >= 0"})
                 else:
@@ -1474,7 +1495,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                         continue
             qs.dn_status = 4
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(data['goodsData'][j].get('goods_code'))).first()
@@ -1499,13 +1520,12 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                 cur_date = timezone.now().date()
                 bin_stock = stockbin.objects.filter(openid=self.request.auth.openid,
                                                     bin_name=bin_qty_change.bin_name,
-                                                    goods_code=bin_qty_change.goods_code,
-                                                    ).aggregate(sum=Sum('goods_qty'))["sum"]
+                                                    goods_code=bin_qty_change.goods_code).aggregate(sum=Sum('goods_qty'))["sum"]
                 cycle_qty = bin_stock - int(data['goodsData'][j].get('pick_qty'))
                 cyclecount.objects.filter(openid=self.request.auth.openid,
                                           bin_name=bin_qty_change.bin_name,
                                           goods_code=bin_qty_change.goods_code,
-                                          create_time__gte=cur_date).update(goods_qty=cycle_qty)
+                                          create_time__gte=cur_date, is_delete=False).update(goods_qty=cycle_qty)
                 if int(data['goodsData'][j].get('pick_qty')) == pick_qty_change.pick_qty:
                     goods_qty_change.pick_stock = goods_qty_change.pick_stock - int(data['goodsData'][j].get('pick_qty'))
                     goods_qty_change.picked_stock = goods_qty_change.picked_stock + int(data['goodsData'][j].get('pick_qty'))
@@ -1548,7 +1568,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                                                                   dn_code=str(data['dn_code']),
                                                                   picking_status=0,
                                                                   t_code=str(
-                                                                      data['goodsData'][i].get('t_code'))).first()
+                                                                      data['goodsData'][i].get('t_code')), is_delete=False).first()
                 if int(data['goodsData'][i].get('picked_qty')) < 0:
                     raise APIException(
                         {"detail": str(data['goodsData'][i].get('goods_code')) + " Picked Qty Must >= 0"})
@@ -1561,21 +1581,21 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                         continue
             qs.dn_status = 4
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(
                                                                 data['goodsData'][j].get('goods_code'))).first()
                 dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                          dn_code=str(data['dn_code']),
-                                                         goods_code=str(data['goodsData'][j].get('goods_code'))).first()
+                                                         goods_code=str(data['goodsData'][j].get('goods_code')), is_delete=False).first()
                 bin_qty_change = stockbin.objects.filter(openid=self.request.auth.openid,
                                                          t_code=str(data['goodsData'][j].get('t_code'))).first()
                 pick_qty_change = PickingListModel.objects.filter(openid=self.request.auth.openid,
                                                                   dn_code=str(data['dn_code']),
                                                                   picking_status=0,
                                                                   t_code=str(
-                                                                      data['goodsData'][j].get('t_code'))).first()
+                                                                      data['goodsData'][j].get('t_code')), is_delete=False).first()
                 qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                  mode_code=dn_detail.dn_code,
                                                  bin_name=bin_qty_change.bin_name,
@@ -1587,13 +1607,12 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                 cur_date = timezone.now().date()
                 bin_stock = stockbin.objects.filter(openid=self.request.auth.openid,
                                                     bin_name=bin_qty_change.bin_name,
-                                                    goods_code=bin_qty_change.goods_code,
-                                                    ).aggregate(sum=Sum('goods_qty'))["sum"]
+                                                    goods_code=bin_qty_change.goods_code).aggregate(sum=Sum('goods_qty'))["sum"]
                 cycle_qty = bin_stock - int(data['goodsData'][j].get('picked_qty'))
                 cyclecount.objects.filter(openid=self.request.auth.openid,
                                           bin_name=bin_qty_change.bin_name,
                                           goods_code=bin_qty_change.goods_code,
-                                          create_time__gte=cur_date).update(goods_qty=cycle_qty)
+                                          create_time__gte=cur_date, is_delete=False).update(goods_qty=cycle_qty)
                 if int(data['goodsData'][j].get('picked_qty')) == pick_qty_change.pick_qty:
                     goods_qty_change.pick_stock = goods_qty_change.pick_stock - int(
                         data['goodsData'][j].get('picked_qty'))
@@ -1664,7 +1683,7 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
             qs.dn_status = 5
             data = self.request.data
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
             if driverlist.objects.filter(openid=self.request.auth.openid,
                                          driver_name=str(data['driver']),
                                          is_delete=False).exists():
@@ -1674,9 +1693,9 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
                 dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                          dn_code=str(data['dn_code']),
                                                          dn_status=4, customer=qs.customer,
-                                                         )
+                                                         is_delete=False)
                 pick_qty_change = PickingListModel.objects.filter(openid=self.request.auth.openid,
-                                                                  dn_code=str(data['dn_code']))
+                                                                  dn_code=str(data['dn_code']), is_delete=False)
                 for i in range(len(dn_detail)):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                 goods_code=dn_detail[i].goods_code).first()
@@ -1698,11 +1717,11 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
                     if bin_qty_change.goods_qty == 0:
                         bin_qty_change.delete()
                         if stockbin.objects.filter(openid=self.request.auth.openid,
-                                                   bin_name=pick_qty_change[j].bin_name).exists():
+                                                   bin_name=pick_qty_change[j].bin_name, is_delete=False).exists():
                             pass
                         else:
                             binset.objects.filter(openid=self.request.auth.openid,
-                                                  bin_name=pick_qty_change[j].bin_name).update(empty_label=True)
+                                                  bin_name=pick_qty_change[j].bin_name, is_delete=False).update(empty_label=True)
                     else:
                         bin_qty_change.picked_qty = bin_qty_change.picked_qty - pick_qty_change[j].picked_qty
                         bin_qty_change.save()
@@ -1764,7 +1783,7 @@ class DnPODViewSet(viewsets.ModelViewSet):
             dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                      dn_code=str(data['dn_code']),
                                                      dn_status=5, customer=qs.customer,
-                                                     )
+                                                     is_delete=False)
             for j in range(len(data['goodsData'])):
                 delivery_damage_qty = data['goodsData'][j].get('delivery_damage_qty')
                 delivery_actual_qty = data['goodsData'][j].get('intransit_qty')
