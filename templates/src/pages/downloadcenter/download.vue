@@ -15,15 +15,6 @@
             </transition>
             <transition appear enter-active-class="animated zoomIn">
               <q-route-tab
-                name="downloadoutbound"
-                :label="$t('outbound.dn')"
-                icon="img:statics/outbound/dnlist.png"
-                :to="{ name: 'downloadoutbound' }"
-                exact
-              />
-            </transition>
-            <transition appear enter-active-class="animated zoomIn">
-              <q-route-tab
                 name="downloadstocklist"
                 :label="$t('stock.stocklist')"
                 icon="img:statics/stock/stocklist.png"

@@ -120,7 +120,7 @@ class BolListViewSet(viewsets.ModelViewSet):
         if len(json_obj_list) == 0:
             return Response("No order is fetched")
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                          id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                          id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
         for order in json_obj_list["orders"]:
             orderitem_quantity = 0
@@ -522,7 +522,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
             if customer.objects.filter(openid=self.request.auth.openid, customer_name=str(data['customer']),
                                        is_delete=False).exists():
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                                  id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                                  id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
                 for i in range(len(data['goods_code'])):
                     check_data = {
                         'openid': self.request.auth.openid,
@@ -645,11 +645,10 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 detail_list[i].is_delete = True
                 account_name = detail_list[i].account_name
                 detail_list[i].save()
-                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code, is_delete=False)
-                if dn_list.exists():
-                    dn_list.first().is_delete = True
-                    dn_list.first().dn_status = 3
-                    dn_list.first().save()
+                dn_list = DnListModel.objects.filter(dn_code=detail_list[i].dn_code, is_delete=False).first()
+                dn_list.is_delete = True
+                dn_list.dn_status = 3
+                dn_list.save()
 
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(account_name),
@@ -919,7 +918,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
         else:
             if qs.dn_status == 2:
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                                  id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                                  id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
                 dn_detail_list = DnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                               dn_code=qs.dn_code,
                                                               dn_status=2, is_delete=False)
@@ -1495,7 +1494,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                         continue
             qs.dn_status = 4
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(data['goodsData'][j].get('goods_code'))).first()
@@ -1581,7 +1580,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
                         continue
             qs.dn_status = 4
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                             goods_code=str(
@@ -1683,7 +1682,7 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
             qs.dn_status = 5
             data = self.request.data
             staff_name = staff.objects.filter(openid=self.request.auth.openid,
-                                              id=self.request.META.get('HTTP_OPERATOR'), is_delete=False).first().staff_name
+                                              id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
             if driverlist.objects.filter(openid=self.request.auth.openid,
                                          driver_name=str(data['driver']),
                                          is_delete=False).exists():

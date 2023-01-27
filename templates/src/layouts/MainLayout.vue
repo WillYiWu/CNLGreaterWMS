@@ -23,23 +23,6 @@
         <q-space />
         <transition appear enter-active-class="animated zoomIn">
           <q-btn
-            icon="img:statics/icons/android.png"
-            round
-            dense
-            flat
-            @click="brownlink('https://www.56yhz.com/media/GWMS.apks')"
-            style="margin: 0 10px 0 10px"
-          >
-            <q-tooltip
-              content-class="bg-amber text-black shadow-4"
-              :offset="[15, 15]"
-              content-style="font-size: 12px"
-              >Android APP
-            </q-tooltip>
-          </q-btn>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-btn
             icon="img:statics/icons/GitHub.png"
             round
             dense
@@ -323,20 +306,6 @@
               ><q-icon name="assignment_ind"
             /></q-item-section>
             <q-item-section>{{ $t("menuItem.staff") }}</q-item-section>
-          </q-item>
-          <q-item
-            clickable
-            :to="{ name: 'driverlist' }"
-            @click="linkChange('driver')"
-            v-ripple
-            exact
-            :active="link === 'driver' && link !== ''"
-            :class="{ 'my-menu-link': link === 'driver' && link !== '' }"
-          >
-            <q-item-section avatar
-              ><q-icon name="transfer_within_a_station"
-            /></q-item-section>
-            <q-item-section>{{ $t("menuItem.driver") }}</q-item-section>
           </q-item>
           <q-separator v-show="device === 0" />
           <q-item

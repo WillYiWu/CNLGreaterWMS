@@ -22,15 +22,6 @@
                 exact
               />
             </transition>
-            <transition appear enter-active-class="animated zoomIn">
-              <q-route-tab
-                name="inboundAndOutbound"
-                :label="$t('dashboards.inbound_and_outbound_statements')"
-                icon="img:statics/dashboard/in_and_out_statement.svg"
-                :to="{ name: 'inboundAndOutbound' }"
-                exact
-              />
-            </transition>
           </q-tabs>
         </div>
       </div>

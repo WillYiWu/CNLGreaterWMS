@@ -7,9 +7,6 @@
         v-model="detaillink"
       >
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="capitallist" :label="$t('finance.capital')" icon="img:statics/capital/capital.png" :to="{ name: 'capitallist' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="freight" :label="$t('finance.freight')" icon="img:statics/capital/freight.png" :to="{ name: 'freight' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
