@@ -45,10 +45,10 @@ import pandas as pd
 from rest_framework.decorators import action
 
 # [Will]
-dnlist_url = "https://api.bol.com/retailer-demo/orders?fulfilment-method=FBR&state=OPEN"
-dnorder_url = "https://api.bol.com/retailer-demo/orders/"
-cancelorder_url = "https://api.bol.com/retailer-demo/orders/cancellation"
-shipment_url = "https://api.bol.com/retailer-demo/orders/shipment"
+dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=OPEN"
+dnorder_url = "https://api.bol.com/retailer/orders/"
+cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
+shipment_url = "https://api.bol.com/retailer/orders/shipment"
 #cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
 
 def obtain_access_token(account_name):
@@ -127,14 +127,18 @@ class BolListViewSet(viewsets.ModelViewSet):
             dn_complete = 2
             response_detail = requests.get(dnorder_url+order["orderId"], headers=headers)
             json_obj_detail = response_detail.json()
+            country = json_obj_detail['shipmentDetails']['countryCode']
+            if country == 'NL':
+                lead_days = 2
+            else:
+                lead_days = 3
             if response_list is not None:
                 for j in range(len(json_obj_detail['orderItems'])):
                     if "exactDeliveryDate" in json_obj_detail['orderItems'][j]["fulfilment"]:
                         sending_date = pd.to_datetime(datetime.strptime(json_obj_detail['orderItems'][j]["fulfilment"]["exactDeliveryDate"],
-                                                 '%Y-%m-%d') - pd.offsets.BusinessDay(2))
+                                                 '%Y-%m-%d') - pd.offsets.BusinessDay(lead_days))
                     else:
-                        sending_date = pd.to_datetime(datetime.strptime(json_obj_detail['orderItems'][j]["fulfilment"]["latestDeliveryDate"],
-                                                 '%Y-%m-%d') - pd.offsets.BusinessDay(2))
+                        sending_date = datetime.now().date()
                     break
 
             for orderitem in order["orderItems"]:
@@ -299,7 +303,7 @@ class DnListViewSet(viewsets.ModelViewSet):
                         empty_qs[i].delete()
             if id is None:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=timezone.now()) & ~Q(customer='')).order_by('dn_complete')
+                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=timezone.now()) & ~Q(customer='')).order_by('account_name','dn_complete', 'dn_code')
             else:
                 return DnListModel.objects.filter(
                     Q(openid=self.request.auth.openid, id=id, is_delete=False, sending_date__lte=timezone.now()) & ~Q(customer=''))
