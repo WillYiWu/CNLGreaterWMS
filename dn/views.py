@@ -235,11 +235,12 @@ class BolListViewSet(viewsets.ModelViewSet):
                                               labeloffer_id=labeloffer_id,
                                               creater=str(staff_name))
                 else:
+                    dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
+                    dndetail_list.goods_desc = goods_desc
                     if orderitem["cancellationRequest"] != False:
-                        dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
                         dn_complete = 3
                         dndetail_list.dn_complete = dn_complete
-                        dndetail_list.save()
+                    dndetail_list.save()
 
             dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False)
             for i in range(len(dndetail_list)):

@@ -24,7 +24,7 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
-             <q-btn :label="$t('outbound.download_all_label')" icon="print" @click="DownloadPickLabel('ALL')">
+             <q-btn :label="$t('outbound.download_all_label')" icon="img:statics/outbound/zegel.jpeg" @click="DownloadPickLabel('ALL')">
                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
                  {{ $t('outbound.download_all_label') }}
                </q-tooltip>
@@ -91,10 +91,10 @@
                 flat
                 push
                 color="positive"
-                icon="img:statics/outbound/order.png"
+                icon="img:statics/outbound/zegel2.ico"
                 @click="DownloadPickLabel(props.row.orderitem_id)"
               >
-                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmorder') }}</q-tooltip>
+                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.view_dn.download_zegel') }}</q-tooltip>
               </q-btn>
             </q-td>
            </q-tr>
@@ -156,7 +156,7 @@
 <router-view />
 
 <script>
-import { getauth, postauth, deleteauth, getfile } from 'boot/axios_request'
+import { getauth, postauth, deleteauth, getfile, getPDF, baseurl } from 'boot/axios_request'
 
 export default {
   name: 'Pagednprepick',
@@ -224,18 +224,25 @@ export default {
     },
     async DownloadPickLabel(orderitem_id){
       var _this = this
+      var file_name = ""
       try{
         const axios = require("axios")
         const instance = axios.create({
-          baseURL: "http://127.0.0.1:8000",
+          baseURL: baseurl,
         })
         const res = await instance.get('dn/shippinglabel/' + orderitem_id, {responseType: 'blob' });
         const downloadUrl = window.URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
         const link = document.createElement('a');
         link.href = downloadUrl
-        link.setAttribute('download', orderitem_id + '.pdf');
+        if (orderitem_id === 'ALL'){
+          file_name = new Date().toLocaleDateString()
+        }else{
+          file_name = orderitem_id
+        }
+        link.setAttribute('download', file_name + '.pdf');
         document.body.appendChild(link);
         link.click();
+        link.remove();
       } catch (error) {
         console.error(error);
       }

@@ -410,7 +410,8 @@ export default {
       customer: 'Customer',
       cancel_order_tip: 'Cancel order from BOL',
       generate_pickup_tip: 'Are you sure to generate Pickup list?',
-      cancel_order_confirm: 'Are you sure to cancel order?'
+      cancel_order_confirm: 'Are you sure to cancel order?',
+      download_zegel: 'Download Label'
     }
   },
   staff: {

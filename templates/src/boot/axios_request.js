@@ -34,6 +34,10 @@ const axiosInstanceAuthScan = axios.create({
   baseURL: baseurl,
 })
 
+const axiosInstanceGetPDF = axios.create({
+  baseURL: baseurl,
+})
+
 var lang = LocalStorage.getItem('lang')
 if (LocalStorage.has('lang')) {
   lang = lang || 'en-US'
@@ -601,6 +605,10 @@ function scanpostauth (url, data) {
 
 function getfile (url) {
   return axiosFile.get(url)
+}
+
+function getPDF (url) {
+  return axiosInstanceGetPDF.get(url)
 }
 
 Vue.prototype.$axios = axios
