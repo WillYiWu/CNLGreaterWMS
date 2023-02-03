@@ -19,7 +19,7 @@ def obtain_access_token(account_name):
     return access_token.json()["access_token"]
 
 def ObtainfinanceData():
-    dnorder_url = "https://api.bol.com/retailer-demo/orders/"
+    dnorder_url = "https://api.bol.com/retailer/orders/"
     dndetail_list = dndetaillist.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
     for i in range(len(dndetail_list)):
         dn_code = dndetail_list[i].dn_code
