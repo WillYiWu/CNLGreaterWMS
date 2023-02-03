@@ -371,7 +371,7 @@ class DnListViewSet(viewsets.ModelViewSet):
                     if empty_qs[i].create_time <= cur_date - date_check:
                         empty_qs[i].delete()
             if id is None:
-                d = DnListModel.objects.filter(
+                return DnListModel.objects.filter(
                     Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)) & ~Q(customer='')).order_by('account_name','dn_complete', 'dn_code')
             else:
                 return DnListModel.objects.filter(
