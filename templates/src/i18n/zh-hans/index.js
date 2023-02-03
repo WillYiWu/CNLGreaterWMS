@@ -378,6 +378,8 @@ export default {
     shippedstock: '已发货',
     confirmpicked: '已拣货',
     confirm_pick_tip: '确认已全部拣货并发货',
+    download_all_label: '下载邮寄单',
+    download_label: '下载',
     received: '已签收',
     pod: '签收回单',
     cancelallorder: '取消所有订单',

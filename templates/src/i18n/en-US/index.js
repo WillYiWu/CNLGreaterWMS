@@ -381,6 +381,8 @@ export default {
     shippedstock: 'Shipped List',
     confirmpicked: 'Picked',
     confirm_pick_tip: 'Confirm all items picked & shipped',
+    download_all_label: 'Download Labels',
+    download_label: 'Download Label',
     received: 'Received',
     pod: 'Proof Of Delivery',
     cancelallorder: 'Cancel all orders',

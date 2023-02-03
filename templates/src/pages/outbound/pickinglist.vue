@@ -24,6 +24,11 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
+             <q-btn :label="$t('outbound.download_all_label')" icon="print" @click="DownloadPickLabel('ALL')">
+               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
+                 {{ $t('outbound.download_all_label') }}
+               </q-tooltip>
+             </q-btn>
              <q-btn :label="$t('print')" icon="print" @click="PrintPickingList()">
                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
                  {{ $t('print') }}
@@ -74,6 +79,24 @@
              <q-td key="update_time" :props="props">
                {{ props.row.update_time }}
              </q-td>
+             <q-td key="action" :props="props" style="width: 100px">
+              <q-btn
+                v-show="
+                  $q.localStorage.getItem('staff_type') !== 'Supplier' &&
+                    $q.localStorage.getItem('staff_type') !== 'Customer' &&
+                    $q.localStorage.getItem('staff_type') !== 'Inbound' &&
+                    $q.localStorage.getItem('staff_type') !== 'StockControl'
+                "
+                round
+                flat
+                push
+                color="positive"
+                icon="img:statics/outbound/order.png"
+                @click="DownloadPickLabel(props.row.orderitem_id)"
+              >
+                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('confirmorder') }}</q-tooltip>
+              </q-btn>
+            </q-td>
            </q-tr>
          </template>
       </q-table>
@@ -133,7 +156,7 @@
 <router-view />
 
 <script>
-import { getauth, postauth } from 'boot/axios_request'
+import { getauth, postauth, deleteauth, getfile } from 'boot/axios_request'
 
 export default {
   name: 'Pagednprepick',
@@ -170,7 +193,8 @@ export default {
         { name: 'picked_qty', label: this.$t('stock.view_stocklist.picked_stock'), field: 'picked_qty', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
-        { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' }
+        { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
+        { name: 'action', label: this.$t('action'), align: 'right' }
       ],
       filter: '',
       pagination: {
@@ -196,6 +220,48 @@ export default {
           })
         })
       } else {
+      }
+    },
+    async DownloadPickLabel(orderitem_id){
+      var _this = this
+      try{
+        const axios = require("axios")
+        const instance = axios.create({
+          baseURL: "http://127.0.0.1:8000",
+        })
+        const res = await instance.get('dn/shippinglabel/' + orderitem_id, {responseType: 'blob' });
+        const downloadUrl = window.URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
+        const link = document.createElement('a');
+        link.href = downloadUrl
+        link.setAttribute('download', orderitem_id + '.pdf');
+        document.body.appendChild(link);
+        link.click();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    DownloadPickLabel2(orderitem_id){
+      var _this = this
+      if (_this.$q.localStorage.has('auth')){
+        getfile('dn/shippinglabel/')
+          .then(res=>{
+            const blob = new Blob([res.data], {type: 'application/pdf;base64'});
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            //link.setAttribute('href', 'data:"application/pdf;base64,' + res.data.base64PDF);
+            link.setAttribute('download', 'merged.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          })
+          .catch(err => {
+            _this.$q.notify({
+              message: err.detail,
+              icon: 'close',
+              color: 'negative'
+            })
+          })
       }
     },
     PrintPickingList () {

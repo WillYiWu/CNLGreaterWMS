@@ -26,6 +26,23 @@ class SannerDnDetailGetSerializer(serializers.ModelSerializer):
         exclude = ['openid', 'is_delete', ]
         read_only_fields = ['id', 'openid']
 
+class ShippinglabelGetSerializer(serializers.ModelSerializer):
+    orderitem_id = serializers.CharField(read_only=True, required=False)
+    label_id = serializers.CharField(read_only=True, required=False)
+    dn_code = serializers.CharField(read_only=True, required=False)
+    bin_name = serializers.CharField(read_only=True, required=False)
+    goods_code = serializers.CharField(read_only=True, required=False)
+    picking_status = serializers.IntegerField(read_only=True, required=False)
+    pick_qty = serializers.IntegerField(read_only=True, required=False)
+    picked_qty = serializers.IntegerField(read_only=True, required=False)
+    creater = serializers.CharField(read_only=True, required=False)
+    t_code = serializers.CharField(read_only=True, required=False)
+    create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    update_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    class Meta:
+        model = PickingListModel
+        exclude = ['openid', 'is_delete', ]
+        read_only_fields = ['id', ]
 
 class DNListGetSerializer(serializers.ModelSerializer):
     dn_code = serializers.CharField(read_only=True, required=False)
