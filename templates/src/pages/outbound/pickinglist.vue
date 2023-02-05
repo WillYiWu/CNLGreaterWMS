@@ -92,7 +92,7 @@
                 push
                 color="positive"
                 icon="img:statics/outbound/zegel2.ico"
-                @click="DownloadPickLabel(props.row.orderitem_id)"
+                @click="DownloadPickLabel(props.row.dn_code)"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.view_dn.download_zegel') }}</q-tooltip>
               </q-btn>
@@ -222,7 +222,7 @@ export default {
       } else {
       }
     },
-    async DownloadPickLabel(orderitem_id){
+    async DownloadPickLabel(dn_code){
       var _this = this
       var file_name = ""
       try{
@@ -230,14 +230,14 @@ export default {
         const instance = axios.create({
           baseURL: baseurl,
         })
-        const res = await instance.get('dn/shippinglabel/' + orderitem_id, {responseType: 'blob' });
+        const res = await instance.get('dn/shippinglabel/' + dn_code, {responseType: 'blob' });
         const downloadUrl = window.URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
         const link = document.createElement('a');
         link.href = downloadUrl
-        if (orderitem_id === 'ALL'){
+        if (dn_code === 'ALL'){
           file_name = new Date().toLocaleDateString()
         }else{
-          file_name = orderitem_id
+          file_name = dn_code
         }
         link.setAttribute('download', file_name + '.pdf');
         document.body.appendChild(link);

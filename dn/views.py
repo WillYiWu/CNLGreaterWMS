@@ -38,7 +38,6 @@ import json
 import base64
 import os
 from staff.models import AccountListModel as account
-from payment.crontask import ObtainfinanceData
 from payment.models import FinanceListModel
 import PyPDF2
 from django.http import FileResponse
@@ -46,6 +45,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import base64
 from django.views import View
+import time
 from rest_framework.decorators import action
 
 # [Will]
@@ -72,11 +72,6 @@ def merge_pdfs(pdf_files, output_file):
 
 
 def obtain_access_token(account_name):
-    # path = os.path.abspath('token.json')
-    # with open(path, 'r') as f:
-    #     config = json.load(f)
-    # client_id = config['token']['client_id']
-    # client_secret = config['token']['client_secret']
     account_info = account.objects.filter(account_name=account_name, is_delete=False).first()
     credential = account_info.client_id + ":" + account_info.client_secret
     credential_encoded = base64.b64encode(credential.encode())
@@ -87,17 +82,58 @@ def obtain_access_token(account_name):
     access_token = requests.post("https://login.bol.com/token?grant_type=client_credentials", headers=oauth_header)
     return access_token.json()["access_token"]
 
-class ShippinglabelViewSet(View):
-    # pagination_class = MyPageNumberPaginationDNList
-    # filter_backends = [DjangoFilterBackend, OrderingFilter, ]
-    # ordering_fields = ['id', "create_time", "update_time", ]
-    # filter_class = DnListFilter
+def ObtainfinanceData():
+    dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
+    for i in range(len(dndetail_list)):
+        dn_code = dndetail_list[i].dn_code
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token(dndetail_list[i].account_name),
+            "Accept": "application/vnd.retailer.v8+json"
+        }
+        response_list = requests.get(dnorder_url+dn_code, headers=headers).json()
+        if response_list is not None:
+            for j in range(len(response_list['orderItems'])):
+                orderitem = response_list['orderItems'][j]
+                if orderitem['orderItemId'] == dndetail_list[i].orderitem_id:
+                    country = response_list['shipmentDetails']['countryCode']
+                    transport_list = transportation.objects.filter(receiver_city=country).first()
+                    goods_list = goods.objects.filter(goods_code=orderitem['product']['ean']).first()
 
-    def get(self, request, orderitemid, *args, **kwargs):
-        if orderitemid == "ALL":
+                    orderitem_id = orderitem['orderItemId']
+                    account_name = dndetail_list[i].account_name
+                    goods_code = dndetail_list[i].goods_code
+                    goods_desc = dndetail_list[i].goods_desc
+                    shipped_qty = dndetail_list[i].goods_qty
+                    selling_price = orderitem['unitPrice']
+                    btw_cost = float(selling_price) - float(selling_price)/1.21
+                    bol_commission = orderitem['commission']
+                    logistic_cost = transport_list.min_payment
+                    product_cost = goods_list.goods_cost
+                    profit = selling_price - btw_cost - bol_commission - logistic_cost - product_cost
+                    selling_date = dndetail_list[i].update_time
+
+                    if not FinanceListModel.objects.filter(orderitem_id=orderitem_id).exists():
+                        FinanceListModel.objects.create(dn_code=dn_code,
+                                                        orderitem_id=orderitem_id,
+                                                        account_name=account_name,
+                                                        shipped_qty=shipped_qty,
+                                                        goods_code=goods_code,
+                                                        goods_desc=goods_desc,
+                                                        selling_price=selling_price,
+                                                        btw_cost=btw_cost,
+                                                        bol_commission=bol_commission,
+                                                        logistic_cost=logistic_cost,
+                                                        product_cost=product_cost,
+                                                        profit = profit,
+                                                        selling_date=selling_date)
+                        dndetail_list[i].revenue_counted = True
+                        dndetail_list[i].save()
+class ShippinglabelViewSet(View):
+    def get(self, request, dn_code, *args, **kwargs):
+        if dn_code == "ALL":
             file_name = "merged.pdf"
         else:
-            file_name = orderitemid + ".pdf"
+            file_name = dn_code + ".pdf"
 
         file = open(file_name, 'rb')
         response = FileResponse(file)
@@ -153,9 +189,14 @@ class BolListViewSet(viewsets.ModelViewSet):
             "Authorization": "Bearer " + obtain_access_token(account_name),
             "Accept": "application/vnd.retailer.v8+json"
         }
-        headers_label = {
+        headers_deliveryoption = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
             "Accept": "application/vnd.retailer.v8+json",
+            "Content-Type": "application/vnd.retailer.v8+json"
+        }
+        headers_label = {
+            "Authorization": "Bearer " + obtain_access_token(account_name),
+            "Accept": "application/vnd.retailer.v8+pdf",
             "Content-Type": "application/vnd.retailer.v8+json"
         }
         response_list = requests.get(dnlist_url, headers=headers)
@@ -170,24 +211,11 @@ class BolListViewSet(viewsets.ModelViewSet):
             dn_complete = 2
             response_detail = requests.get(dnorder_url+order["orderId"], headers=headers)
             json_obj_detail = response_detail.json()
-            # country = json_obj_detail['shipmentDetails']['countryCode']
-            # if country == 'NL':
-            #     lead_days = 2
-            # else:
-            #     lead_days = 3
-            # if response_list is not None:
-            #     for j in range(len(json_obj_detail['orderItems'])):
-            #         if "exactDeliveryDate" in json_obj_detail['orderItems'][j]["fulfilment"]:
-            #             sending_date = pd.to_datetime(datetime.strptime(json_obj_detail['orderItems'][j]["fulfilment"]["exactDeliveryDate"],
-            #                                      '%Y-%m-%d') - pd.offsets.BusinessDay(lead_days))
-            #         else:
-            #             sending_date = datetime.now().date()
-            #         break
-
             for orderitem in order["orderItems"]:
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
                 goods_desc = ''
+                sending_date = ''
                 can_order_stock = 0
 
                 order_item = []
@@ -195,13 +223,16 @@ class BolListViewSet(viewsets.ModelViewSet):
                 deliveryoption_data = {"orderItems": order_item}
 
                 #Fetch handover date and shippingLabelOfferId from BOL, handover date equals to sending date
-                deliveryoption_result = requests.post(deliveryoption_url, json.dumps(deliveryoption_data), headers=headers_label)
-                deliveryoption_json = deliveryoption_result.json()
-                for option in deliveryoption_json["deliveryOptions"]:
-                    if option["recommended"] == True:
-                        sending_date = pd.to_datetime(option["handoverDetails"]["latestHandoverDateTime"])
-                        labeloffer_id = option["shippingLabelOfferId"]
-                        break
+                deliveryoption_result = requests.post(deliveryoption_url, json.dumps(deliveryoption_data), headers=headers_deliveryoption)
+                if deliveryoption_result.status_code == 200:
+                    deliveryoption_json = deliveryoption_result.json()
+                    for option in deliveryoption_json["deliveryOptions"]:
+                        if option["recommended"] == True:
+                            sending_date = pd.to_datetime(option["handoverDetails"]["latestHandoverDateTime"])
+                            labeloffer_id = option["shippingLabelOfferId"]
+                            break
+                else:
+                    print(orderitem["orderItemId"] + 'deliveryoption fetch fail')
 
                 if not goods.objects.filter(goods_code=ean, is_delete=False).exists():
                     dn_complete = 0
@@ -235,7 +266,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                               labeloffer_id=labeloffer_id,
                                               creater=str(staff_name))
                 else:
-                    dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
+                    dndetail_list = DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).first()
                     dndetail_list.goods_desc = goods_desc
                     if orderitem["cancellationRequest"] != False:
                         dn_complete = 3
@@ -263,16 +294,42 @@ class BolListViewSet(viewsets.ModelViewSet):
                 dn_list.dn_complete = dn_complete
                 dn_list.save()
 
-        #Create shipping lable for all detailed orders with dn_complete = 2
+        #Create shipping label for all detailed orders with dn_complete = 2
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
         for order in dndetail_list:
+            if os.path.exists(order.dn_code+'.pdf'):
+                continue
+
             labeloffer_id = order.labeloffer_id
             order_item = []
             order_item.append({'orderItemId': order.orderitem_id})
             createlabel_data = {"orderItems": order_item, "shippingLabelOfferId": labeloffer_id}
-            createlabel_result = requests.post(createlabel_url, json.dumps(createlabel_data),headers=headers_label)
-            order.labelprocess_id = createlabel_result.json()["processStatusId"]
+            createlabel_result = requests.post(createlabel_url, json.dumps(createlabel_data),headers=headers_deliveryoption)
+            labelprocess_id = createlabel_result.json()["processStatusId"]
+            order.labelprocess_id = labelprocess_id
             order.save()
+
+            time.sleep(1)
+
+            process_result = requests.get(getlabelid_url+labelprocess_id,headers=headers)
+            if process_result.status_code == 200:
+                print(order.orderitem_id + labelprocess_id + 'error')
+                label_id = process_result.json()["entityId"]
+                order.label_id = label_id
+                order.save()
+            #Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
+                response = requests.get(getlabel_url+label_id,headers=headers_label)
+                if response.status_code == 200:
+                    if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
+                        with open(order.dn_code + '.pdf', 'wb') as file:
+                            file.write(response.content)
+                        print(order.orderitem_id + 'PDF file saved successfully')
+                    else:
+                        print('Error: The response is not a PDF file')
+                else:
+                    print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
+            else:
+                print(order.orderitem_id + 'process id obtain failed')
 
 
         return Response({"detail": "success"}, status=200)
@@ -471,15 +528,15 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         dn_status = int(self.request.query_params.get('dn_status', None))
         if dn_status == 4:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status,sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+                                                dn_complete=dn_complete, dn_status=dn_status,sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
             return result
 
         if dn_code != 'undefined':
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         else:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+                                                dn_complete=dn_complete, dn_status=dn_status, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         return result
 
     def get_serializer_class(self):
@@ -890,7 +947,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return DnListModel.objects.filter(openid=self.request.auth.openid, dn_status=2, is_delete=False).order_by('create_time')
+                return DnListModel.objects.filter(openid=self.request.auth.openid, dn_status=2, is_delete=False).order_by('account_name','dn_code')
             else:
                 return DnListModel.objects.filter(openid=self.request.auth.openid, dn_status=2, id=id, is_delete=False)
         else:
@@ -909,35 +966,39 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
 
         for i in range(len(normalorder_set)):
+            label_id = ""
             account_name = normalorder_set[i].account_name
-            headers = {
-                "Authorization": "Bearer " + obtain_access_token(account_name),
-                "Accept": "application/vnd.retailer.v8+json"
-            }
-            headers_label = {
-                "Authorization": "Bearer " + obtain_access_token(account_name),
-                "Accept": "application/vnd.retailer.v8+pdf",
-                "Content-Type": "application/vnd.retailer.v8+json"
-            }
+            # headers = {
+            #     "Authorization": "Bearer " + obtain_access_token(account_name),
+            #     "Accept": "application/vnd.retailer.v8+json"
+            # }
+            # headers_label = {
+            #     "Authorization": "Bearer " + obtain_access_token(account_name),
+            #     "Accept": "application/vnd.retailer.v8+pdf",
+            #     "Content-Type": "application/vnd.retailer.v8+json"
+            # }
             bin_set = stockbin.objects.filter(goods_code=normalorder_set[i].goods_code, bin_property='Normal')
             tobepick_amount = normalorder_set[i].goods_qty
             picked_amount = 0
-            process_id = normalorder_set[i].labelprocess_id
-            process_result = requests.get(getlabelid_url+process_id,headers=headers)
-            label_id = process_result.json()["entityId"]
-            normalorder_set[i].label_id = label_id
-            normalorder_set[i].save()
-            #Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
-            response = requests.get(getlabel_url+label_id,headers=headers_label)
-            if response.status_code == 200:
-                if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
-                    with open(normalorder_set[i].orderitem_id + '.pdf', 'wb') as file:
-                        file.write(response.content)
-                    print('PDF file saved successfully')
-                else:
-                    print('Error: The response is not a PDF file')
-            else:
-                print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
+            # process_id = normalorder_set[i].labelprocess_id
+            # process_result = requests.get(getlabelid_url+process_id,headers=headers)
+            # if process_result.status_code == 200:
+            #     label_id = process_result.json()["entityId"]
+            #     normalorder_set[i].label_id = label_id
+            #     normalorder_set[i].save()
+            # #Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
+            #     response = requests.get(getlabel_url+label_id,headers=headers_label)
+            #     if response.status_code == 200:
+            #         if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
+            #             with open(normalorder_set[i].orderitem_id + '.pdf', 'wb') as file:
+            #                 file.write(response.content)
+            #             print(normalorder_set[i].orderitem_id + 'PDF file saved successfully')
+            #         else:
+            #             print('Error: The response is not a PDF file')
+            #     else:
+            #         print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
+            # else:
+            #     print(normalorder_set[i].orderitem_id + 'process id obtain failed')
 
             for j in range(len(bin_set)):
                 tobepick_amount = tobepick_amount - picked_amount
@@ -1013,12 +1074,14 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                             label_id=label_id,
                                             creater=str(staff_name))
 
-        picking_list = PickingListModel.objects.filter(openid=self.request.auth.openid,
-                                                       picking_status=0,
-                                                       is_delete=False)
+        dnlist_list = DnListModel.objects.filter(openid=self.request.auth.openid,
+                                                 dn_status__lte=2,
+                                                 dn_complete=2,
+                                                 is_delete=False,
+                                                 sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
         pdf_list = []
-        for pick in picking_list:
-            pdf_list.append(pick.orderitem_id+".pdf")
+        for dnlist in dnlist_list:
+            pdf_list.append(dnlist.dn_code+".pdf")
         output_file = 'merged.pdf'
         merge_pdfs(pdf_list, output_file)
         return Response({'detail': 'success'}, status=200)

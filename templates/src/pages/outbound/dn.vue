@@ -908,21 +908,6 @@ export default {
           .then(res => {
             _this.table_list = []
             res.results.forEach(item => {
-              if (item.dn_status === 1) {
-                item.dn_status = _this.$t('outbound.wrongorder')
-              } else if (item.dn_status === 2) {
-                item.dn_status = _this.$t('outbound.neworder')
-              } else if (item.dn_status === 3) {
-                item.dn_status = _this.$t('outbound.pickstock')
-              } else if (item.dn_status === 4) {
-                item.dn_status = _this.$t('outbound.pickedstock')
-              } else if (item.dn_status === 5) {
-                item.dn_status = _this.$t('outbound.shippedstock')
-              } else if (item.dn_status === 6) {
-                item.dn_status = _this.$t('outbound.received')
-              } else {
-                item.dn_status = 'N/A'
-              }
               if (item.dn_complete === 2) {
                 item.dn_complete = _this.$t('outbound.view_dn.dn_sufficientstock')
               } else if (item.dn_complete === 1) {
