@@ -964,7 +964,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
 
         for i in range(len(normalorder_set)):
-            label_id = normalorder_set.label_id
+            label_id = normalorder_set[i].label_id
             bin_set = stockbin.objects.filter(goods_code=normalorder_set[i].goods_code, bin_property='Normal')
             tobepick_amount = normalorder_set[i].goods_qty
             picked_amount = 0
