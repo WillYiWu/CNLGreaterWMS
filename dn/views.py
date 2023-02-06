@@ -1046,7 +1046,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                  dn_status__lte=2,
                                                  dn_complete=2,
                                                  is_delete=False,
-                                                 sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+                                                 sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         pdf_list = []
         for dnlist in dnlist_list:
             pdf_list.append(dnlist.dn_code+".pdf")
@@ -1542,7 +1542,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
         if self.request.user:
             return PickingListModel.objects.filter(openid=self.request.auth.openid,
                                                    picking_status=0,
-                                                   is_delete=False)
+                                                   is_delete=False).order_by('account_name','dn_code')
         else:
             return PickingListModel.objects.none()
 
