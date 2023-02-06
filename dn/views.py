@@ -328,8 +328,6 @@ class BolListViewSet(viewsets.ModelViewSet):
                         print('Error: The response is not a PDF file')
                 else:
                     print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
-            else:
-                print(order.orderitem_id + 'process id obtain failed')
 
 
         return Response({"detail": "success"}, status=200)
@@ -966,40 +964,10 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
 
         for i in range(len(normalorder_set)):
-            label_id = ""
-            account_name = normalorder_set[i].account_name
-            # headers = {
-            #     "Authorization": "Bearer " + obtain_access_token(account_name),
-            #     "Accept": "application/vnd.retailer.v8+json"
-            # }
-            # headers_label = {
-            #     "Authorization": "Bearer " + obtain_access_token(account_name),
-            #     "Accept": "application/vnd.retailer.v8+pdf",
-            #     "Content-Type": "application/vnd.retailer.v8+json"
-            # }
+            label_id = normalorder_set.label_id
             bin_set = stockbin.objects.filter(goods_code=normalorder_set[i].goods_code, bin_property='Normal')
             tobepick_amount = normalorder_set[i].goods_qty
             picked_amount = 0
-            # process_id = normalorder_set[i].labelprocess_id
-            # process_result = requests.get(getlabelid_url+process_id,headers=headers)
-            # if process_result.status_code == 200:
-            #     label_id = process_result.json()["entityId"]
-            #     normalorder_set[i].label_id = label_id
-            #     normalorder_set[i].save()
-            # #Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
-            #     response = requests.get(getlabel_url+label_id,headers=headers_label)
-            #     if response.status_code == 200:
-            #         if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
-            #             with open(normalorder_set[i].orderitem_id + '.pdf', 'wb') as file:
-            #                 file.write(response.content)
-            #             print(normalorder_set[i].orderitem_id + 'PDF file saved successfully')
-            #         else:
-            #             print('Error: The response is not a PDF file')
-            #     else:
-            #         print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
-            # else:
-            #     print(normalorder_set[i].orderitem_id + 'process id obtain failed')
-
             for j in range(len(bin_set)):
                 tobepick_amount = tobepick_amount - picked_amount
                 if bin_set[j].goods_qty >= tobepick_amount:
