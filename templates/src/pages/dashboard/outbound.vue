@@ -3,7 +3,7 @@
     <q-card-section>
       <div class="text-h6 text-grey-8 text-weight-bolder">
         {{ selected_product + $t('index.chart') }}
-        <q-select outlined v-model="selected_product" class="bg-white float-right q-mb-sm " style="width:300px;" :options="product_options" label="Select Product" />
+        <q-select outlined v-model="selected_product" class="bg-white float-right q-mb-sm " style="width:300px;" :options="product_options" @input="getList" :label="$t('dashboards.select_type') " />
       </div>
     </q-card-section>
     <q-card-section :style="{ height: height2, marginTop:'10px' }"><IEcharts :option="barChartOption" :resizable="true" /></q-card-section>
@@ -52,15 +52,22 @@ export default {
         },
         series: []
       },
-      selected_product: this.$t('dashboards.total_sales'),
-      product_options: [this.$t('dashboards.total_sales')]
+      selected_product: this.$t('dashboards.monthly'),
+      product_options: [this.$t('dashboards.monthly'),
+                        this.$t('dashboards.daily')]
     };
   },
   methods: {
     getList() {
       var _this = this;
+      var param = "";
+      if (_this.selected_product === _this.$t('dashboards.monthly')){
+        param = "Monthly";
+      }else{
+        param = "Daily";
+      }
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname + 'sales/', {})
+        getauth(_this.pathname + 'sales/'+param, {})
           .then(res => {
             _this.barChartOption.yAxis.data = res.yAxis;
             _this.barChartOption.series = res.series;
