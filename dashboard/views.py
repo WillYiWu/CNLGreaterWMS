@@ -132,14 +132,15 @@ class SalesViewSet(viewsets.ModelViewSet):
             return None
 
     def get_queryset(self):
-        id = self.get_project()
+        #id = self.get_project()
+        type = self.kwargs.get('type', None)
         if self.request.user:
-            if id is None:
+            if type == "monthly":
                 return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=365),
                                                     is_delete=False)
             else:
-                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=365),
-                                                    id=id, is_delete=False)
+                return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=12),
+                                                    is_delete=False)
         else:
             return FinanceListModel.objects.none()
 
@@ -154,6 +155,7 @@ class SalesViewSet(viewsets.ModelViewSet):
         return lang
 
     def list(self, request, *args, **kwargs):
+        type = self.kwargs.get('type', None)
         qs = self.get_queryset()
         context = {}
         dataset = {}
@@ -174,8 +176,18 @@ class SalesViewSet(viewsets.ModelViewSet):
               }
             }
           }
-        receipt_res = qs.annotate(year=ExtractYear('selling_date'), month=ExtractMonth('selling_date')) \
+        if type == "Monthly":
+            receipt_res = qs.annotate(year=ExtractYear('selling_date'), month=ExtractMonth('selling_date')) \
             .values('year', 'month').order_by('year', 'month').annotate(product_cost=Sum('product_cost'),
+                                                                        logistic_cost=Sum('logistic_cost'),
+                                                                        bol_commission=Sum('bol_commission'),
+                                                                        btw_cost=Sum('btw_cost'),
+                                                                        profit=Sum('profit'))
+        else:
+            receipt_res = qs.annotate(year=ExtractYear('selling_date'),
+                                      month=ExtractMonth('selling_date'),
+                                      day=ExtractDay('selling_date')) \
+            .values('year', 'month', 'day').order_by('year', 'month', 'day').annotate(product_cost=Sum('product_cost'),
                                                                         logistic_cost=Sum('logistic_cost'),
                                                                         bol_commission=Sum('bol_commission'),
                                                                         btw_cost=Sum('btw_cost'),
@@ -204,8 +216,16 @@ class SalesViewSet(viewsets.ModelViewSet):
         # context['dataset'] = dataset
         # context['series'] = series
 
+        first_column = ''
+        second_column = ''
+        if type == "Monthly":
+            first_column = 'year'
+            second_column = 'month'
+        else:
+            first_column = 'month'
+            second_column = 'day'
         data = {
-            'yAxis': [str(dat['year'])+'.'+str(dat['month']) for dat in receipt_res],
+            'yAxis': [str(dat[first_column])+'.'+str(dat[second_column]) for dat in receipt_res],
             'series':[
                 {
                     "name": 'Product Cost',
