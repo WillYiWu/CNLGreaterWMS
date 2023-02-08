@@ -192,30 +192,6 @@ class SalesViewSet(viewsets.ModelViewSet):
                                                                         bol_commission=Sum('bol_commission'),
                                                                         btw_cost=Sum('btw_cost'),
                                                                         profit=Sum('profit'))
-        # qty_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_qty'))
-        # rank_res = qs.values('goods_code').order_by('goods_code').annotate(number=Sum('goods_cost'))
-        # receipt_res_dict = {
-        # }
-        # # qty_res_dict = {
-        # # }
-        # # rank_res_dict = {
-        # # }
-        # for i in receipt_res:
-        #     series.append(bar_charts)
-        #     dimensions.append("%s" % (i['month']))
-        #     receipt_res_dict.update({"%s" % (i['month']): i['cost']})
-        # # for i in qty_res:
-        # #     qty_res_dict.update({i['goods_code']: i['number']})
-        # # for i in rank_res:
-        # #     rank_res_dict.update({i['goods_code']: i['number']})
-        # source.append(receipt_res_dict)
-        # # data_list.append(qty_res_dict)
-        # # data_list.append(rank_res_dict)
-        # dataset['source'] = source
-        # dataset['dimensions'] = dimensions
-        # context['dataset'] = dataset
-        # context['series'] = series
-
         first_column = ''
         second_column = ''
         if type == "Monthly":
