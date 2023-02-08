@@ -189,9 +189,9 @@ const routes = [{
             component: () => import('pages/stock/cyclecountrecorder.vue')
           },
           {
-            path: 'handcount',
-            name: 'handcount',
-            component: () => import('pages/stock/handcount.vue')
+            path: 'stockcount',
+            name: 'stockcount',
+            component: () => import('pages/stock/stockcount.vue')
           },
           {
             path: 'handcountrecorder',

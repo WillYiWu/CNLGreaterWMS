@@ -11,6 +11,13 @@ re_path(r'^bin/(?P<pk>\d+)/$', views.StockBinViewSet.as_view({
     'get': 'retrieve',
     'post': 'create'
 }), name="bin_1"),
+path(r'correction/', views.StockCorrectionViewSet.as_view({"get": "list", "post": "create", "delete": "destroy"}), name="siteaccount"),
+re_path(r'^correction/(?P<pk>\d+)/$', views.StockCorrectionViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+}), name="siteaccout_1"),
 path(r'filelist/', views.FileListDownloadView.as_view({"get": "list"}), name="stocklistfilelistdownload"),
 path(r'filebinlist/', views.FileBinListDownloadView.as_view({"get": "list"}), name="binlistfiledetaildownload")
 ]

@@ -19,10 +19,7 @@
           <q-route-tab name="occupiedbin" :label="$t('stock.occupiedbin')" icon="all_inbox" :to="{ name: 'occupiedbin' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="handcount" :label="$t('handcount.handcount')" icon="img:statics/stock/cyclecount.png" :to="{ name: 'handcount' }" exact/>
-        </transition>
-        <transition appear enter-active-class="animated zoomIn">
-          <q-route-tab name="handcountrecorder" :label="$t('handcount.handcountrecorder')" icon="img:statics/stock/cyclecountrecorder.png" :to="{ name: 'handcountrecorder' }" exact/>
+          <q-route-tab name="stockcount" :label="$t('handcount.handcount')" icon="img:statics/stock/cyclecount.png" :to="{ name: 'stockcount' }" exact/>
         </transition>
       </q-tabs>
     </div>

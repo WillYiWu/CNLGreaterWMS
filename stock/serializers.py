@@ -49,6 +49,13 @@ class StockBinGetSerializer(serializers.ModelSerializer):
     def get_qty(self, obj):
         return 0
 
+class StockBinUpdateSerializer(serializers.ModelSerializer):
+    goods_qty = serializers.IntegerField(read_only=False, required=True, validators=[datasolve.data_validate])
+    class Meta:
+        model = StockBinModel
+        exclude = ['openid',]
+        read_only_fields = ['id', 'create_time', 'update_time', ]
+
 class StockBinPostSerializer(serializers.ModelSerializer):
     openid = serializers.CharField(read_only=False, required=False, validators=[datasolve.openid_validate])
     bin_name = serializers.CharField(read_only=True, required=False, validators=[datasolve.data_validate])

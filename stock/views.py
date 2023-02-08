@@ -15,6 +15,53 @@ from django.http import StreamingHttpResponse
 from .files import FileListRenderCN, FileListRenderEN, FileBinListRenderCN, FileBinListRenderEN
 from rest_framework.settings import api_settings
 
+class StockCorrectionViewSet(viewsets.ModelViewSet):
+    """
+        list:
+            Response a data list（all）
+    """
+    pagination_class = MyPageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = StockBinFilter
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        id = self.get_project()
+        if self.request.user:
+            if id is None:
+                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name")
+            else:
+                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name")
+        else:
+            return StockBinModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return serializers.StockBinGetSerializer
+        elif self.action in ['update']:
+            return serializers.StockBinUpdateSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def update(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot Update Data Which Not Yours"})
+        else:
+            data = self.request.data
+            serializer = self.get_serializer(qs, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
 class StockListViewSet(viewsets.ModelViewSet):
     """
         list:
@@ -69,9 +116,9 @@ class StockBinViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid)
+                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name")
             else:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id)
+                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name")
         else:
             return StockBinModel.objects.none()
 
