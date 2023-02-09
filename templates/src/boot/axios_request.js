@@ -48,7 +48,6 @@ if (LocalStorage.has('lang')) {
 
 const axiosFile = axios.create({
   baseURL: baseurl,
-  responseType: 'blob'
 })
 
 axiosInstanceAuth.interceptors.request.use(
