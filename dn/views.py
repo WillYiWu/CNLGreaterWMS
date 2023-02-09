@@ -1560,8 +1560,8 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             pick_list[i].picked_qty = pick_list[i].pick_qty
             pick_list[i].intransit_qty = pick_list[i].pick_qty
             pick_list[i].save()
-            stockbin_list = stockbin.filter.objects(bin_name=pick_list[i].bin_name, goods_code=pick_list[i].goods_code).first()
-            stocklist_list = stocklist.filter.objects(goods_code=pick_list[i].goods_code).first()
+            stockbin_list = stockbin.objects.filter(bin_name=pick_list[i].bin_name, goods_code=pick_list[i].goods_code).first()
+            stocklist_list = stocklist.objects.filter(goods_code=pick_list[i].goods_code).first()
             stockbin_list.goods_qty = stockbin_list.goods_qty - pick_list[i].picked_qty
             stockbin_list.save()
             stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
