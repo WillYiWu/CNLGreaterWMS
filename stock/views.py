@@ -56,9 +56,36 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
             raise APIException({"detail": "Cannot Update Data Which Not Yours"})
         else:
             data = self.request.data
+            goods_qty = int(data['goods_qty'])
+            bin_name = str(data['bin_name'])
+            goods_code = str(data['goods_code'])
+            stock_bin = StockBinModel.objects.filter(openid=self.request.auth.openid,
+                                         bin_name=bin_name,
+                                         goods_code=goods_code).first()
+            old_qty = stock_bin.goods_qty
+            stock_list = StockListModel.objects.filter(openid=self.request.auth.openid,
+                                                       goods_code=goods_code).first()
+            if stock_bin.bin_property == "Normal":
+                stock_list.can_order_stock = int(stock_list.can_order_stock) - (old_qty - goods_qty)
+                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
+                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
+            elif stock_bin.bin_property == "Inspect":
+                stock_list.inspect_stock = int(stock_list.inspect_stock) - (old_qty - goods_qty)
+                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
+                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
+            elif stock_bin.bin_property == "Holding":
+                stock_list.hold_stock = int(stock_list.hold_stock) - (old_qty - goods_qty)
+                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
+                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
+            elif stock_bin.bin_property == "Damage":
+                stock_list.damage_stock = int(stock_list.damage_stock) - (old_qty - goods_qty)
+                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
+                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
+            stock_list.save()
             serializer = self.get_serializer(qs, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=200, headers=headers)
 
