@@ -135,7 +135,7 @@ class SalesViewSet(viewsets.ModelViewSet):
         #id = self.get_project()
         type = self.kwargs.get('type', None)
         if self.request.user:
-            if type == "monthly":
+            if type == "Monthly":
                 return FinanceListModel.objects.filter(selling_date__gte=timezone.now().date() - relativedelta(days=365),
                                                     is_delete=False)
             else:
