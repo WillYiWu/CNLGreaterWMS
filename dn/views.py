@@ -530,7 +530,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
         dn_status = int(self.request.query_params.get('dn_status', None))
         if dn_status == 4:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status,sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
+                                                dn_complete=dn_complete, dn_status=dn_status).order_by('-sending_date')
             return result
 
         if dn_code != 'undefined':
