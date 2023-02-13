@@ -307,8 +307,11 @@ class BolListViewSet(viewsets.ModelViewSet):
             order.labelprocess_id = labelprocess_id
             order.save()
 
-            time.sleep(1)
+        time.sleep(1)
 
+        dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
+        for order in dndetail_list:
+            labelprocess_id = order.labelprocess_id
             process_result = requests.get(getlabelid_url+labelprocess_id,headers=headers)
             if process_result.status_code == 200:
                 print(order.orderitem_id + labelprocess_id + 'error')
