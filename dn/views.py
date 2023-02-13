@@ -361,20 +361,23 @@ class BolListViewSet(viewsets.ModelViewSet):
                 detail_list[i].save()
 
                 if DnListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
-                    dn_list = DnListModel.objects.filter(dn_code=dn_code).first()
+                    dn_list = DnListModel.objects.filter(dn_code=dn_code, is_delete=False).first()
                     dn_list.is_delete = True
                     dn_list.dn_status = 3
                     dn_list.save()
 
-                dn_picking_list = PickingListModel.objects.filter(dn_code=dn_code, is_delete=False)
-                for i in range(len(dn_picking_list)):
-                    dn_picking_list[i].is_delete = True
-                    dn_picking_list[i].save()
 
-                finance_list = FinanceListModel.objects.filter(dn_code=dn_code, is_delete=False)
-                for i in range(len(finance_list)):
-                    finance_list[i].is_delete = True
-                    finance_list[i].save()
+                if PickingListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
+                    dn_picking_list = PickingListModel.objects.filter(dn_code=dn_code, is_delete=False)
+                    for i in range(len(dn_picking_list)):
+                        dn_picking_list[i].is_delete = True
+                        dn_picking_list[i].save()
+
+                if FinanceListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
+                    finance_list = FinanceListModel.objects.filter(dn_code=dn_code, is_delete=False)
+                    for i in range(len(finance_list)):
+                        finance_list[i].is_delete = True
+                        finance_list[i].save()
 
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(account_name),
