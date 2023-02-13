@@ -249,6 +249,8 @@ class BolListViewSet(viewsets.ModelViewSet):
                             else:
                                 if dn_complete != 1:
                                     dn_complete = 2
+                    if orderitem["cancellationRequest"] != False:
+                        dn_complete = 3
 
                     goods_desc = goods.objects.filter(goods_code=ean, is_delete=False).first().goods_desc
 
@@ -270,9 +272,6 @@ class BolListViewSet(viewsets.ModelViewSet):
                 else:
                     dndetail_list = DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).first()
                     dndetail_list.goods_desc = goods_desc
-                    if orderitem["cancellationRequest"] != False:
-                        dn_complete = 3
-                        dndetail_list.dn_complete = dn_complete
                     dndetail_list.save()
 
             dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False)
