@@ -298,9 +298,6 @@ class BolListViewSet(viewsets.ModelViewSet):
         #Create shipping label for all detailed orders with dn_complete = 2
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
         for order in dndetail_list:
-            if os.path.exists(order.dn_code+'.pdf'):
-                continue
-
             labeloffer_id = order.labeloffer_id
             order_item = []
             order_item.append({'orderItemId': order.orderitem_id})
