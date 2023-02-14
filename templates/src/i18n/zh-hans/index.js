@@ -226,13 +226,13 @@ export default {
       order_item_id: '订单物品号',
       goods_desc: '商品描述',
       quantity: '订单数量',
-      selling_price: '销售价格',
+      selling_price: '销售金额',
       btw: '增值税',
       bol_commission: 'BOL费用',
       logistic_cost: '物流费用',
       product_cost: '产品成本',
       profit: '销售毛利',
-      selling_date: '销售日期',
+      selling_date: '发货日期',
       create_time: '创建时间'
     }
   },

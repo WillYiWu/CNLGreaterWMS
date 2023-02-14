@@ -104,9 +104,6 @@
              <q-td key="selling_date" :props="props">
                {{ props.row.selling_date }}
              </q-td>
-             <q-td key="create_time" :props="props">
-               {{ props.row.create_time }}
-             </q-td>
            </q-tr>
          </template>
       </q-table>
@@ -165,8 +162,7 @@ export default {
         { name: 'logistic', label: this.$t('finance.view_pnl.logistic_cost'), field: 'logistic', align: 'center' },
         { name: 'product_cost', label: this.$t('finance.view_pnl.product_cost'), field: 'product_cost', align: 'center' },
         { name: 'profit', label: this.$t('finance.view_pnl.profit'), field: 'profit', align: 'center' },
-        { name: 'selling_date', label: this.$t('finance.view_pnl.selling_date'), field: 'selling_date', align: 'center' },
-        { name: 'create_time', label: this.$t('finance.view_pnl.create_time'), field: 'create_time', align: 'center' }
+        { name: 'selling_date', label: this.$t('finance.view_pnl.selling_date'), field: 'selling_date', align: 'center' }
       ],
       filter: '',
       pagination: {

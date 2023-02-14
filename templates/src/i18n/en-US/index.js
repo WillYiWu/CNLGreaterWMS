@@ -229,7 +229,7 @@ export default {
       order_item_id: 'DN Item Code',
       goods_desc: 'Goods Desc',
       quantity: 'Volume',
-      selling_price: 'Selling Price',
+      selling_price: 'Selling Revenue',
       btw: 'BTW',
       bol_commission: 'BOL Commission',
       logistic_cost: 'Logistic Cost',
