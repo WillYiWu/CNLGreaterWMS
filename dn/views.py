@@ -110,7 +110,6 @@ def ObtainfinanceData():
                     bol_commision_vat = bol_commission_inc_tax - bol_commission_inc_tax/ 1.21
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
                     product_cost = goods_list.goods_cost
-                    profit = selling_price - btw_cost - bol_commission - logistic_cost - product_cost
                     selling_date = dndetail_list[i].update_time
 
                     if FinanceListModel.objects.filter(dn_code=dn_code).exists():
@@ -118,6 +117,7 @@ def ObtainfinanceData():
                     else:
                         logistic_cost = transport_list.min_payment
 
+                    profit = selling_price - btw_cost - bol_commission - logistic_cost - product_cost
 
                     if not FinanceListModel.objects.filter(orderitem_id=orderitem_id).exists():
                         FinanceListModel.objects.create(dn_code=dn_code,
