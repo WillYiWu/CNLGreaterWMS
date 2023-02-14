@@ -5,6 +5,7 @@ urlpatterns = [
 path(r'freight/', views.TransportationFeeListViewSet.as_view({"get": "list", "post": "create"}), name="transportationfee"),
 path(r'pnl/', views.FinanceListViewSet.as_view({"get": "list", "post": "create"}), name="finance"),
 path(r'freightfile/', views.FreightfileDownloadView.as_view({"get": "list"}), name="freightfiledownload"),
+path(r'filepnllist/', views.FinanceListDownloadView.as_view({"get": "list"}), name="financelistdownload"),
 re_path(r'^freight/(?P<pk>\d+)/$', views.TransportationFeeListViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',

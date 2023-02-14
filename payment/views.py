@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from .filter import TransportationFeeListFilter, FinanceListFilter
 from rest_framework.exceptions import APIException
 from .files import FreightfileRenderCN, FreightfileRenderEN
+from .files import FinanceListRenderCN, FinanceListRenderEN
+from .serializers import FinanceGetSerializer
 
 class TransportationFeeListViewSet(viewsets.ModelViewSet):
     """
@@ -196,4 +198,56 @@ class FinanceListViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         return Response("Finance Data Fetch Success")
 
+class FinanceListDownloadView(viewsets.ModelViewSet):
+    renderer_classes = (FinanceListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = FinanceListFilter
 
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        id = self.get_project()
+        if self.request.user:
+            if id is None:
+                return FinanceListModel.objects.filter()
+            else:
+                return FinanceListModel.objects.filter(id=id)
+        else:
+            return FinanceListModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return serializers.FinanceGetSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def get_lang(self, data):
+        lang = self.request.META.get('HTTP_LANGUAGE')
+        if lang:
+            if lang == 'zh-hans':
+                return FinanceListRenderCN().render(data)
+            else:
+                return FinanceListRenderEN().render(data)
+        else:
+            return FinanceListRenderEN().render(data)
+
+    def list(self, request, *args, **kwargs):
+        from datetime import datetime
+        dt = datetime.now()
+        data = (
+            FinanceGetSerializer(instance).data
+            for instance in self.filter_queryset(self.get_queryset())
+        )
+        renderer = self.get_lang(data)
+        response = StreamingHttpResponse(
+            renderer,
+            content_type="text/csv"
+        )
+        response['Content-Disposition'] = "attachment; filename='financelist_{}.csv'".format(str(dt.strftime('%Y%m%d%H%M%S%f')))
+        return response

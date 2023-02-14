@@ -18,32 +18,53 @@
         bordered
       >
          <template v-slot:top>
-           <q-btn-group push>
-             <q-btn :label="$t('refresh')" icon="refresh" @click="reFresh()">
-               <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                 {{ $t('refreshtip') }}
-               </q-tooltip>
-             </q-btn>
-             <q-btn
-              v-show="
-                $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                  $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                  $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                  $q.localStorage.getItem('staff_type') !== 'StockControl'
-              "
-              :label="$t('finance.view_pnl.fetch_financedata')"
-              icon="img:statics/capital/fetch.png"
-              @click="fetchfinancedata()"
+          <div class="flex items-center">
+            <div class="q-mr-md">{{ $t("download_center.createTime") }}</div>
+            <q-input
+              readonly
+              outlined
+              dense
+              v-model="createDate2"
+              :placeholder="interval"
             >
-              <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('finance.view_pnl.fetch_financedata') }}</q-tooltip>
-            </q-btn>
-           </q-btn-group>
-           <q-space />
-           <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
-             <template v-slot:append>
-               <q-icon name="search" @click="getSearchList()"/>
-             </template>
-           </q-input>
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    ref="qDateProxy"
+                    transition-show="scale"
+                    transition-hide="scale"
+                    ><q-date v-model="createDate1" range
+                  /></q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+            <q-btn-group push class="q-ml-md">
+              <q-btn
+                :label="$t('download_center.reset')"
+                icon="img:statics/downloadcenter/reset.svg"
+                @click="reset()"
+              >
+                <q-tooltip
+                  content-class="bg-amber text-black shadow-4"
+                  :offset="[10, 10]"
+                  content-style="font-size: 12px"
+                  >{{ $t("download_center.reset") }}</q-tooltip
+                >
+              </q-btn>
+              <q-btn
+                :label="$t('downloadasnlist')"
+                icon="cloud_download"
+                @click="downloadlistData()"
+              >
+                <q-tooltip
+                  content-class="bg-amber text-black shadow-4"
+                  :offset="[10, 10]"
+                  content-style="font-size: 12px"
+                  >{{ $t("downloadasnlisttip") }}</q-tooltip
+                >
+              </q-btn>
+            </q-btn-group>
+          </div>
          </template>
          <template v-slot:body="props">
            <q-tr :props="props">
@@ -77,6 +98,9 @@
              <q-td key="product_cost" :props="props">
                {{ props.row.product_cost }}
              </q-td>
+             <q-td key="profit" :props="props">
+               {{ props.row.profit }}
+             </q-td>
              <q-td key="selling_date" :props="props">
                {{ props.row.selling_date }}
              </q-td>
@@ -107,7 +131,8 @@
     <router-view />
 
 <script>
-import { getauth, postauth } from 'boot/axios_request'
+import { getauth, postauth, getfile } from 'boot/axios_request'
+import { date, exportFile, SessionStorage, LocalStorage } from 'quasar';
 
 export default {
   name: 'Pagednpnl',
@@ -117,7 +142,7 @@ export default {
       login_name: '',
       authin: '0',
       dn_code: '',
-      pathname: 'payment/pnl/',
+      pathname: 'payment/',
       param: '?dn_complete=2&dn_status=1',
       pathname_previous: '',
       pathname_next: '',
@@ -139,6 +164,7 @@ export default {
         { name: 'bol_commission', label: this.$t('finance.view_pnl.bol_commission'), field: 'bol_commission', align: 'center' },
         { name: 'logistic', label: this.$t('finance.view_pnl.logistic_cost'), field: 'logistic', align: 'center' },
         { name: 'product_cost', label: this.$t('finance.view_pnl.product_cost'), field: 'product_cost', align: 'center' },
+        { name: 'profit', label: this.$t('finance.view_pnl.profit'), field: 'profit', align: 'center' },
         { name: 'selling_date', label: this.$t('finance.view_pnl.selling_date'), field: 'selling_date', align: 'center' },
         { name: 'create_time', label: this.$t('finance.view_pnl.create_time'), field: 'create_time', align: 'center' }
       ],
@@ -146,6 +172,36 @@ export default {
       pagination: {
         page: 1,
         rowsPerPage: '30'
+      },
+      createDate1: '',
+      createDate2: '',
+      date_range: '',
+      searchUrl: '',
+      downloadhUrl: 'payment/filepnllist/'
+    }
+  },
+  computed: {
+    interval() {
+      return this.$t('download_center.start') + ' - ' + this.$t('download_center.end');
+    }
+  },
+  watch: {
+    createDate1(val) {
+      if (val) {
+        if (val.to) {
+          this.createDate2 = `${val.from} - ${val.to}`;
+          this.date_range = `${val.from},${val.to} 23:59:59`;
+          this.searchUrl = this.pathname + 'pnl/?' + 'create_time__range=' + this.date_range
+          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'create_time__range=' + this.date_range
+        } else {
+          this.createDate2 = `${val}`;
+          this.dateArray = val.split('/');
+          this.searchUrl = this.pathname + 'pnl/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+        }
+        this.date_range = this.date_range.replace(/\//g, '-');
+        this.getSearchList();
+        this.$refs.qDateProxy.hide();
       }
     }
   },
@@ -153,7 +209,7 @@ export default {
     getList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname, {
+        getauth(_this.pathname + 'pnl/', {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
@@ -170,21 +226,19 @@ export default {
     },
     getSearchList () {
       var _this = this
-      if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname + '&dn_code__icontains=' + _this.filter, {
-        }).then(res => {
+      getauth(_this.searchUrl)
+        .then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
           _this.pathname_next = res.next
-        }).catch(err => {
+        })
+        .catch(err => {
           _this.$q.notify({
             message: err.detail,
             icon: 'close',
             color: 'negative'
           })
         })
-      } else {
-      }
     },
     getListPrevious () {
       var _this = this
@@ -247,6 +301,26 @@ export default {
             color: 'negative'
           })
         })
+    },
+    downloadlistData() {
+      var _this = this;
+      getfile(_this.downloadhUrl).then(res => {
+        var timeStamp = Date.now();
+        var formattedString = date.formatDate(timeStamp, 'YYYYMMDD');
+        const status = exportFile(_this.downloadhUrl + 'list' + formattedString + '.csv', '\uFEFF' + res.data, 'text/csv');
+        if (status !== true) {
+          _this.$q.notify({
+            message: 'Browser denied file download...',
+            color: 'negative',
+            icon: 'warning'
+          });
+        }
+      });
+    },
+    reset () {
+      this.getList()
+      this.downloadUrl = 'payment/pnl/'
+      this.createDate2 = ''
     }
   },
   created () {

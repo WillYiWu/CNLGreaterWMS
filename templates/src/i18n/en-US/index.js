@@ -234,6 +234,7 @@ export default {
       bol_commission: 'BOL Commission',
       logistic_cost: 'Logistic Cost',
       product_cost: 'Product Cost',
+      profit: 'Gross Profit',
       selling_date: 'Shipment Date',
       create_time : 'Create Time'
     }

@@ -104,7 +104,7 @@ def ObtainfinanceData():
                     goods_code = dndetail_list[i].goods_code
                     goods_desc = dndetail_list[i].goods_desc
                     shipped_qty = dndetail_list[i].goods_qty
-                    selling_price = orderitem['unitPrice']
+                    selling_price = float(orderitem['unitPrice']) * float(shipped_qty)
                     btw_cost = float(selling_price) - float(selling_price)/1.21
                     bol_commission_inc_tax = float(orderitem['commission'])
                     bol_commision_vat = bol_commission_inc_tax - bol_commission_inc_tax/ 1.21

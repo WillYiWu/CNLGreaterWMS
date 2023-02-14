@@ -231,6 +231,7 @@ export default {
       bol_commission: 'BOL费用',
       logistic_cost: '物流费用',
       product_cost: '产品成本',
+      profit: '销售毛利',
       selling_date: '销售日期',
       create_time: '创建时间'
     }

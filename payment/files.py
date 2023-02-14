@@ -39,6 +39,61 @@ def en_data_header():
         ('update_time', u'Update Time')
     ])
 
+def file_headers_finance():
+    return [
+        'account_name',
+        'dn_code',
+        'goods_code',
+        'goods_desc',
+        'shipped_qty',
+        'selling_price',
+        'btw_cost',
+        'bol_commission',
+        'logistic_cost',
+        'product_cost',
+        'profit',
+        'selling_date'
+    ]
+
+def cn_data_header_finance():
+    return dict([
+        ('account_name', u'账户名'),
+        ('dn_code', u'订单号'),
+        ('goods_code', u'订单物品号'),
+        ('goods_desc', u'商品描述'),
+        ('shipped_qty', u'订单数量'),
+        ('selling_price', u'销售价格'),
+        ('btw_cost', u'增值税'),
+        ('bol_commission', u'BOL费用'),
+        ('logistic_cost', u'物流成本'),
+        ('product_cost', u'产品成本'),
+        ('profit', u'销售毛利'),
+        ('selling_date', u'发货日期')
+    ])
+
+def en_data_header_finance():
+    return dict([
+        ('account_name', u'Account Name'),
+        ('dn_code', u'DN Order'),
+        ('goods_code', u'EAN'),
+        ('goods_desc', u'Goods Desc'),
+        ('shipped_qty', u'Goods Quantity'),
+        ('selling_price', u'Selling Price'),
+        ('btw_cost', u'BTW'),
+        ('bol_commission', u'BOL Cost'),
+        ('logistic_cost', u'Logistic Cost'),
+        ('product_cost', u'Product Cost'),
+        ('profit', u'Gross Profit'),
+        ('selling_date', u'Sending Date')
+    ])
+
+class FinanceListRenderCN(CSVStreamingRenderer):
+    header = file_headers_finance()
+    labels = cn_data_header_finance()
+
+class FinanceListRenderEN(CSVStreamingRenderer):
+    header = file_headers_finance()
+    labels = en_data_header_finance()
 class FreightfileRenderCN(CSVStreamingRenderer):
     header = file_headers()
     labels = cn_data_header()
