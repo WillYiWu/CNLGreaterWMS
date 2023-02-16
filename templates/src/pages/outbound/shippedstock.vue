@@ -19,7 +19,7 @@
       >
          <template v-slot:top>
          <div class="flex items-center">
-            <div class="q-mr-md">{{ $t("download_center.createTime") }}</div>
+            <div class="q-mr-md">{{ $t("outbound.view_dn.sending_date") }}</div>
             <q-input
               readonly
               outlined
@@ -78,7 +78,7 @@
                  {{ props.row.goods_qty }}
                </q-td>
                <q-td key="intransit_qty" :props="props">
-                 {{ props.row.intransit_qty }}
+                 {{ props.row.goods_qty }}
                </q-td>
              <q-td key="customer" :props="props">
                {{ props.row.customer }}
@@ -86,11 +86,8 @@
              <q-td key="creater" :props="props">
                {{ props.row.creater }}
              </q-td>
-             <q-td key="create_time" :props="props">
-               {{ props.row.create_time }}
-             </q-td>
-             <q-td key="update_time" :props="props">
-               {{ props.row.update_time }}
+             <q-td key="sending_date" :props="props">
+               {{ props.row.sending_date }}
              </q-td>
            </q-tr>
          </template>
@@ -146,8 +143,7 @@ export default {
         { name: 'intransit_qty', label: this.$t('outbound.view_dn.intransit_qty'), field: 'intransit_qty', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
-        { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
-        { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' }
+        { name: 'sending_date', label: this.$t('outbound.view_dn.sending_date'), field: 'sending_date', align: 'center' }
       ],
       filter: '',
       pagination: {
@@ -166,15 +162,15 @@ export default {
         if (val.to) {
           this.createDate2 = `${val.from} - ${val.to}`;
           this.date_range = `${val.from},${val.to} 23:59:59`;
-          this.searchUrl = this.pathnamedn + 'detail/?' + 'create_time__range=' + this.date_range
-          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'create_time__range=' + this.date_range
-          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'create_time__range=' + this.date_range
+          this.searchUrl = this.pathnamedn + 'detail/?' + 'sending_date__range=' + this.date_range
+          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'sending_date__range=' + this.date_range
+          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'sending_date__range=' + this.date_range
         } else {
           this.createDate2 = `${val}`;
           this.dateArray = val.split('/');
-          this.searchUrl = this.pathnamedn + 'detail/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
-          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
-          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.searchUrl = this.pathnamedn + 'detail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
         }
         this.date_range = this.date_range.replace(/\//g, '-');
         this.getSearchList();

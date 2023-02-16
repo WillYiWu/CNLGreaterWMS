@@ -138,6 +138,31 @@
               </q-item>
             </template>
           </q-select>
+          <q-select
+            filled
+            use-input
+            fill-input
+            hide-selected
+            input-debounce="0"
+            dense
+            outlined
+            square
+            v-model="newFormData.account_name"
+            :options="account_name_table"
+            @input-value="setModel"
+            :label="$t('outbound.view_dn.account_name')"
+            style="margin-bottom: 5px"
+            :rules="[val => (val && val.length > 0) || error1]"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+            <template v-slot:Sno-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  No Result
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
           <q-input
             dense
             outlined
@@ -746,6 +771,7 @@ export default {
       table_list: [],
       viewprint_table: [],
       account_table: [],
+      account_name_table: [],
       bar_code: '',
       pickinglist_print_table: [],
       pickinglist_check: 0,
@@ -780,6 +806,7 @@ export default {
       newFormData: {
         dn_code: '',
         customer: '',
+        account_name: '',
         goods_code: [],
         goods_qty: [],
         creater: ''
@@ -947,7 +974,11 @@ export default {
         getauth(_this.path_account, {
         }).then(res => {
           _this.account_table = []
+          _this.account_name_table = []
           _this.account_table = res.results
+          res.results.forEach(item => {
+            _this.account_name_table.push(item.account_name)
+          })
         }).catch(err => {
           _this.$q.notify({
             message: err.detail,
@@ -1239,6 +1270,7 @@ export default {
       } else {
         _this.newFormData.dn_code = e.dn_code
         _this.newFormData.customer = e.customer
+        _this.newFormData.account_name = e.account_name
         getauth(_this.pathname + 'detail/?dn_code=' + e.dn_code).then(res => {
           _this.newForm = true
           _this.editid = e.id
@@ -1482,6 +1514,7 @@ export default {
     setModel (val) {
       const _this = this
       _this.newFormData.customer = val
+      _this.newFormData.account_name = val
     },
     filterFnS (val, update, abort) {
       var _this = this

@@ -412,7 +412,8 @@ export default {
       cancel_order_tip: '取消BOL平台订单',
       generate_pickup_tip: '是否确认生成拣货清单?',
       cancel_order_confirm: '是否确认取消订单?',
-      download_zegel: '下载邮寄单'
+      download_zegel: '下载邮寄单',
+      sending_date: '发货日期'
     }
   },
   staff: {
