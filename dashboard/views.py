@@ -204,7 +204,7 @@ class SalesViewSet(viewsets.ModelViewSet):
             'yAxis': [str(dat[first_column])+'.'+str(dat[second_column]) for dat in receipt_res],
             'series':[
                 {
-                    "name": 'Product Cost',
+                    "name": '产品成本',
                     "type": 'bar',
                     "stack": 'total',
                     "label": {
@@ -216,7 +216,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "data": [dat['product_cost'] for dat in receipt_res]
                 },
                 {
-                    "name": 'Logistic cost',
+                    "name": '物流成本',
                     "type": 'bar',
                     "stack": 'total',
                     "label": {
@@ -228,7 +228,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "data": [dat['logistic_cost'] for dat in receipt_res]
                 },
                 {
-                    "name": 'BOL Commission',
+                    "name": 'BOL费用',
                     "type": 'bar',
                     "stack": 'total',
                     "label": {
@@ -240,7 +240,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "data": [dat['bol_commission'] for dat in receipt_res]
                 },
                 {
-                    "name": 'BTW Cost',
+                    "name": '增值税',
                     "type": 'bar',
                     "stack": 'total',
                     "label": {
@@ -252,7 +252,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "data": [dat['btw_cost'] for dat in receipt_res]
                 },
                 {
-                    "name": 'Profit',
+                    "name": '毛利',
                     "type": 'bar',
                     "stack": 'total',
                     "label": {
