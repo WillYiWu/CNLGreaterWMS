@@ -97,184 +97,6 @@
                 />
               </q-td>
             </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_weight" :props="props">{{ props.row.goods_weight }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_w" :props="props">
-                <q-input
-                  dense
-                  outlined
-                  square
-                  v-model.number="editFormData.goods_w"
-                  type="number"
-                  :label="$t('goods.view_goodslist.goods_w')"
-                  :rules="[val => (val && val > 0) || error5]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_w" :props="props">{{ props.row.goods_w }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_d" :props="props">
-                <q-input
-                  dense
-                  outlined
-                  square
-                  v-model.number="editFormData.goods_d"
-                  type="number"
-                  :label="$t('goods.view_goodslist.goods_d')"
-                  :rules="[val => (val && val > 0) || error6]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_d" :props="props">{{ props.row.goods_d }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_h" :props="props">
-                <q-input
-                  dense
-                  outlined
-                  square
-                  v-model.number="editFormData.goods_h"
-                  type="number"
-                  :label="$t('goods.view_goodslist.goods_h')"
-                  :rules="[val => (val && val > 0) || error7]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_h" :props="props">{{ props.row.goods_h }}</q-td>
-            </template>
-            <q-td key="unit_volume" :props="props">{{ props.row.unit_volume }}</q-td>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_unit" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_unit"
-                  :options="goods_unit_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_unit')"
-                  :rules="[val => (val && val.length > 0) || error8]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_unit" :props="props">{{ props.row.goods_unit }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_class" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_class"
-                  :options="goods_class_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_class')"
-                  :rules="[val => (val && val.length > 0) || error9]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_class" :props="props">{{ props.row.goods_class }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_brand" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_brand"
-                  :options="goods_brand_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_brand')"
-                  :rules="[val => (val && val.length > 0) || error10]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_brand" :props="props">{{ props.row.goods_brand }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_color" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_color"
-                  :options="goods_color_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_color')"
-                  :rules="[val => (val && val.length > 0) || error11]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_color" :props="props">{{ props.row.goods_color }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_shape" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_shape"
-                  :options="goods_shape_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_shape')"
-                  :rules="[val => (val && val.length > 0) || error12]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_shape" :props="props">{{ props.row.goods_shape }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_specs" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_specs"
-                  :options="goods_specs_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_specs')"
-                  :rules="[val => (val && val.length > 0) || error13]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_specs" :props="props">{{ props.row.goods_specs }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_origin" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_origin"
-                  :options="goods_origin_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_origin')"
-                  :rules="[val => (val && val.length > 0) || error14]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_origin" :props="props">{{ props.row.goods_origin }}</q-td>
-            </template>
             <template v-if="props.row.id === editid">
               <q-td key="goods_cost" :props="props">
                 <q-input
@@ -411,130 +233,6 @@
             dense
             outlined
             square
-            v-model.number="newFormData.goods_weight"
-            type="number"
-            :label="$t('goods.view_goodslist.goods_weight')"
-            :rules="[val => (val && val > 0) || error4]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-input
-            dense
-            outlined
-            square
-            v-model.number="newFormData.goods_w"
-            type="number"
-            :label="$t('goods.view_goodslist.goods_w')"
-            :rules="[val => (val && val > 0) || error5]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-input
-            dense
-            outlined
-            square
-            v-model.number="newFormData.goods_d"
-            type="number"
-            :label="$t('goods.view_goodslist.goods_d')"
-            :rules="[val => (val && val > 0) || error6]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-input
-            dense
-            outlined
-            square
-            v-model.number="newFormData.goods_h"
-            type="number"
-            :label="$t('goods.view_goodslist.goods_h')"
-            :rules="[val => (val && val > 0) || error7]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_unit"
-            :options="goods_unit_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_unit')"
-            :rules="[val => (val && val.length > 0) || error8]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_class"
-            :options="goods_class_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_class')"
-            :rules="[val => (val && val.length > 0) || error9]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_brand"
-            :options="goods_brand_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_brand')"
-            :rules="[val => (val && val.length > 0) || error10]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_color"
-            :options="goods_color_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_color')"
-            :rules="[val => (val && val.length > 0) || error11]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_shape"
-            :options="goods_shape_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_shape')"
-            :rules="[val => (val && val.length > 0) || error12]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_specs"
-            :options="goods_specs_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_specs')"
-            :rules="[val => (val && val.length > 0) || error13]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-select
-            dense
-            outlined
-            square
-            v-model="newFormData.goods_origin"
-            :options="goods_origin_list"
-            transition-show="scale"
-            transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_origin')"
-            :rules="[val => (val && val.length > 0) || error14]"
-            @keyup.enter="newDataSubmit()"
-          />
-          <q-input
-            dense
-            outlined
-            square
             v-model.number="newFormData.goods_cost"
             type="number"
             :label="$t('goods.view_goodslist.goods_cost')"
@@ -636,18 +334,6 @@ export default {
         { name: 'goods_code', required: true, label: this.$t('goods.view_goodslist.goods_code'), align: 'left', field: 'goods_code' },
         { name: 'goods_desc', label: this.$t('goods.view_goodslist.goods_desc'), field: 'goods_desc', align: 'center' },
         { name: 'goods_supplier', label: this.$t('goods.view_goodslist.goods_supplier'), field: 'goods_supplier', align: 'center' },
-        { name: 'goods_weight', label: this.$t('goods.view_goodslist.goods_weight'), field: 'goods_weight', align: 'center' },
-        { name: 'goods_w', label: this.$t('goods.view_goodslist.goods_w'), field: 'goods_w', align: 'center' },
-        { name: 'goods_d', label: this.$t('goods.view_goodslist.goods_d'), field: 'goods_d', align: 'center' },
-        { name: 'goods_h', label: this.$t('goods.view_goodslist.goods_h'), field: 'goods_h', align: 'center' },
-        { name: 'unit_volume', label: this.$t('goods.view_goodslist.unit_volume'), field: 'unit_volume', align: 'center' },
-        { name: 'goods_unit', label: this.$t('goods.view_goodslist.goods_unit'), field: 'goods_unit', align: 'center' },
-        { name: 'goods_class', label: this.$t('goods.view_goodslist.goods_class'), field: 'goods_class', align: 'center' },
-        { name: 'goods_brand', label: this.$t('goods.view_goodslist.goods_brand'), field: 'goods_brand', align: 'center' },
-        { name: 'goods_color', label: this.$t('goods.view_goodslist.goods_color'), field: 'goods_color', align: 'center' },
-        { name: 'goods_shape', label: this.$t('goods.view_goodslist.goods_shape'), field: 'goods_shape', align: 'center' },
-        { name: 'goods_specs', label: this.$t('goods.view_goodslist.goods_specs'), field: 'goods_specs', align: 'center' },
-        { name: 'goods_origin', label: this.$t('goods.view_goodslist.goods_origin'), field: 'goods_origin', align: 'center' },
         { name: 'goods_cost', label: this.$t('goods.view_goodslist.goods_cost'), field: 'goods_cost', align: 'center' },
         { name: 'goods_price', label: this.$t('goods.view_goodslist.goods_price'), field: 'goods_price', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
@@ -820,6 +506,17 @@ export default {
       _this.table_list.forEach(i => {
         goodscodes.push(i.goods_code);
       });
+      _this.newFormData.goods_weight = 100;
+      _this.newFormData.goods_w = 100;
+      _this.newFormData.goods_d = 100;
+      _this.newFormData.goods_h = 100;
+      _this.newFormData.goods_unit = 'piece';
+      _this.newFormData.goods_class = 'NA';
+      _this.newFormData.goods_brand = 'XX';
+      _this.newFormData.goods_color = 'Red';
+      _this.newFormData.goods_shape = 'Rectangle';
+      _this.newFormData.goods_specs = 'NA';
+      _this.newFormData.goods_origin = 'Shanghai';
       if (goodscodes.indexOf(_this.newFormData.goods_code) === -1 && _this.newFormData.goods_code.length !== 0) {
         _this.newFormData.creater = _this.login_name;
         postauth(_this.pathname, _this.newFormData)
