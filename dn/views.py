@@ -571,9 +571,11 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                         check_data = {
                             'openid': self.request.auth.openid,
                             'dn_code': str(data['dn_code']),
+                            'account_name': 'Offline',
                             'customer': str(data['customer']),
                             'goods_code': str(data['goods_code'][i]),
                             'goods_qty': int(data['goods_qty'][i]),
+                            'dn_status': 4,
                             'creater': str(staff_name)
                         }
                         serializer = self.get_serializer(data=check_data)
@@ -591,20 +593,36 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     goods_weight = round(goods_detail.goods_weight * int(data['goods_qty'][j]) / 1000, 4)
                     goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
                     goods_cost = round(goods_detail.goods_price * int(data['goods_qty'][j]), 2)
-                    if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j]),
-                                                can_order_stock__gte=0, is_delete=False).exists():
-                        goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                    goods_code=str(data['goods_code'][j])).first()
-                        goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
-                        goods_qty_change.save()
+
+                    goods_qty = int(data['goods_qty'][j])
+                    tobe_picked = goods_qty
+                    stockbin_list = stockbin.objects.filter(goods_code=str(data['goods_code'][j]))
+                    stocklist_list = stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j])).first()
+
+                    if stocklist_list.can_order_stock > goods_qty:
+                        for stockbin_each in stockbin_list:
+                            db_qty = stockbin_each.goods_qty
+                            if tobe_picked > db_qty:
+                                tobe_picked = tobe_picked - db_qty
+                                db_qty = 0
+                                stockbin_each.goods_qty = db_qty
+                                stockbin_each.save()
+                            else:
+                                db_qty = db_qty - tobe_picked
+                                stockbin_each.goods_qty = db_qty
+                                stockbin_each.save()
+                                break
+                        stocklist_list.can_order_stock = stocklist_list.can_order_stock - goods_qty
+                        stocklist_list.save()
                     else:
-                        stocklist.objects.create(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j]),
-                                                 goods_desc=goods_detail.goods_desc,
-                                                 dn_stock=int(data['goods_qty'][j]))
+                        raise APIException({"detail": "Insufficient Stock"})
+
+
                     post_data = DnDetailModel(openid=self.request.auth.openid,
                                               dn_code=str(data['dn_code']),
                                               customer=str(data['customer']),
+                                              account_name='Offline',
+                                              dn_status=4,
                                               goods_code=str(data['goods_code'][j]),
                                               goods_desc=str(goods_detail.goods_desc),
                                               goods_qty=int(data['goods_qty'][j]),
@@ -696,7 +714,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
                     goods_cost = round(goods_detail.goods_price * int(data['goods_qty'][j]), 2)
                     if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j]),
-                                                can_order_stock__gt=0, is_delete=False).exists():
+                                                can_order_stock__gt=0).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                     goods_code=str(data['goods_code'][j])).first()
                         goods_qty_change.dn_stock = goods_qty_change.dn_stock + int(data['goods_qty'][j])
