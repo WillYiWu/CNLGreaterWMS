@@ -228,6 +228,7 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
                                                goods_code=str(data['goods_code'][j]),
                                                goods_desc=str(goods_detail.goods_desc),
                                                goods_qty=int(data['goods_qty'][j]),
+                                               goods_actual_qty=int(data['goods_qty'][j]),
                                                goods_weight=goods_weight,
                                                goods_volume=goods_volume,
                                                goods_cost=goods_cost,
@@ -784,32 +785,32 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                                              asn_code=str(data['asn_code'])).first()
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                 goods_code=str(data['goods_code'])).first()
-                    if int(data['qty']) <= 0:
+                    if int(data['goods_actual_qty']) <= 0:
                         raise APIException({"detail": "Move QTY Must > 0"})
                     else:
                         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
-                        move_qty = qs.goods_actual_qty - qs.sorted_qty - int(data['qty'])
+                        move_qty = qs.goods_actual_qty - qs.sorted_qty - int(data['goods_actual_qty'])
                         if move_qty > 0:
-                            qs.sorted_qty = qs.sorted_qty + int(data['qty'])
-                            goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['qty'])
-                            goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['qty'])
+                            qs.sorted_qty = qs.sorted_qty + int(data['goods_actual_qty'])
+                            goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['goods_actual_qty'])
+                            goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['goods_actual_qty'])
                             if bin_detail.bin_property == 'Damage':
-                                goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['qty'])
-                                qs.goods_damage_qty = qs.goods_damage_qty + int(data['qty'])
+                                goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['goods_actual_qty'])
+                                qs.goods_damage_qty = qs.goods_damage_qty + int(data['goods_actual_qty'])
                             elif bin_detail.bin_property == 'Inspection':
-                                goods_qty_change.inspect_stock = goods_qty_change.inspect_stock + int(data['qty'])
+                                goods_qty_change.inspect_stock = goods_qty_change.inspect_stock + int(data['goods_actual_qty'])
                             elif bin_detail.bin_property == 'Holding':
-                                goods_qty_change.hold_stock = goods_qty_change.hold_stock + int(data['qty'])
+                                goods_qty_change.hold_stock = goods_qty_change.hold_stock + int(data['goods_actual_qty'])
                             else:
-                                goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['qty'])
+                                goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['goods_actual_qty'])
                             qs.save()
                             goods_qty_change.save()
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
                                                     goods_code=str(data['goods_code']),
                                                     goods_desc=goods_qty_change.goods_desc,
-                                                    goods_qty=int(data['qty']),
+                                                    goods_qty=int(data['goods_actual_qty']),
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
                                                     t_code=Md5.md5(str(data['goods_code'])),
@@ -819,7 +820,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
                                                              goods_code=str(data['goods_code']),
-                                                             goods_qty=int(data['qty']),
+                                                             goods_qty=int(data['goods_actual_qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
@@ -836,37 +837,37 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 bin_stock = 0
                             if line_data.exists():
-                                line_data.goods_qty = bin_stock + int(data['qty'])
+                                line_data.goods_qty = bin_stock + int(data['goods_actual_qty'])
                                 line_data.update(goods_qty=line_data.goods_qty)
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
                                                           goods_code=str(data['goods_code']),
-                                                          goods_qty=int(data['qty']),
+                                                          goods_qty=int(data['goods_actual_qty']),
                                                           creater=str(staff_name)
                                                           )
                             if bin_detail.empty_label == True:
                                 bin_detail.empty_label = False
                                 bin_detail.save()
                         elif move_qty == 0:
-                            qs.sorted_qty = qs.sorted_qty + int(data['qty'])
+                            qs.sorted_qty = qs.sorted_qty + int(data['goods_actual_qty'])
                             qs.asn_status = 5
-                            goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['qty'])
-                            goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['qty'])
+                            goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['goods_actual_qty'])
+                            goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['goods_actual_qty'])
                             if bin_detail.bin_property == 'Damage':
-                                goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['qty'])
-                                qs.goods_damage_qty = qs.goods_damage_qty + int(data['qty'])
+                                goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['goods_actual_qty'])
+                                qs.goods_damage_qty = qs.goods_damage_qty + int(data['goods_actual_qty'])
                             elif bin_detail.bin_property == 'Inspection':
-                                goods_qty_change.inspect_stock = goods_qty_change.inspect_stock + int(data['qty'])
+                                goods_qty_change.inspect_stock = goods_qty_change.inspect_stock + int(data['goods_actual_qty'])
                             elif bin_detail.bin_property == 'Holding':
-                                goods_qty_change.hold_stock = goods_qty_change.hold_stock + int(data['qty'])
+                                goods_qty_change.hold_stock = goods_qty_change.hold_stock + int(data['goods_actual_qty'])
                             else:
-                                goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['qty'])
+                                goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['goods_actual_qty'])
                             qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
                                                              goods_code=str(data['goods_code']),
-                                                             goods_qty=int(data['qty']),
+                                                             goods_qty=int(data['goods_actual_qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
@@ -883,13 +884,13 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 bin_stock = 0
                             if line_data.exists():
-                                line_data.goods_qty = bin_stock + int(data['qty'])
+                                line_data.goods_qty = bin_stock + int(data['goods_actual_qty'])
                                 line_data.update(goods_qty=line_data.goods_qty)
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
                                                           goods_code=str(data['goods_code']),
-                                                          goods_qty=int(data['qty']),
+                                                          goods_qty=int(data['goods_actual_qty']),
                                                           creater=str(staff_name),
                                                           t_code=Md5.md5(str(data['bin_name']))
                                                           )
@@ -907,7 +908,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                                     bin_name=str(data['bin_name']),
                                                     goods_code=str(data['goods_code']),
                                                     goods_desc=goods_qty_change.goods_desc,
-                                                    goods_qty=int(data['qty']),
+                                                    goods_qty=int(data['goods_actual_qty']),
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
                                                     t_code=Md5.md5(str(data['goods_code'])),

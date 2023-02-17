@@ -106,7 +106,7 @@
                     outlined
                     square
                     debounce="500"
-                    v-model.number="movedata.qty"
+                    v-model.number="movedata.goods_actual_qty"
                     type="number"
                     :label="$t('stock.view_stocklist.goods_qty')"
                     style="margin-bottom: 5px"
