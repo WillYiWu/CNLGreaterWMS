@@ -36,9 +36,9 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name", "goods_code")
             else:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name", "goods_code")
         else:
             return StockBinModel.objects.none()
 

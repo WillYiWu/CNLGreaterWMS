@@ -109,7 +109,7 @@ def ObtainfinanceData():
                     bol_commission_inc_tax = float(orderitem['commission'])
                     bol_commision_vat = bol_commission_inc_tax - bol_commission_inc_tax/ 1.21
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
-                    product_cost = goods_list.goods_cost
+                    product_cost = int(shipped_qty) * float(goods_list.goods_cost)
                     selling_date = dndetail_list[i].update_time
 
                     if FinanceListModel.objects.filter(dn_code=dn_code).exists():

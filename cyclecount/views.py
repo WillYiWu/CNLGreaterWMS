@@ -381,9 +381,9 @@ class ManualCyclecountViewSet(viewsets.ModelViewSet):
                 query_dict['openid'] = self.request.auth.openid
             if id is not None:
                 query_dict['id'] = id
-            return ManualCyclecountModeModel.objects.filter(**query_dict)
+            return ManualCyclecountModeModel.objects.filter(**query_dict).order_by('bin_name', 'goods_code')
         else:
-            return ManualCyclecountModeModel.objects.none()
+            return ManualCyclecountModeModel.objects.none().order_by('bin_name', 'goods_code')
 
     def get_serializer_class(self):
         if self.action in ['list']:
