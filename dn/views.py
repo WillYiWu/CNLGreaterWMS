@@ -284,7 +284,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 dndetail_list[i].dn_complete = dn_complete
                 dndetail_list[i].save()
 
-            if not DnListModel.objects.filter(dn_code=order["orderId"], is_delete=False).exists():
+            if not DnListModel.objects.filter(dn_code=order["orderId"],account_name=account_name,is_delete=False).exists():
                 DnListModel.objects.create(openid=self.request.auth.openid,
                                            dn_code=order["orderId"],
                                            dn_status=1,
