@@ -24,7 +24,7 @@
                  {{ $t('refreshtip') }}
                </q-tooltip>
              </q-btn>
-             <q-btn :label="$t('outbound.download_all_label')" icon="img:statics/outbound/zegel.jpeg" @click="DownloadPickLabel('ALL')">
+             <q-btn :label="$t('outbound.download_all_label')" icon="img:statics/outbound/zegel.jpeg" @click="DownloadPickLabel('','ALL')">
                <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
                  {{ $t('outbound.download_all_label') }}
                </q-tooltip>
@@ -92,7 +92,7 @@
                 push
                 color="positive"
                 icon="img:statics/outbound/zegel2.ico"
-                @click="DownloadPickLabel(props.row.dn_code)"
+                @click="DownloadPickLabel(props.row.account_name,props.row.dn_code)"
               >
                 <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">{{ $t('outbound.view_dn.download_zegel') }}</q-tooltip>
               </q-btn>
@@ -222,7 +222,7 @@ export default {
       } else {
       }
     },
-    async DownloadPickLabel(dn_code){
+    async DownloadPickLabel(account_name, dn_code){
       var _this = this
       var file_name = ""
       try{
@@ -230,14 +230,14 @@ export default {
         const instance = axios.create({
           baseURL: baseurl,
         })
-        const res = await instance.get('dn/shippinglabel/' + dn_code, {responseType: 'blob' });
+        const res = await instance.get('dn/shippinglabel/' + account_name+dn_code, {responseType: 'blob' });
         const downloadUrl = window.URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
         const link = document.createElement('a');
         link.href = downloadUrl
         if (dn_code === 'ALL'){
           file_name = new Date().toLocaleDateString()
         }else{
-          file_name = dn_code
+          file_name = account_name+dn_code
         }
         link.setAttribute('download', file_name + '.pdf');
         document.body.appendChild(link);

@@ -112,7 +112,7 @@ def ObtainfinanceData():
                     product_cost = float(shipped_qty) * float(goods_list.goods_cost)
                     selling_date = dndetail_list[i].update_time
 
-                    if FinanceListModel.objects.filter(dn_code=dn_code).exists():
+                    if FinanceListModel.objects.filter(dn_code=dn_code,account_name=account_name).exists():
                         logistic_cost = 0
                     else:
                         logistic_cost = transport_list.min_payment
@@ -329,7 +329,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                     response = requests.get(getlabel_url+label_id,headers=headers_label)
                     if response.status_code == 200:
                         if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
-                            with open(order.dn_code + '.pdf', 'wb') as file:
+                            with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
                                 file.write(response.content)
                             print(order.orderitem_id + 'PDF file saved successfully')
                         else:
@@ -1078,7 +1078,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                  sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         pdf_list = []
         for dnlist in dnlist_list:
-            pdf_list.append(dnlist.dn_code+".pdf")
+            pdf_list.append(dnlist.account_name+dnlist.dn_code+".pdf")
         output_file = 'merged.pdf'
         merge_pdfs(pdf_list, output_file)
         return Response({'detail': 'success'}, status=200)
