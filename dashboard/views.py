@@ -213,7 +213,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "emphasis": {
                         "focus": 'series'
                     },
-                    "data": [dat['product_cost'] for dat in receipt_res]
+                    "data": [round(dat['product_cost'],2) for dat in receipt_res]
                 },
                 {
                     "name": '物流成本',
@@ -225,7 +225,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "emphasis": {
                         "focus": 'series'
                     },
-                    "data": [dat['logistic_cost'] for dat in receipt_res]
+                    "data": [round(dat['logistic_cost'],2) for dat in receipt_res]
                 },
                 {
                     "name": 'BOL费用',
@@ -237,7 +237,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "emphasis": {
                         "focus": 'series'
                     },
-                    "data": [dat['bol_commission'] for dat in receipt_res]
+                    "data": [round(dat['bol_commission'],2) for dat in receipt_res]
                 },
                 {
                     "name": '增值税',
@@ -249,7 +249,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "emphasis": {
                         "focus": 'series'
                     },
-                    "data": [dat['btw_cost'] for dat in receipt_res]
+                    "data": [round(dat['btw_cost'],2) for dat in receipt_res]
                 },
                 {
                     "name": '毛利',
@@ -261,7 +261,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                     "emphasis": {
                         "focus": 'series'
                     },
-                    "data": [dat['profit'] for dat in receipt_res]
+                    "data": [round(dat['profit'],2) for dat in receipt_res]
                 }
             ]
         }
