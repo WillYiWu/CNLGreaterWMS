@@ -614,6 +614,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                 stockbin_each.save()
                                 break
                         stocklist_list.can_order_stock = stocklist_list.can_order_stock - goods_qty
+                        stocklist_list.onhand_stock = stocklist_list.onhand_stock - goods_qty
                         stocklist_list.save()
                     else:
                         raise APIException({"detail": "Insufficient Stock"})
