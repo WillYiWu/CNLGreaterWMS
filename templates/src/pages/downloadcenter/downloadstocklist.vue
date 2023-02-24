@@ -94,28 +94,6 @@
             <q-td key="damage_stock" :props="props">{{
               props.row.damage_stock
             }}</q-td>
-            <q-td key="asn_stock" :props="props">{{
-              props.row.asn_stock
-            }}</q-td>
-            <q-td key="dn_stock" :props="props">{{ props.row.dn_stock }}</q-td>
-            <q-td key="pre_load_stock" :props="props">{{
-              props.row.pre_load_stock
-            }}</q-td>
-            <q-td key="pre_sort_stock" :props="props">{{
-              props.row.pre_sort_stock
-            }}</q-td>
-            <q-td key="sorted_stock" :props="props">{{
-              props.row.sorted_stock
-            }}</q-td>
-            <q-td key="pick_stock" :props="props">{{
-              props.row.pick_stock
-            }}</q-td>
-            <q-td key="picked_stock" :props="props">{{
-              props.row.picked_stock
-            }}</q-td>
-            <q-td key="back_order_stock" :props="props">{{
-              props.row.back_order_stock
-            }}</q-td>
             <q-td key="create_time" :props="props">{{
               props.row.create_time
             }}</q-td>
@@ -200,14 +178,6 @@ export default {
         { name: 'inspect_stock', label: this.$t('stock.view_stocklist.inspect_stock'), field: 'inspect_stock', align: 'center' },
         { name: 'hold_stock', label: this.$t('stock.view_stocklist.hold_stock'), field: 'hold_stock', align: 'center' },
         { name: 'damage_stock', label: this.$t('stock.view_stocklist.damage_stock'), field: 'damage_stock', align: 'center' },
-        { name: 'asn_stock', label: this.$t('stock.view_stocklist.asn_stock'), field: 'asn_stock', align: 'center' },
-        { name: 'dn_stock', label: this.$t('stock.view_stocklist.dn_stock'), field: 'dn_stock', align: 'center' },
-        { name: 'pre_load_stock', label: this.$t('stock.view_stocklist.pre_load_stock'), field: 'pre_load_stock', align: 'center' },
-        { name: 'pre_sort_stock', label: this.$t('stock.view_stocklist.pre_sort_stock'), field: 'pre_sort_stock', align: 'center' },
-        { name: 'sorted_stock', label: this.$t('stock.view_stocklist.sorted_stock'), field: 'sorted_stock', align: 'center' },
-        { name: 'pick_stock', label: this.$t('stock.view_stocklist.pick_stock'), field: 'pick_stock', align: 'center' },
-        { name: 'picked_stock', label: this.$t('stock.view_stocklist.picked_stock'), field: 'picked_stock', align: 'center' },
-        { name: 'back_order_stock', label: this.$t('stock.view_stocklist.back_order_stock'), field: 'back_order_stock', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' }
       ],

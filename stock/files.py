@@ -53,14 +53,6 @@ def file_headers_list():
         'inspect_stock',
         'hold_stock',
         'damage_stock',
-        'asn_stock',
-        'dn_stock',
-        'pre_load_stock',
-        'pre_sort_stock',
-        'sorted_stock',
-        'pick_stock',
-        'picked_stock',
-        'back_order_stock',
         'create_time',
         'update_time'
     ]
@@ -76,14 +68,6 @@ def cn_data_header_list():
         ('inspect_stock', u'质检库存'),
         ('hold_stock', u'锁定库存'),
         ('damage_stock', u'破损库存'),
-        ('asn_stock', u'到货通知书数量'),
-        ('dn_stock', u'发货单数量'),
-        ('pre_load_stock', u'等待卸货数量'),
-        ('pre_sort_stock', u'等待分拣数量'),
-        ('sorted_stock', u'已分拣数量'),
-        ('pick_stock', u'等待拣货数量'),
-        ('picked_stock', u'已拣货数量'),
-        ('back_order_stock', u'欠货数量'),
         ('create_time', u'创建时间'),
         ('update_time', u'更新时间')
     ])
@@ -99,14 +83,6 @@ def en_data_header_list():
         ('inspect_stock', u'Inspect Stock'),
         ('hold_stock', u'Hold Stock'),
         ('damage_stock', u'Damage Stock'),
-        ('asn_stock', u'ASN Stock'),
-        ('dn_stock', u'DN Stock'),
-        ('pre_load_stock', u'Pre Load Stock'),
-        ('pre_sort_stock', u'Pre Sort Stock'),
-        ('sorted_stock', u'Sorted Stock'),
-        ('pick_stock', u'Pick Stock'),
-        ('picked_stock', u'Picked Stock'),
-        ('back_order_stock', u'Back Order Stock'),
         ('create_time', u'Create Time'),
         ('update_time', u'Update Time')
     ])
