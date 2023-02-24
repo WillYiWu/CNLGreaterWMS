@@ -476,6 +476,7 @@ class DnListViewSet(viewsets.ModelViewSet):
             else:
                 data['dn_code'] = 'DN' + order_day + '1'
         data['bar_code'] = Md5.md5(str(data['dn_code']))
+        data['dn_status'] = 4
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -596,7 +597,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
 
                     goods_qty = int(data['goods_qty'][j])
                     tobe_picked = goods_qty
-                    stockbin_list = stockbin.objects.filter(goods_code=str(data['goods_code'][j]))
+                    stockbin_list = stockbin.objects.filter(goods_code=str(data['goods_code'][j]),bin_property='Normal')
                     stocklist_list = stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j])).first()
 
                     if stocklist_list.can_order_stock > goods_qty:
@@ -1594,6 +1595,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             stockbin_list.goods_qty = stockbin_list.goods_qty - pick_list[i].picked_qty
             stockbin_list.save()
             stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
+            stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
             stocklist_list.save()
             orderItems = []
             orderItems.append({'orderItemId': pick_list[i].orderitem_id})

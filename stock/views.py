@@ -67,20 +67,13 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
                                                        goods_code=goods_code).first()
             if stock_bin.bin_property == "Normal":
                 stock_list.can_order_stock = int(stock_list.can_order_stock) - (old_qty - goods_qty)
-                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
-                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
             elif stock_bin.bin_property == "Inspect":
                 stock_list.inspect_stock = int(stock_list.inspect_stock) - (old_qty - goods_qty)
-                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
-                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
             elif stock_bin.bin_property == "Holding":
                 stock_list.hold_stock = int(stock_list.hold_stock) - (old_qty - goods_qty)
-                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
-                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
             elif stock_bin.bin_property == "Damage":
                 stock_list.damage_stock = int(stock_list.damage_stock) - (old_qty - goods_qty)
-                stock_list.goods_qty = int(stock_list.goods_qty) - (old_qty - goods_qty)
-                stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
+            stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
             stock_list.save()
             serializer = self.get_serializer(qs, data=data, partial=True)
             serializer.is_valid(raise_exception=True)
