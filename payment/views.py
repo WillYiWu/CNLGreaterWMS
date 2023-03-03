@@ -183,9 +183,9 @@ class FinanceListViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return FinanceListModel.objects.filter(is_delete=False).order_by('-selling_date', 'account_name')
+                return FinanceListModel.objects.filter(is_delete=False, openid=self.request.auth.openid).order_by('-selling_date', 'account_name')
             else:
-                return FinanceListModel.objects.filter(id=id, is_delete=False).order_by('-selling_date', 'account_name')
+                return FinanceListModel.objects.filter(id=id, is_delete=False, openid=self.request.auth.openid).order_by('-selling_date', 'account_name')
         else:
             return FinanceListModel.objects.none()
 

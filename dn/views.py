@@ -111,6 +111,7 @@ def ObtainfinanceData():
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
                     product_cost = float(shipped_qty) * float(goods_list.goods_cost)
                     selling_date = dndetail_list[i].update_time
+                    openid = dndetail_list[i].openid
 
                     if FinanceListModel.objects.filter(dn_code=dn_code,account_name=account_name).exists():
                         logistic_cost = 0
@@ -132,7 +133,8 @@ def ObtainfinanceData():
                                                         logistic_cost=logistic_cost,
                                                         product_cost=product_cost,
                                                         profit = profit,
-                                                        selling_date=selling_date)
+                                                        selling_date=selling_date,
+                                                        openid=openid)
                         dndetail_list[i].revenue_counted = True
                         dndetail_list[i].save()
 class ShippinglabelViewSet(View):
