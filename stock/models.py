@@ -34,6 +34,7 @@ class StockBinModel(models.Model):
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     goods_desc = models.CharField(max_length=255, verbose_name="Goods Description")
     goods_qty = models.BigIntegerField(default=0, verbose_name="Binstock Qty")
+    goods_cost = models.FloatField(default=0, verbose_name="Goods Cost")
     pick_qty = models.BigIntegerField(default=0, verbose_name="BinPick Qty")
     picked_qty = models.BigIntegerField(default=0, verbose_name="BinPicked Qty")
     bin_size = models.CharField(max_length=255, verbose_name="Bin size")

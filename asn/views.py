@@ -806,11 +806,13 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                 goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['goods_actual_qty'])
                             qs.save()
                             goods_qty_change.save()
+                            goods_cost = goods.objects.filter(goods_code=str(data['goods_code'])).first().goods_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
                                                     goods_code=str(data['goods_code']),
                                                     goods_desc=goods_qty_change.goods_desc,
                                                     goods_qty=int(data['goods_actual_qty']),
+                                                    goods_cost=goods_cost,
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
                                                     t_code=Md5.md5(str(data['goods_code'])),
@@ -904,11 +906,13 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 asn_detail.asn_status = 5
                                 asn_detail.save()
+                            goods_cost = goods.objects.filter(goods_code=str(data['goods_code'])).first().goods_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
                                                     goods_code=str(data['goods_code']),
                                                     goods_desc=goods_qty_change.goods_desc,
                                                     goods_qty=int(data['goods_actual_qty']),
+                                                    goods_cost=goods_cost,
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
                                                     t_code=Md5.md5(str(data['goods_code'])),
