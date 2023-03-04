@@ -8,6 +8,7 @@
         row-key="id"
         :separator="separator"
         :loading="loading"
+        :filter="filter"
         :columns="columns"
         hide-bottom
         :pagination.sync="pagination"
