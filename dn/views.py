@@ -109,7 +109,7 @@ def ObtainfinanceData():
                     bol_commission_inc_tax = float(orderitem['commission'])
                     bol_commision_vat = bol_commission_inc_tax - bol_commission_inc_tax/ 1.21
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
-                    product_cost = float(shipped_qty) * float(goods_list.goods_cost)
+                    product_cost = float(shipped_qty) * float(dndetail_list[i].goods_cost)
                     selling_date = dndetail_list[i].update_time
                     openid = dndetail_list[i].openid
 
@@ -1021,6 +1021,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list.openid=self.request.auth.openid
                        pick_list.creater=str(staff_name)
                        pick_list.label_id = label_id
+                       normalorder_set[i].goods_cost = bin_set[j].goods_cost
+                       normalorder_set[i].save()
                        pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
@@ -1060,6 +1062,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                         pick_list.openid = self.request.auth.openid
                         pick_list.creater = str(staff_name)
                         pick_list.label_id = label_id
+                        normalorder_set[i].goods_cost = bin_set[j].goods_cost
+                        normalorder_set[i].save()
                         pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
