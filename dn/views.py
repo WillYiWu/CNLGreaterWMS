@@ -166,7 +166,7 @@ def FillInReturnData():
         return_list = requests.get(getreturn_url, headers=headers)
         json_return_list = return_list.json()["returns"]
         for return_iterate in json_return_list:
-            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=35):
+            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=3):
                 continue
             else:
                 for return_item in return_iterate["returnItems"]:
