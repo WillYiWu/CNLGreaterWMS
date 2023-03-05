@@ -166,7 +166,7 @@ def FillInReturnData():
         return_list = requests.get(getreturn_url, headers=headers)
         json_return_list = return_list.json()["returns"]
         for return_iterate in json_return_list:
-            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=3):
+            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=35):
                 continue
             else:
                 for return_item in return_iterate["returnItems"]:
@@ -184,16 +184,15 @@ def FillInReturnData():
                             finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                             finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                             if finance_record.logistic_cost == 4.98:
-                                finance_record.logistic_cost = finance_record.logistic_cost +2.66
+                                finance_record.logistic_cost = float(finance_record.logistic_cost) +2.66
                             elif finance_record.logistic_cost == 5.25:
-                                finance_record.logistic_cost = finance_record.logistic_cost + 2.93
+                                finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.93
                             else:
                                 finance_record.logistic_cost = 2.66
-                            finance_record.logistic_cost = finance_record.logistic_cost * 2
                             finance_record.shipped_qty = finance_record.shipped_qty - quantity
-                            finance_record.profit = finance_record.selling_price - finance_record.btw_cost - \
-                                                   finance_record.bol_commission - finance_record.product_cost - \
-                                                    finance_record.logistic_cost
+                            finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
+                                                   float(finance_record.bol_commission) - float(finance_record.product_cost) - \
+                                                    float(finance_record.logistic_cost)
                             finance_record.save()
 
 class ShippinglabelViewSet(View):
