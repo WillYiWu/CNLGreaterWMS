@@ -171,6 +171,7 @@ export default {
   dashboards: {
     outbound_statements: '销售报表',
     inbound_statements: '收货报表',
+    inventory_statements: '库存报表',
     inbound_and_outbound_statements: '收发货报表',
     select_type: '选择图表类型',
     monthly: '月度',

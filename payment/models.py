@@ -34,6 +34,7 @@ class FinanceListModel(models.Model):
     profit = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Product Cost")
     openid = models.CharField(max_length=255, default='', verbose_name="Openid")
     is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    returned = models.BooleanField(default=False, verbose_name='whether returned')
     selling_date = models.DateTimeField(auto_now_add=True, verbose_name="Selling Date")
     create_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
 

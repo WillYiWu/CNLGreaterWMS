@@ -24,6 +24,7 @@ from django.db.models import Q
 from django.db.models import Sum
 import re
 from django.utils import timezone
+from stock.models import StockDashboardModel
 
 class ReceiptsViewSet(viewsets.ModelViewSet):
     """
@@ -114,6 +115,73 @@ class ReceiptsViewSet(viewsets.ModelViewSet):
         context['series'] = series
         return Response(context)
 
+class InventoryViewSet(viewsets.ModelViewSet):
+    pagination_class = None
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = FinanceListFilter
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        # id = self.get_project()
+        type = self.kwargs.get('type', None)
+        if self.request.user:
+            return StockDashboardModel.objects.filter(
+                                            create_time__gte=timezone.now().date() - relativedelta(days=12))
+        else:
+            return StockDashboardModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return dnserializers.DNDetailGetSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def notice_lang(self):
+        lang = self.request.META.get('HTTP_LANGUAGE')
+        return lang
+
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        receipt_res = qs.annotate(month=ExtractMonth('create_time'), day=ExtractDay('create_time')) \
+                .values('month', 'day').order_by('month', 'day').annotate(stock_quantity=Sum('stock_quantity'),
+                                                                          stock_value=Sum('stock_value'))
+
+        data = {
+            'xAxis': [str(dat['month']) + '月' + str(dat['day']) + '日'for dat in receipt_res],
+            'series': [
+                {
+                    "name": '库存数量(个)',
+                    "type": 'line',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [dat['stock_quantity'] for dat in receipt_res]
+                },
+                {
+                    "name": '库存价值(欧元)',
+                    "type": 'line',
+                    "label": {
+                        "show": "true"
+                    },
+                    "emphasis": {
+                        "focus": 'series'
+                    },
+                    "data": [round(dat['stock_value'], 2) for dat in receipt_res]
+                },
+            ]
+        }
+
+        return Response(data)
 class SalesViewSet(viewsets.ModelViewSet):
     """
         list:
@@ -157,25 +225,6 @@ class SalesViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         type = self.kwargs.get('type', None)
         qs = self.get_queryset()
-        context = {}
-        dataset = {}
-        dimensions = ['product']
-        source = []
-        series = []
-        bar_charts = {
-            "type": 'bar',
-            "barWidth": '4%',
-            "barGap": '60%',
-            "barCategoryGap": '10%',
-            "itemStyle": {
-              "normal": {
-                "label": {
-                  "show": "true",
-                  "position": "top"
-                }
-              }
-            }
-          }
         if type == "Monthly":
             receipt_res = qs.annotate(year=ExtractYear('selling_date'), month=ExtractMonth('selling_date')) \
             .values('year', 'month').order_by('year', 'month').annotate(product_cost=Sum('product_cost'),

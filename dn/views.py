@@ -38,6 +38,7 @@ import json
 import base64
 import os
 from staff.models import AccountListModel as account
+from stock.models import StockDashboardModel as stockdashboard
 from payment.models import FinanceListModel
 import PyPDF2
 from django.http import FileResponse
@@ -57,6 +58,7 @@ createlabel_url = "https://api.bol.com/retailer/shipping-labels"
 deliveryoption_url = "https://api.bol.com/retailer/shipping-labels/delivery-options"
 getlabel_url = "https://api.bol.com/retailer/shipping-labels/"
 getlabelid_url = "https://api.bol.com/shared/process-status/"
+getreturn_url = "https://api.bol.com/retailer/returns?handled=true&fulfilment-method=FBR"
 
 
 def merge_pdfs(pdf_files, output_file):
@@ -83,6 +85,8 @@ def obtain_access_token(account_name):
     return access_token.json()["access_token"]
 
 def ObtainfinanceData():
+    FillInStockDashboardData()
+    FillInReturnData()
     dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
     for i in range(len(dndetail_list)):
         dn_code = dndetail_list[i].dn_code
@@ -137,6 +141,61 @@ def ObtainfinanceData():
                                                         openid=openid)
                         dndetail_list[i].revenue_counted = True
                         dndetail_list[i].save()
+
+def FillInStockDashboardData():
+    stockbin_list = stockbin.objects.filter()
+    stock_quantity = 0
+    stock_value = 0
+    if stockdashboard.objects.filter(create_time__date=timezone.now().date()).exists():
+        return
+
+    for stock in stockbin_list:
+        stock_quantity = stock_quantity + stock.goods_qty
+        stock_value = stock_value + float(stock.goods_qty*stock.goods_cost)
+
+    stockdashboard.objects.create(stock_quantity=stock_quantity, stock_value=stock_value)
+
+def FillInReturnData():
+    account_list = account.objects.filter(is_delete=False)
+    for accounts in account_list:
+        account_name = accounts.account_name
+        headers = {
+            "Authorization": "Bearer " + obtain_access_token(account_name),
+            "Accept": "application/vnd.retailer.v8+json"
+        }
+        return_list = requests.get(getreturn_url, headers=headers)
+        json_return_list = return_list.json()["returns"]
+        for return_iterate in json_return_list:
+            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=3):
+                continue
+            else:
+                for return_item in return_iterate["returnItems"]:
+                    dn_code = return_item["orderId"]
+                    goods_code = return_item["ean"]
+                    quantity = return_item["expectedQuantity"]
+                    if not FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).exists():
+                        continue
+                    else:
+                        finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).first()
+                        if finance_record.returned == False:
+                            finance_record.returned = True
+                            finance_record.selling_price = finance_record.selling_price * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                            finance_record.btw_cost = finance_record.btw_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                            finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                            finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                            if finance_record.logistic_cost == 4.98:
+                                finance_record.logistic_cost = finance_record.logistic_cost +2.66
+                            elif finance_record.logistic_cost == 5.25:
+                                finance_record.logistic_cost = finance_record.logistic_cost + 2.93
+                            else:
+                                finance_record.logistic_cost = 2.66
+                            finance_record.logistic_cost = finance_record.logistic_cost * 2
+                            finance_record.shipped_qty = finance_record.shipped_qty - quantity
+                            finance_record.profit = finance_record.selling_price - finance_record.btw_cost - \
+                                                   finance_record.bol_commission - finance_record.product_cost - \
+                                                    finance_record.logistic_cost
+                            finance_record.save()
+
 class ShippinglabelViewSet(View):
     def get(self, request, dn_code, *args, **kwargs):
         if dn_code == "ALL":

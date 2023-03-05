@@ -16,7 +16,7 @@
             <transition appear enter-active-class="animated zoomIn">
               <q-route-tab
                 name="inbounddashboard"
-                :label="$t('dashboards.inbound_statements')"
+                :label="$t('dashboards.inventory_statements')"
                 icon="img:statics/dashboard/in_statement.svg"
                 :to="{ name: 'inbounddashboard' }"
                 exact

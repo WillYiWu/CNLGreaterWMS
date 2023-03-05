@@ -1,19 +1,13 @@
 <template>
   <q-card class="shadow-11" :style="{ height: height }">
-    <q-card-section>
-      <div class="text-h6 text-grey-8 text-weight-bolder">
-        {{ selected_product + $t('index.chart') }}
-        <q-select outlined v-model="selected_product" class="bg-white float-right q-mb-sm " style="width:300px;" :options="product_options" label="Select Product" />
-      </div>
-    </q-card-section>
-    <q-card-section :style="{ height: height2, marginTop: '10px' }"><IEcharts :option="barChartOption" :resizable="true" /></q-card-section>
+    <q-card-section :style="{ height: height2, marginTop:'10px' }"><IEcharts :option="barChartOption" :resizable="true" /></q-card-section>
   </q-card>
 </template>
 
 <script>
 import IEcharts from 'vue-echarts-v3/src/full.js';
 import { getauth } from 'boot/axios_request';
-import { LocalStorage } from "quasar";
+import {LocalStorage} from "quasar";
 
 export default {
   name: 'charts',
@@ -26,45 +20,42 @@ export default {
       height2: '',
       width: '100%',
       barChartOption: {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+          // Use axis to trigger tooltip
+          type: 'line' // 'shadow' as default; can also be 'line' or 'shadow'
+          }
+        },
         grid: {
-          bottom: '25%'
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
         },
         legend: {},
         tooltip: {},
         dataset: {
-          dimensions: [],
-          source: []
+        },
+        yAxis: {
+          type: 'value'
         },
         xAxis: {
           type: 'category',
-          axisLabel: {
-            rotate: 45
-          },
-          nameLocation: 'middle',
-          nameGap: 78
-        },
-        yAxis: {
-          type: 'value',
-          splitLine: {
-            show: true,
-            lineStyle: {
-              type: [30, 20]
-            }
-          }
+          data: []
         },
         series: []
       },
-      selected_product: this.$t('dashboards.total_receipts'),
-      product_options: [this.$t('dashboards.total_receipts')]
     };
   },
   methods: {
     getList() {
       var _this = this;
+      var param = "";
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.pathname + 'receipts/', {})
+        getauth(_this.pathname + 'stock/', {})
           .then(res => {
-            _this.barChartOption.dataset = res.dataset;
+            _this.barChartOption.xAxis.data = res.xAxis;
             _this.barChartOption.series = res.series;
           })
           .catch(err => {

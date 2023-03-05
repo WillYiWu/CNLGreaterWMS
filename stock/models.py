@@ -49,3 +49,14 @@ class StockBinModel(models.Model):
         verbose_name = 'Stock Bin'
         verbose_name_plural = "Stock Bin"
         ordering = ['-id']
+
+class StockDashboardModel(models.Model):
+    stock_quantity = models.BigIntegerField(default=0, verbose_name="Stock Qty")
+    stock_value = models.FloatField(default=0, verbose_name="Stock Value")
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
+
+    class Meta:
+        db_table = 'stockdashboard'
+        verbose_name = 'Stock Dashboard'
+        verbose_name_plural = "Stock Dashboard"
+        ordering = ['-id']

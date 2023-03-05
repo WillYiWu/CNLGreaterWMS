@@ -52,6 +52,7 @@ def file_headers_finance():
         'logistic_cost',
         'product_cost',
         'profit',
+        'returned',
         'selling_date'
     ]
 
@@ -68,6 +69,7 @@ def cn_data_header_finance():
         ('logistic_cost', u'物流成本'),
         ('product_cost', u'产品成本'),
         ('profit', u'销售毛利'),
+        ('returned', u'退货'),
         ('selling_date', u'发货日期')
     ])
 
@@ -84,6 +86,7 @@ def en_data_header_finance():
         ('logistic_cost', u'Logistic Cost'),
         ('product_cost', u'Product Cost'),
         ('profit', u'Gross Profit'),
+        ('returned', u'Returned'),
         ('selling_date', u'Sending Date')
     ])
 

@@ -176,6 +176,7 @@ export default {
   dashboards: {
     outbound_statements: 'Sales',
     inbound_statements: 'Inbound',
+    inventory_statements: 'Inventory',
     inbound_and_outbound_statements: 'Inbound And Outbound',
     select_type: 'Select Chart Type',
     monthly: 'Monthly',

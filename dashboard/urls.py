@@ -3,5 +3,6 @@ from . import views
 
 urlpatterns = [
 path(r'receipts/', views.ReceiptsViewSet.as_view({"get": "list"}), name="receipts"),
-path('sales/<str:type>', views.SalesViewSet.as_view({"get": "list"}), name="sales")
+path('sales/<str:type>', views.SalesViewSet.as_view({"get": "list"}), name="sales"),
+path('stock/', views.InventoryViewSet.as_view({"get": "list"}), name="stock")
 ]
