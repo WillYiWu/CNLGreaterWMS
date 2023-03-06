@@ -1079,8 +1079,6 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list.openid=self.request.auth.openid
                        pick_list.creater=str(staff_name)
                        pick_list.label_id = label_id
-                       normalorder_set[i].goods_cost = bin_set[j].goods_cost
-                       normalorder_set[i].save()
                        pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
@@ -1100,6 +1098,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                     dn_list.dn_status = 2
                     dn_list.save()
                     normalorder_set[i].dn_status = 2
+                    normalorder_set[i].goods_cost = bin_set[j].goods_cost
                     normalorder_set[i].save()
                     break
                 else:
