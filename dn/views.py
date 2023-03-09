@@ -166,34 +166,33 @@ def FillInReturnData():
         return_list = requests.get(getreturn_url, headers=headers)
         json_return_list = return_list.json()["returns"]
         for return_iterate in json_return_list:
-            if pd.to_datetime(return_iterate["registrationDateTime"]) <= timezone.now().date() - relativedelta(days=3):
-                continue
-            else:
-                for return_item in return_iterate["returnItems"]:
-                    dn_code = return_item["orderId"]
-                    goods_code = return_item["ean"]
-                    quantity = return_item["expectedQuantity"]
-                    if not FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).exists():
-                        continue
-                    else:
-                        finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).first()
-                        if finance_record.returned == False:
-                            finance_record.returned = True
-                            finance_record.selling_price = finance_record.selling_price * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                            finance_record.btw_cost = finance_record.btw_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                            finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                            finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                            if finance_record.logistic_cost == 4.98:
-                                finance_record.logistic_cost = float(finance_record.logistic_cost) +2.66
-                            elif finance_record.logistic_cost == 5.25:
-                                finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.93
-                            else:
-                                finance_record.logistic_cost = 2.66
-                            finance_record.shipped_qty = finance_record.shipped_qty - quantity
-                            finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
+            for return_item in return_iterate["returnItems"]:
+                if pd.to_datetime(return_item["processingResults"]["processingDateTime"]) <= timezone.now().date() - relativedelta(days=35):
+                    continue
+                dn_code = return_item["orderId"]
+                goods_code = return_item["ean"]
+                quantity = return_item["expectedQuantity"]
+                if not FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).exists():
+                    continue
+                else:
+                    finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).first()
+                    if finance_record.returned == False:
+                        finance_record.returned = True
+                        finance_record.selling_price = finance_record.selling_price * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                        finance_record.btw_cost = finance_record.btw_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                        finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                        finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
+                        if finance_record.logistic_cost == 4.98:
+                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.66
+                        elif finance_record.logistic_cost == 5.25:
+                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.93
+                        else:
+                            finance_record.logistic_cost = 2.66
+                        finance_record.shipped_qty = finance_record.shipped_qty - quantity
+                        finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
                                                    float(finance_record.bol_commission) - float(finance_record.product_cost) - \
                                                     float(finance_record.logistic_cost)
-                            finance_record.save()
+                        finance_record.save()
 
 class ShippinglabelViewSet(View):
     def get(self, request, dn_code, *args, **kwargs):
@@ -308,12 +307,14 @@ class BolListViewSet(viewsets.ModelViewSet):
                         if not stocklist.objects.filter(goods_code=ean).exists():
                             dn_complete = 1
                         else:
-                            can_order_stock = stocklist.objects.filter(goods_code=ean).first().can_order_stock
-                            if can_order_stock < orderitem["quantity"]:
+                            stock_list = stocklist.objects.filter(goods_code=ean).first()
+                            if stock_list.can_order_stock - stock_list.ordered_stock < orderitem["quantity"]:
                                 dn_complete = 1
                             else:
                                 if dn_complete != 1:
                                     dn_complete = 2
+                                    stock_list.ordered_stock = stock_list.ordered_stock + orderitem["quantity"]
+                                    stock_list.save()
                     if orderitem["cancellationRequest"] != False:
                         dn_complete = 3
 
@@ -426,6 +427,11 @@ class BolListViewSet(viewsets.ModelViewSet):
                 detail_list[i].dn_status = 3
                 account_name = detail_list[i].account_name
                 detail_list[i].save()
+
+                stock_list = stocklist.objects.filter(goods_code=detail_list[i].goods_code).first()
+                if detail_list[i].dn_complete == 2:
+                    stock_list.ordered_stock = stock_list.ordered_stock - detail_list[i].goods_qty
+                    stock_list.save()
 
                 if DnListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
                     dn_list = DnListModel.objects.filter(dn_code=dn_code, is_delete=False).first()
@@ -1659,6 +1665,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             stockbin_list.goods_qty = stockbin_list.goods_qty - pick_list[i].picked_qty
             stockbin_list.save()
             stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
+            stocklist_list.ordered_stock = stocklist_list.ordered_stock - pick_list[i].picked_qty
             stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
             stocklist_list.save()
             orderItems = []
