@@ -167,7 +167,7 @@ def FillInReturnData():
         json_return_list = return_list.json()["returns"]
         for return_iterate in json_return_list:
             for return_item in return_iterate["returnItems"]:
-                if pd.to_datetime(return_item["processingResults"]["processingDateTime"]) <= timezone.now().date() - relativedelta(days=35):
+                if pd.to_datetime(return_item["processingResults"][0]["processingDateTime"]) <= timezone.now().date() - relativedelta(days=35):
                     continue
                 dn_code = return_item["orderId"]
                 goods_code = return_item["ean"]
@@ -182,9 +182,9 @@ def FillInReturnData():
                         finance_record.btw_cost = finance_record.btw_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                         finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                         finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                        if finance_record.logistic_cost == 4.98:
+                        if float(finance_record.logistic_cost) == 4.98:
                             finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.66
-                        elif finance_record.logistic_cost == 5.25:
+                        elif float(finance_record.logistic_cost) == 5.25:
                             finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.93
                         else:
                             finance_record.logistic_cost = 2.66
