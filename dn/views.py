@@ -329,7 +329,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                               stock_qty=can_order_stock,
                                               orderitem_id=orderitem["orderItemId"],
                                               dn_complete=dn_complete,
-                                              customer=json_obj_detail["shipmentDetails"]["firstName"],
+                                              customer=json_obj_detail["billingDetails"]["firstName"],
                                               goods_code=ean,
                                               goods_qty=orderitem["quantity"],
                                               sending_date=sending_date,
@@ -352,7 +352,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                                            account_name=account_name,
                                            total_orderquantity=orderitem_quantity,
                                            dn_complete=dn_complete,
-                                           customer=json_obj_detail["shipmentDetails"]["firstName"],
+                                           customer=json_obj_detail["billingDetails"]["firstName"],
                                            sending_date=sending_date,
                                            create_time=order["orderPlacedDateTime"],
                                            creater=str(staff_name))
