@@ -666,7 +666,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     stockbin_list = stockbin.objects.filter(goods_code=str(data['goods_code'][j]),bin_property='Normal')
                     stocklist_list = stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j])).first()
 
-                    if stocklist_list.can_order_stock > goods_qty:
+                    if stocklist_list.can_order_stock >= goods_qty:
                         for stockbin_each in stockbin_list:
                             db_qty = stockbin_each.goods_qty
                             if tobe_picked > db_qty:
