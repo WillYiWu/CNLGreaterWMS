@@ -110,25 +110,6 @@
                   flat
                   push
                   color="purple"
-                  :icon="props.row.is_lock ? 'lock' : 'lock_open'"
-                  @click="unlock(props.row)"
-                >
-                  <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                    {{ props.row.is_lock ? $t('staff.view_staff.unlock') : $t('staff.view_staff.lock') }}
-                  </q-tooltip>
-                </q-btn>
-                <q-btn
-                  v-show="
-                    $q.localStorage.getItem('staff_type') !== 'Supplier' &&
-                      $q.localStorage.getItem('staff_type') !== 'Customer' &&
-                      $q.localStorage.getItem('staff_type') !== 'Inbound' &&
-                      $q.localStorage.getItem('staff_type') !== 'Outbound' &&
-                      $q.localStorage.getItem('staff_type') !== 'StockControl'
-                  "
-                  round
-                  flat
-                  push
-                  color="purple"
                   icon="edit"
                   @click="editData(props.row)"
                 >
