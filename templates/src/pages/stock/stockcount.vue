@@ -180,7 +180,7 @@ export default {
       ],
       pagination: {
         page: 1,
-        rowsPerPage: '30'
+        rowsPerPage: '60'
       },
       editid: 0,
       editFormData: {},

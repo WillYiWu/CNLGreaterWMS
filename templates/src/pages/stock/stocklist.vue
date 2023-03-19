@@ -97,7 +97,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '30'
+        rowsPerPage: '60'
       }
     };
   },

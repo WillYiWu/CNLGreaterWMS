@@ -36,9 +36,9 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name", "goods_code")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0).order_by("bin_name", "goods_code")
             else:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name", "goods_code")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0,id=id).order_by("bin_name", "goods_code")
         else:
             return StockBinModel.objects.none()
 
@@ -103,9 +103,9 @@ class StockListViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockListModel.objects.filter(openid=self.request.auth.openid)
+                return StockListModel.objects.filter(openid=self.request.auth.openid,onhand_stock__gt=0)
             else:
-                return StockListModel.objects.filter(openid=self.request.auth.openid, id=id)
+                return StockListModel.objects.filter(openid=self.request.auth.openid, onhand_stock__gt=0,id=id)
         else:
             return StockListModel.objects.none()
 
@@ -136,9 +136,9 @@ class StockBinViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid).order_by("bin_name")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0).order_by("bin_name")
             else:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid, id=id).order_by("bin_name")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0,id=id).order_by("bin_name")
         else:
             return StockBinModel.objects.none()
 
