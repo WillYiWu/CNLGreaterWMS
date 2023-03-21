@@ -553,6 +553,7 @@ export default {
     },
     view_picking: {
       order_qty: '订单数量',
+      available_qty: '可交付数量',
       picking_qty: '拣货数量',
       picking_qty_error: '拣货数量不得大于订单数量'
     },

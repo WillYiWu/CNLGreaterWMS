@@ -1080,6 +1080,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list.orderitem_id=normalorder_set[i].orderitem_id
                        pick_list.account_name=normalorder_set[i].account_name
                        pick_list.customer=normalorder_set[i].customer
+                       pick_list.picked_qty = picked_amount
                        pick_list.pick_qty=normalorder_set[i].goods_qty
                        pick_list.bin_name=bin_set[j].bin_name
                        pick_list.openid=self.request.auth.openid
@@ -1095,6 +1096,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                     account_name=normalorder_set[i].account_name,
                                                     customer=normalorder_set[i].customer,
                                                     pick_qty=normalorder_set[i].goods_qty,
+                                                    picked_qty=picked_amount,
                                                     bin_name=bin_set[j].bin_name,
                                                     openid=self.request.auth.openid,
                                                     label_id=label_id,
@@ -1120,6 +1122,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                         pick_list.orderitem_id = normalorder_set[i].orderitem_id
                         pick_list.account_name = normalorder_set[i].account_name
                         pick_list.customer = normalorder_set[i].customer
+                        pick_list.picked_qty = picked_amount
                         pick_list.pick_qty = normalorder_set[i].goods_qty
                         pick_list.bin_name = bin_set[j].bin_name
                         pick_list.openid = self.request.auth.openid
@@ -1137,6 +1140,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                             account_name=normalorder_set[i].account_name,
                                             customer=normalorder_set[i].customer,
                                             pick_qty=normalorder_set[i].goods_qty,
+                                            picked_qty=picked_amount,
                                             bin_name=bin_set[j].bin_name,
                                             openid=self.request.auth.openid,
                                             label_id=label_id,

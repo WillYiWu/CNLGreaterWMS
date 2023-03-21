@@ -551,7 +551,7 @@ export default {
     },
     view_picking: {
       order_qty: 'Order Quantity',
-      picking_qty: 'Pick quantity',
+      available_qty: 'Deliverable Quantity',
       picking_qty_error: 'The Picking Quantity Cannot Be Greater Than The Order Quantity'
     },
     view_shipping: {
