@@ -1678,10 +1678,10 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
         for i in range(len(dn_list)):
             dn_list[i].dn_status = 4
             dn_list[i].save()
-            dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
-            for j in range(len(dn_detail)):
-                dn_detail[j].dn_status = 4
-                dn_detail[j].save()
+        dn_detail = DnDetailModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
+        for j in range(len(dn_detail)):
+            dn_detail[j].dn_status = 4
+            dn_detail[j].save()
 
         ObtainfinanceData()
 
