@@ -300,6 +300,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 else:
                     print(orderitem["orderItemId"] + 'deliveryoption fetch fail')
 
+
                 if not goods.objects.filter(goods_code=ean, is_delete=False).exists():
                     dn_complete = 0
                 else:
@@ -308,13 +309,12 @@ class BolListViewSet(viewsets.ModelViewSet):
                             dn_complete = 1
                         else:
                             stock_list = stocklist.objects.filter(goods_code=ean).first()
-                            if stock_list.can_order_stock - stock_list.ordered_stock < orderitem["quantity"]:
+                            if stock_list.can_order_stock < orderitem["quantity"]:
                                 dn_complete = 1
                             else:
                                 if dn_complete != 1:
                                     dn_complete = 2
-                                    stock_list.ordered_stock = stock_list.ordered_stock + orderitem["quantity"]
-                                    stock_list.save()
+
                     if orderitem["cancellationRequest"] != False:
                         dn_complete = 3
 
@@ -429,9 +429,6 @@ class BolListViewSet(viewsets.ModelViewSet):
                 detail_list[i].save()
 
                 stock_list = stocklist.objects.filter(goods_code=detail_list[i].goods_code).first()
-                if detail_list[i].dn_complete == 2:
-                    stock_list.ordered_stock = stock_list.ordered_stock - detail_list[i].goods_qty
-                    stock_list.save()
 
                 if DnListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
                     dn_list = DnListModel.objects.filter(dn_code=dn_code, is_delete=False).first()
@@ -1665,7 +1662,6 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             stockbin_list.goods_qty = stockbin_list.goods_qty - pick_list[i].picked_qty
             stockbin_list.save()
             stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
-            stocklist_list.ordered_stock = stocklist_list.ordered_stock - pick_list[i].picked_qty
             stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
             stocklist_list.save()
             orderItems = []
