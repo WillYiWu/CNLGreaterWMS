@@ -89,6 +89,8 @@ def ObtainfinanceData():
     FillInReturnData()
     dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
     for i in range(len(dndetail_list)):
+        if dndetail_list[i].account_name == "Offline":
+            continue
         dn_code = dndetail_list[i].dn_code
         headers = {
             "Authorization": "Bearer " + obtain_access_token(dndetail_list[i].account_name),
@@ -694,6 +696,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                               goods_weight=goods_weight,
                                               goods_volume=goods_volume,
                                               goods_cost=goods_cost,
+                                              revenue_counted=True,
                                               creater=str(staff_name))
                     weight_list.append(goods_weight)
                     volume_list.append(goods_volume)
