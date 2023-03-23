@@ -25,6 +25,7 @@ from django.db.models import Sum
 import re
 from django.utils import timezone
 from stock.models import StockDashboardModel
+from customer.models import ListModel as customer
 
 class ReceiptsViewSet(viewsets.ModelViewSet):
     """
@@ -202,15 +203,21 @@ class SalesViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         #id = self.get_project()
         type = self.kwargs.get('type', None)
+
         if self.request.user:
             if type == "Monthly":
-                return FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=timezone.now().date() - relativedelta(days=365),
+                finance_list = FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=timezone.now().date() - relativedelta(days=365),
                                                     is_delete=False)
             else:
-                return FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=timezone.now().date() - relativedelta(days=12),
+                finance_list = FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=timezone.now().date() - relativedelta(days=12),
                                                     is_delete=False)
-        else:
-            return FinanceListModel.objects.none()
+
+        customer_list = customer.objects.filter(is_delete=False)
+        for customer_data in customer_list:
+            finance_list = finance_list.exclude(account_name=customer_data.customer_name)
+
+
+        return finance_list
 
     def get_serializer_class(self):
         if self.action in ['list']:

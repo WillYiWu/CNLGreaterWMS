@@ -641,6 +641,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                             'customer': str(data['customer']),
                             'goods_code': str(data['goods_code'][i]),
                             'goods_qty': int(data['goods_qty'][i]),
+                            'goods_price': float(data['goods_price'][i]),
                             'dn_status': 4,
                             'creater': str(staff_name)
                         }
@@ -649,6 +650,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                     else:
                         raise APIException({"detail": str(data['goods_code'][i]) + " does not exists"})
                 post_data_list = []
+                post_finance_list = []
                 weight_list = []
                 volume_list = []
                 cost_list = []
@@ -658,7 +660,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                                         is_delete=False).first()
                     goods_weight = round(goods_detail.goods_weight * int(data['goods_qty'][j]) / 1000, 4)
                     goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
-                    goods_cost = round(goods_detail.goods_price * int(data['goods_qty'][j]), 2)
+                    goods_cost = round(goods_detail.goods_cost * int(data['goods_qty'][j]), 2)
 
                     goods_qty = int(data['goods_qty'][j])
                     tobe_picked = goods_qty
@@ -698,10 +700,25 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                               goods_cost=goods_cost,
                                               revenue_counted=True,
                                               creater=str(staff_name))
+
+                    post_finance = FinanceListModel(openid=self.request.auth.openid,
+                                              dn_code=str(data['dn_code']),
+                                              account_name=str(data['customer']),
+                                              goods_code=str(data['goods_code'][j]),
+                                              goods_desc=str(goods_detail.goods_desc),
+                                              shipped_qty=int(data['goods_qty'][j]),
+                                              selling_price=float(data['goods_price'][j])*int(data['goods_qty'][j]),
+                                              product_cost=goods_cost,
+                                              profit=float(data['goods_price'][j])*int(data['goods_qty'][j])-goods_cost,
+                                              btw_cost=0,
+                                              bol_commission=0,
+                                              logistic_cost=0)
+
                     weight_list.append(goods_weight)
                     volume_list.append(goods_volume)
                     cost_list.append(goods_cost)
                     post_data_list.append(post_data)
+                    post_finance_list.append(post_finance)
                 total_weight = sumOfList(weight_list, len(weight_list))
                 total_volume = sumOfList(volume_list, len(volume_list))
                 total_cost = sumOfList(cost_list, len(cost_list))
@@ -731,6 +748,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                         transportation_list.append(transportation_detail)
                     transportation_res['detail'] = transportation_list
                 DnDetailModel.objects.bulk_create(post_data_list, batch_size=100)
+                FinanceListModel.objects.bulk_create(post_finance_list, batch_size=10)
                 DnListModel.objects.filter(openid=self.request.auth.openid, dn_code=str(data['dn_code']), is_delete=False).update(
                     customer=str(data['customer']), total_weight=total_weight, total_volume=total_volume,
                     total_cost=total_cost, transportation_fee=transportation_res)

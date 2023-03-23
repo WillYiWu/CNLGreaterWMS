@@ -111,7 +111,7 @@
             <q-tooltip content-class="bg-amber text-black shadow-4">{{ $t('index.close') }}</q-tooltip>
           </q-btn>
         </q-bar>
-       <q-card-section style="max-height: 325px; width: 400px" class="scroll">
+       <q-card-section style="max-height: 325px; width: 610px" class="scroll">
           <q-select
             filled
             use-input
@@ -138,6 +138,7 @@
               </q-item>
             </template>
           </q-select>
+          <div class="row">
           <q-input
             dense
             outlined
@@ -146,7 +147,7 @@
             v-model.number="goodsData1.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -180,10 +181,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData1.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData2.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -216,10 +230,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData2.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData3.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -252,10 +279,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData3.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData4.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -288,10 +328,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData4.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData5.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -324,10 +377,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData5.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData6.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -360,10 +426,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData6.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData7.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -396,10 +475,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData7.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData8.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -432,10 +524,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData8.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData9.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -468,10 +573,23 @@
             outlined
             square
             debounce="500"
+            v-model.number="goodsData9.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
+          <div class="row">
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
             v-model.number="goodsData10.qty"
             type="number"
             :label="$t('stock.view_stocklist.goods_qty')"
-            style="margin-bottom: 5px"
+            style="margin-bottom: 5px; margin-right:5px;"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
             <template v-slot:before>
@@ -499,6 +617,18 @@
               </q-select>
             </template>
           </q-input>
+          <q-input
+            dense
+            outlined
+            square
+            debounce="500"
+            v-model.number="goodsData10.price"
+            type="number"
+            :label="$t('finance.view_pnl.selling_price')"
+            @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
+          >
+          </q-input>
+          </div>
         </q-card-section>
         <div style="float: right; padding: 15px 15px 15px 0">
           <q-btn color="white" text-color="black" style="margin-right: 25px" @click="isEdit ? editDataCancel() : newDataCancel()">{{ $t('cancel') }}</q-btn>
@@ -783,6 +913,7 @@ export default {
         account_name: '',
         goods_code: [],
         goods_qty: [],
+        goods_price: [],
         creater: ''
       },
       pickFormData: {
@@ -791,16 +922,16 @@ export default {
         goodsData: [],
         creater: ''
       },
-      goodsData1: { bin: '', code: '', qty: '' },
-      goodsData2: { bin: '', code: '', qty: '' },
-      goodsData3: { bin: '', code: '', qty: '' },
-      goodsData4: { bin: '', code: '', qty: '' },
-      goodsData5: { bin: '', code: '', qty: '' },
-      goodsData6: { bin: '', code: '', qty: '' },
-      goodsData7: { bin: '', code: '', qty: '' },
-      goodsData8: { bin: '', code: '', qty: '' },
-      goodsData9: { bin: '', code: '', qty: '' },
-      goodsData10: { bin: '', code: '', qty: '' },
+      goodsData1: { bin: '', code: '', qty: '', price: '' },
+      goodsData2: { bin: '', code: '', qty: '', price: ''  },
+      goodsData3: { bin: '', code: '', qty: '', price: ''  },
+      goodsData4: { bin: '', code: '', qty: '', price: ''  },
+      goodsData5: { bin: '', code: '', qty: '', price: ''  },
+      goodsData6: { bin: '', code: '', qty: '', price: ''  },
+      goodsData7: { bin: '', code: '', qty: '', price: ''  },
+      goodsData8: { bin: '', code: '', qty: '', price: ''  },
+      goodsData9: { bin: '', code: '', qty: '', price: ''  },
+      goodsData10: { bin: '', code: '', qty: '', price: ''  },
       editid: 0,
       editFormData: {},
       pickedForm: false,
@@ -1154,6 +1285,7 @@ export default {
       if (_this.newFormData.customer !== '') {
         _this.newFormData.goods_code = []
         _this.newFormData.goods_qty = []
+        _this.newFormData.goods_price = []
         let goodsDataCheck = 0
         for (let i = 0; i < 10; i++) {
           const goodsData = `goodsData${i + 1}`
@@ -1168,6 +1300,7 @@ export default {
             } else {
               _this.newFormData.goods_code.push(_this[goodsData].code)
               _this.newFormData.goods_qty.push(_this[goodsData].qty)
+              _this.newFormData.goods_price.push(_this[goodsData].price)
             }
             goodsDataCheck += 1
           }
