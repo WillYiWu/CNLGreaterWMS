@@ -148,14 +148,20 @@ def FillInStockDashboardData():
     stockbin_list = stockbin.objects.filter()
     stock_quantity = 0
     stock_value = 0
-    if stockdashboard.objects.filter(create_time__date=timezone.now().date()).exists():
-        return
 
     for stock in stockbin_list:
         stock_quantity = stock_quantity + stock.goods_qty
         stock_value = stock_value + float(stock.goods_qty*stock.goods_cost)
 
-    stockdashboard.objects.create(stock_quantity=stock_quantity, stock_value=stock_value)
+    if stockdashboard.objects.filter(create_time__date=timezone.now().date()).exists():
+        stock_dasboard = stockdashboard.objects.filter(create_time__date=timezone.now().date())
+        stock_dasboard.update(stock_quantity=stock_quantity, stock_value=stock_value)
+    else:
+        stockdashboard.objects.create(stock_quantity=stock_quantity, stock_value=stock_value)
+
+    return
+
+
 
 def FillInReturnData():
     account_list = account.objects.filter(is_delete=False)
@@ -251,6 +257,7 @@ class BolListViewSet(viewsets.ModelViewSet):
 
     #[Will]New function to pull order data from BOL and store to DNList and DNDetailList
     def create(self, request, *args, **kwargs):
+        FillInStockDashboardData()
         data = self.request.data
         account_name = data['account_name']
         headers = {
