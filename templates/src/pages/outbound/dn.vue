@@ -183,7 +183,7 @@
             debounce="500"
             v-model.number="goodsData1.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -232,7 +232,7 @@
             debounce="500"
             v-model.number="goodsData2.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -281,7 +281,7 @@
             debounce="500"
             v-model.number="goodsData3.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -330,7 +330,7 @@
             debounce="500"
             v-model.number="goodsData4.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -379,7 +379,7 @@
             debounce="500"
             v-model.number="goodsData5.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -428,7 +428,7 @@
             debounce="500"
             v-model.number="goodsData6.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -477,7 +477,7 @@
             debounce="500"
             v-model.number="goodsData7.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -526,7 +526,7 @@
             debounce="500"
             v-model.number="goodsData8.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -575,7 +575,7 @@
             debounce="500"
             v-model.number="goodsData9.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>
@@ -624,7 +624,7 @@
             debounce="500"
             v-model.number="goodsData10.price"
             type="number"
-            :label="$t('finance.view_pnl.selling_price')"
+            :label="$t('finance.view_pnl.unit_price')"
             @keyup.enter="isEdit ? editDataSubmit() : newDataSubmit()"
           >
           </q-input>

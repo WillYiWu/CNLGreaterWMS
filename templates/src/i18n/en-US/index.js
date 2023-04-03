@@ -231,6 +231,7 @@ export default {
       goods_desc: 'Goods Desc',
       quantity: 'Volume',
       selling_price: 'Selling Revenue',
+      unit_price: '销售单价',
       btw: 'BTW',
       bol_commission: 'BOL Commission',
       logistic_cost: 'Logistic Cost',

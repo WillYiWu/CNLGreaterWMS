@@ -228,6 +228,7 @@ export default {
       goods_desc: '商品描述',
       quantity: '订单数量',
       selling_price: '销售金额',
+      unit_price: '销售单价',
       btw: '增值税',
       bol_commission: 'BOL费用',
       logistic_cost: '物流费用',
