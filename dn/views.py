@@ -1697,7 +1697,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
                     stockbin_item.save()
                     break
                 else:
-                    tobe_picked = tobe_picked - stockbin_list.goods_qty
+                    tobe_picked = tobe_picked - stockbin_item.goods_qty
                     stockbin_item.goods_qty = 0
                     stockbin_item.save()
             stocklist_list = stocklist.objects.filter(goods_code=pick_list[i].goods_code).first()
