@@ -199,7 +199,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '60'
+        rowsPerPage: '80'
       }
     }
   },
