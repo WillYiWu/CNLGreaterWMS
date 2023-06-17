@@ -18,6 +18,11 @@ const routes = [{
           children: [{
             path: 'outbounddashboard',
             name: 'outbounddashboard',
+            component: () => import('pages/dashboard/outboundlogin.vue')
+          },
+          {
+            path: 'newoutbound',
+            name: 'newoutbound',
             component: () => import('pages/dashboard/outbound.vue')
           },
           {
@@ -310,6 +315,11 @@ const routes = [{
           {
             path: 'PNL',
             name: 'PNL',
+            component: () => import('pages/finance/financelogin.vue')
+          },
+          {
+            path: 'newPNL',
+            name: 'newPNL',
             component: () => import('pages/finance/PNL.vue')
           }
           ]

@@ -72,6 +72,7 @@ export default {
   loadmore: '加载更多',
   new: '新增',
   newtip: '新增一条数据',
+  password: '请输入访问密码',
   fetch: '获取',
   fetchtip: '获取此BOL账号订单',
   refresh: '刷新',

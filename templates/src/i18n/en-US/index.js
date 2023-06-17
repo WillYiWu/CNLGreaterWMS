@@ -77,6 +77,7 @@ export default {
   loadmore: 'Load More',
   new: 'new',
   newtip: 'New A Data',
+  password: 'please put password',
   fetch: 'Fetch',
   fetchtip: 'Fetch Orders From This BOL Account',
   refresh: 'Refresh',
