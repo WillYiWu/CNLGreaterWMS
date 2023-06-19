@@ -210,9 +210,14 @@ const routes = [{
           name: 'goods',
           component: () => import('pages/goods/goods.vue'),
           children: [{
+            path: 'newgoodslist',
+            name: 'newgoodslist',
+            component: () => import('pages/goods/goodslist.vue')
+          },
+          {
             path: 'goodslist',
             name: 'goodslist',
-            component: () => import('pages/goods/goodslist.vue')
+            component: () => import('pages/goods/goodslogin.vue')
           },
           {
             path: 'goodsunit',
