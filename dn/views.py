@@ -385,28 +385,46 @@ class BolListViewSet(viewsets.ModelViewSet):
         time.sleep(1)
 
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
+        label_id_empty = False
         for order in dndetail_list:
             labelprocess_id = order.labelprocess_id
             process_result = requests.get(getlabelid_url+labelprocess_id,headers=headers)
             if process_result.status_code == 200:
-                print(order.orderitem_id + labelprocess_id + 'error')
+                print(order.orderitem_id + labelprocess_id + 'success')
                 status = process_result.json()["status"]
                 if status == 'SUCCESS':
                     label_id = process_result.json()["entityId"]
                     order.label_id = label_id
                     order.save()
-            #Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
-                    response = requests.get(getlabel_url+label_id,headers=headers_label)
-                    if response.status_code == 200:
-                        if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
-                            with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
-                                file.write(response.content)
-                            print(order.orderitem_id + 'PDF file saved successfully')
-                        else:
-                            print('Error: The response is not a PDF file')
+                else:
+                    label_id_empty = True
             else:
-                print(f'Error: Failed to download the PDF file. Status code: {response.status_code}')
+                print(f'Error: Failed to download the PDF file. Status code: {process_result.status_code}')
 
+        if label_id_empty == True:
+            time.sleep(3)
+            for order in dndetail_list:
+                if order.label_id == '':
+                    process_result = requests.get(getlabelid_url + order.labelprocess_id, headers=headers)
+                    if process_result.status_code == 200:
+                        print(order.orderitem_id + labelprocess_id + 'success')
+                        status = process_result.json()["status"]
+                        if status == 'SUCCESS':
+                            label_id = process_result.json()["entityId"]
+                            order.label_id = label_id
+                            order.save()
+
+
+        for order in dndetail_list:
+            # Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
+            response = requests.get(getlabel_url + order.label_id, headers=headers_label)
+            if response.status_code == 200:
+                if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
+                    with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
+                        file.write(response.content)
+                    print(order.orderitem_id + 'PDF file saved successfully')
+                else:
+                    print('Error: The response is not a PDF file')
 
         return Response({"detail": "success"}, status=200)
 
