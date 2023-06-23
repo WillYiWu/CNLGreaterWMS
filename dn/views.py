@@ -277,7 +277,7 @@ class BolListViewSet(viewsets.ModelViewSet):
         response_list = requests.get(dnlist_url, headers=headers)
         json_obj_list = response_list.json()
         if len(json_obj_list) == 0:
-            return Response("No order is fetched")
+            return Response({"detail": "No order"}, status=200)
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
@@ -422,7 +422,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
                     with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
                         file.write(response.content)
-                    print(order.orderitem_id + 'PDF file saved successfully')
+                    print(order.dn_code + 'PDF file saved successfully')
                 else:
                     print('Error: The response is not a PDF file')
 
