@@ -1099,7 +1099,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         #[Will] Rewrite the whole create function of pickinglist, to generate pickinglist with data from DNDetaillist and Bin info
-        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status=1, dn_complete=2, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status__lte=2, dn_complete=2, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
 
