@@ -371,7 +371,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 dn_list.save()
 
         #Create shipping label for all detailed orders with dn_complete = 2
-        dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
+        dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
         for order in dndetail_list:
             labeloffer_id = order.labeloffer_id
             order_item = []
@@ -384,7 +384,7 @@ class BolListViewSet(viewsets.ModelViewSet):
 
         time.sleep(1)
 
-        dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status=1, is_delete=False)
+        dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
         label_id_empty = False
         for order in dndetail_list:
             labelprocess_id = order.labelprocess_id
