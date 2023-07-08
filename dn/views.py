@@ -277,7 +277,7 @@ class BolListViewSet(viewsets.ModelViewSet):
         response_list = requests.get(dnlist_url, headers=headers)
         json_obj_list = response_list.json()
         if len(json_obj_list) == 0:
-            return Response({"detail": "No order"}, status=200)
+            return Response({"detail": "没有新订单"}, status=200)
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
         #A loop to extract all orders, and generate DN per order, and count orderitem number for each order
@@ -304,6 +304,8 @@ class BolListViewSet(viewsets.ModelViewSet):
                     for option in deliveryoption_json["deliveryOptions"]:
                         if option["recommended"] == True:
                             sending_date = pd.to_datetime(option["handoverDetails"]["latestHandoverDateTime"])
+                            if sending_date.weekday() == 0:
+                                sending_date = sending_date - pd.Timedelta(days=2)
                             labeloffer_id = option["shippingLabelOfferId"]
                             break
                 else:
@@ -390,10 +392,12 @@ class BolListViewSet(viewsets.ModelViewSet):
             labelprocess_id = order.labelprocess_id
             process_result = requests.get(getlabelid_url+labelprocess_id,headers=headers)
             if process_result.status_code == 200:
-                print(order.orderitem_id + labelprocess_id + 'success')
                 status = process_result.json()["status"]
                 if status == 'SUCCESS':
+                    print(order.dn_code + 'success')
                     label_id = process_result.json()["entityId"]
+                    if label_id == '':
+                        label_id_empty = True
                     order.label_id = label_id
                     order.save()
                 else:
@@ -403,14 +407,17 @@ class BolListViewSet(viewsets.ModelViewSet):
 
         if label_id_empty == True:
             time.sleep(3)
+            label_id_empty = False
             for order in dndetail_list:
                 if order.label_id == '':
                     process_result = requests.get(getlabelid_url + order.labelprocess_id, headers=headers)
                     if process_result.status_code == 200:
-                        print(order.orderitem_id + labelprocess_id + 'success')
                         status = process_result.json()["status"]
                         if status == 'SUCCESS':
+                            print(order.dn_code + 'success')
                             label_id = process_result.json()["entityId"]
+                            if label_id == '':
+                                label_id_empty = True
                             order.label_id = label_id
                             order.save()
 
@@ -426,7 +433,10 @@ class BolListViewSet(viewsets.ModelViewSet):
                 else:
                     print('Error: The response is not a PDF file')
 
-        return Response({"detail": "success"}, status=200)
+        if label_id_empty == True:
+            return Response({"detail": "面单未取全"}, status=200)
+        else:
+            return Response({"detail": "success"}, status=200)
 
     #[Will] When EAN is not matching or stock is insufficient, cancel order and inform BOL
     def destroy(self, request, *args, **kwargs):
