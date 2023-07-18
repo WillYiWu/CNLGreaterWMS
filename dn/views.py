@@ -420,6 +420,8 @@ class BolListViewSet(viewsets.ModelViewSet):
                                 label_id_empty = True
                             order.label_id = label_id
                             order.save()
+                        else:
+                            label_id_empty = True
 
 
         for order in dndetail_list:
