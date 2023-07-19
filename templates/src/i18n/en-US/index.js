@@ -317,7 +317,8 @@ export default {
       error6: 'Goods Depth Must Greater Than 0',
       error7: 'Goods Height Must Greater Than 0',
       error8: 'Please Enter the Goods Cost',
-      error9: 'Please Enter the Goods Price'
+      error9: 'Please Enter the Goods Price',
+      labelid: 'LabelID'
     },
     view_unit: {
       goods_unit: 'Goods Unit',

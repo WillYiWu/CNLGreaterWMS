@@ -314,7 +314,8 @@ export default {
       error6: '商品宽度必须大于0',
       error7: '商品高度必须大于0',
       error8: '请输入商品成本',
-      error9: '请输入商品价格'
+      error9: '请输入商品价格',
+      labelid: '面单ID'
     },
     view_unit: {
       goods_unit: '商品单位',

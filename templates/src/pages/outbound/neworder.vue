@@ -68,6 +68,9 @@
              <q-td key="creater" :props="props">
                {{ props.row.creater }}
              </q-td>
+             <q-td key="creater" :props="props">
+               {{ props.row.label_id }}
+             </q-td>
              <q-td key="create_time" :props="props">
                {{ props.row.create_time }}
              </q-td>
@@ -128,6 +131,7 @@ export default {
         { name: 'goods_qty', label: this.$t('outbound.view_dn.goods_qty'), field: 'goods_qty', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
+        { name: 'labelid', label: this.$t('goods.view_goodslist.labelid'), field: 'labelid', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' }
       ],
