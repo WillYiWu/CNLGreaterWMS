@@ -103,9 +103,9 @@ class StockListViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockListModel.objects.filter(openid=self.request.auth.openid,onhand_stock__gt=0)
+                return StockListModel.objects.filter(openid=self.request.auth.openid,onhand_stock__gt=0).order_by("can_order_stock")
             else:
-                return StockListModel.objects.filter(openid=self.request.auth.openid, onhand_stock__gt=0,id=id)
+                return StockListModel.objects.filter(openid=self.request.auth.openid, onhand_stock__gt=0,id=id).order_by("can_order_stock")
         else:
             return StockListModel.objects.none()
 
