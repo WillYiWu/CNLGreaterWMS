@@ -104,7 +104,7 @@ export default {
   methods: {
     getList() {
       var _this = this;
-      getauth(_this.pathname + '?ordering=-update_time', {})
+      getauth(_this.pathname, {})
         .then(res => {
           _this.table_list = res.results;
           _this.pathname_previous = res.previous;
@@ -121,7 +121,7 @@ export default {
     getSearchList() {
       var _this = this;
       if (LocalStorage.has('auth')) {
-        getauth(_this.pathname + '?ordering=-update_time' + '&goods_code__icontains=' + _this.filter, {})
+        getauth(_this.pathname + '&goods_code__icontains=' + _this.filter, {})
           .then(res => {
             _this.table_list = res.results;
             _this.pathname_previous = res.previous;
