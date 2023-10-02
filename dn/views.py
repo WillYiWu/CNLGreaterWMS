@@ -355,7 +355,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 if not created:
                     obj.goods_desc = goods_desc
                     obj.save()
-                time.sleep(0.01)
+                time.sleep(0.1)
                 """
                 if not DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).exists():
                     DnDetailModel.objects.create(openid=self.request.auth.openid,
@@ -403,7 +403,7 @@ class BolListViewSet(viewsets.ModelViewSet):
             if not created:
                 obj_dn.dn_complete = dn_complete
                 obj_dn.save()
-            time.sleep(0.1)
+
             """
             if not DnListModel.objects.filter(dn_code=order["orderId"],account_name=account_name,is_delete=False).exists():
                 DnListModel.objects.create(openid=self.request.auth.openid,
