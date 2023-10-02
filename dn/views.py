@@ -331,6 +331,32 @@ class BolListViewSet(viewsets.ModelViewSet):
 
                     goods_desc = goods.objects.filter(goods_code=ean, is_delete=False).first().goods_desc
 
+                data = {
+                    "openid": self.request.auth.openid,
+                    "dn_code": order["orderId"],
+                    "dn_status": 1,
+                    "goods_desc": goods_desc,
+                    "account_name": account_name,
+                    "stock_qty": can_order_stock,
+                    "orderitem_id": orderitem["orderItemId"],
+                    "dn_complete": dn_complete,
+                    "customer": json_obj_detail["shipmentDetails"]["firstName"],
+                    "goods_code": ean,
+                    "goods_qty": orderitem["quantity"],
+                    "sending_date": sending_date,
+                    "labeloffer_id": labeloffer_id,
+                    "creater": str(staff_name)
+                }
+                obj, created = DnDetailModel.objects.get_or_create(
+                    orderitem_id=orderitem["orderItemId"],
+                    is_delete=False,
+                    defaults=data
+                )
+                if not created:
+                    obj.goods_desc = goods_desc
+                    obj.save()
+                time.sleep(0.01)
+                """
                 if not DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).exists():
                     DnDetailModel.objects.create(openid=self.request.auth.openid,
                                               dn_code=order["orderId"],
@@ -350,12 +376,35 @@ class BolListViewSet(viewsets.ModelViewSet):
                     dndetail_list = DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).first()
                     dndetail_list.goods_desc = goods_desc
                     dndetail_list.save()
-
+                 """
             dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False)
             for i in range(len(dndetail_list)):
                 dndetail_list[i].dn_complete = dn_complete
                 dndetail_list[i].save()
 
+            data_dn = {
+                "openid": self.request.auth.openid,
+                "dn_code": order["orderId"],
+                "dn_status": 1,
+                "account_name": account_name,
+                "total_orderquantity": orderitem_quantity,
+                "dn_complete": dn_complete,
+                "customer": json_obj_detail["shipmentDetails"]["firstName"],
+                "sending_date": sending_date,
+                "create_time": order["orderPlacedDateTime"],
+                "creater": str(staff_name)
+            }
+
+            obj_dn, created = DnListModel.objects.get_or_create(
+                dn_code=order["orderId"],
+                account_name=account_name,
+                is_delete=False
+            )
+            if not created:
+                obj_dn.dn_complete = dn_complete
+                obj_dn.save()
+            time.sleep(0.1)
+            """
             if not DnListModel.objects.filter(dn_code=order["orderId"],account_name=account_name,is_delete=False).exists():
                 DnListModel.objects.create(openid=self.request.auth.openid,
                                            dn_code=order["orderId"],
@@ -371,6 +420,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 dn_list = DnListModel.objects.filter(dn_code=order["orderId"], is_delete=False).first()
                 dn_list.dn_complete = dn_complete
                 dn_list.save()
+            """
 
         #Create shipping label for all detailed orders with dn_complete = 2
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
