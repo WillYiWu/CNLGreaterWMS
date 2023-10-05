@@ -29,7 +29,32 @@ jobs:
       
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16  # Install Node.js 16
+
+      - name: Install Quasar CLI
+        run: npm install -g @quasar/cli  # Install Quasar CLI globally
+
+      - name: Install Python Dependencies
+        run: pip install -r requirements.txt  # Install Python dependencies
+
+      - name: Install Node.js Dependencies
+        run: |
+          cd templates
+          npm install  # Install Node.js dependencies based on package.json
+
+      - name: Build Quasar App
+        run: |
+          quasar build
+
+      - name: Start Django Server
+        run: |
+          cd ..
+          python manage.py runserver 0.0.0.0:8008
+          
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       
       - name: Upload artifact for deployment jobs
@@ -39,6 +64,7 @@ jobs:
           path: |
             . 
             !venv/
+
 
   deploy:
     runs-on: ubuntu-latest
