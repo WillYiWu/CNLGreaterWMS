@@ -53,20 +53,6 @@ jobs:
         run: |
           yarn install
           
-      - name: Build Quasar App
-        run: |
-          quasar build
-          
-      - name: data migration
-        run: |
-          cd ..
-          python manage.py makemigrations
-          python manage.py migrate
-
-      - name: Start Django Server
-        run: |
-          python manage.py runserver 0.0.0.0:8008
-          
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       
       - name: Upload artifact for deployment jobs
