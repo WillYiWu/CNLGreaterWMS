@@ -29,30 +29,7 @@ jobs:
       
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16  # Install Node.js 16
-          
-      - name: Install yarn
-        run: npm install yarn -g
-      
-      - name: Install Quasar CLI
-        run: npm install -g @quasar/cli  # Install Quasar CLI globally
-
-      - name: Install Python Dependencies
-        run: pip install -r requirements.txt  # Install Python dependencies
-
-      - name: Install Node.js Dependencies
-        run: |
-          cd templates
-          npm install  # Install Node.js dependencies based on package.json
-
-      - name: Install yarn
-        run: |
-          yarn install
-          
+        
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       
       - name: Upload artifact for deployment jobs
@@ -62,7 +39,6 @@ jobs:
           path: |
             . 
             !venv/
-
 
   deploy:
     runs-on: ubuntu-latest
@@ -84,4 +60,4 @@ jobs:
         with:
           app-name: 'CNLWMS'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1F7FE24CA1D24300AA09429E7C37C7C4 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_278C08D03FC74CC798351CD35BC4AC4F }}
