@@ -21,7 +21,7 @@ class TransportationFeeListModel(models.Model):
 
 class FinanceListModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
-    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
+    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID", unique=True)
     account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     goods_desc = models.CharField(max_length=255, default='', verbose_name="Goods Code")
