@@ -398,7 +398,8 @@ class BolListViewSet(viewsets.ModelViewSet):
             obj_dn, created = DnListModel.objects.get_or_create(
                 dn_code=order["orderId"],
                 account_name=account_name,
-                is_delete=False
+                is_delete=False,
+                defaults=data_dn
             )
             if not created:
                 obj_dn.dn_complete = dn_complete
