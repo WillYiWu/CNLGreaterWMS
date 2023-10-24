@@ -1208,7 +1208,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                     label_id=label_id,
                                                     creater=str(staff_name))
 
-                    dn_list = DnListModel.objects.filter(dn_code=normalorder_set[i].dn_code, is_delete=False).first()
+                    dn_list = DnListModel.objects.filter(dn_code=normalorder_set[i].dn_code, account_name=normalorder_set[i].account_name, is_delete=False).first()
                     dn_list.dn_status = 2
                     dn_list.save()
                     normalorder_set[i].dn_status = 2
