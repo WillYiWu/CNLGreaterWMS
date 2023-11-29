@@ -355,7 +355,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 if not created:
                     obj.goods_desc = goods_desc
                     obj.save()
-                #time.sleep(0.1)
+                time.sleep(0.1)
                 """
                 if not DnDetailModel.objects.filter(orderitem_id=orderitem["orderItemId"], is_delete=False).exists():
                     DnDetailModel.objects.create(openid=self.request.auth.openid,
@@ -435,7 +435,7 @@ class BolListViewSet(viewsets.ModelViewSet):
             order.labelprocess_id = labelprocess_id
             order.save()
 
-        #time.sleep(1)
+        time.sleep(1)
 
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
         label_id_empty = False
@@ -457,7 +457,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 print(f'Error: Failed to download the PDF file. Status code: {process_result.status_code}')
 
         if label_id_empty == True:
-            #time.sleep(3)
+            time.sleep(3)
             label_id_empty = False
             for order in dndetail_list:
                 if order.label_id == '':
