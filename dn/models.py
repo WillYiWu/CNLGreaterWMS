@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class DnListModel(models.Model):
-    dn_code = models.CharField(max_length=255, verbose_name="DN Code")
+    dn_code = models.CharField(max_length=255, verbose_name="DN Code",unique=True)
     #[Will] 1:created/imported; 2:pickup list generated; 3:cancelled; 4: delivered
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
     #[Will] Add a new field to indicate total number of items in an order
@@ -35,7 +35,7 @@ class DnDetailModel(models.Model):
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
     # 3:cancelled by customer; 2:sufficient stock; 1:insufficient stock; 0:Unmatched EAN
     dn_complete = models.IntegerField(default=2, verbose_name="DN Incomplete")
-    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
+    orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID",unique=True)
     account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     labeloffer_id = models.CharField(max_length=255, default='', verbose_name="LabelOffer ID")
     label_id = models.CharField(max_length=255, default='', verbose_name="Label ID")
