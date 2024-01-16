@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class DnListModel(models.Model):
-    dn_code = models.CharField(max_length=255, verbose_name="DN Code",unique=True)
+    dn_code = models.CharField(max_length=255, verbose_name="DN Code")
     #[Will] 1:created/imported; 2:pickup list generated; 3:cancelled; 4: delivered
     dn_status = models.BigIntegerField(default=1, verbose_name="DN Status")
     #[Will] Add a new field to indicate total number of items in an order
@@ -29,6 +29,7 @@ class DnListModel(models.Model):
         verbose_name = 'DN List'
         verbose_name_plural = "DN List"
         ordering = ['-id']
+        unique_together = ['dn_code', 'account_name']
 
 class DnDetailModel(models.Model):
     dn_code = models.CharField(max_length=255, verbose_name="DN Code")
