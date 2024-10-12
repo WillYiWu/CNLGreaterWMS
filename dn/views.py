@@ -191,11 +191,11 @@ def FillInReturnData():
                         finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                         finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
                         if float(finance_record.logistic_cost) == 4.98:
-                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.66
+                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.79
                         elif float(finance_record.logistic_cost) == 5.25:
-                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.93
+                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 3.07
                         else:
-                            finance_record.logistic_cost = 2.66
+                            finance_record.logistic_cost = 2.79
                         finance_record.shipped_qty = finance_record.shipped_qty - quantity
                         finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
                                                    float(finance_record.bol_commission) - float(finance_record.product_cost) - \
