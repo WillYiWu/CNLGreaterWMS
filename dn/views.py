@@ -94,7 +94,7 @@ def ObtainfinanceData():
         dn_code = dndetail_list[i].dn_code
         headers = {
             "Authorization": "Bearer " + obtain_access_token(dndetail_list[i].account_name),
-            "Accept": "application/vnd.retailer.v8+json"
+            "Accept": "application/vnd.retailer.v10+json"
         }
         response_list = requests.get(dnorder_url+dn_code, headers=headers).json()
         if response_list is not None:
@@ -169,7 +169,7 @@ def FillInReturnData():
         account_name = accounts.account_name
         headers = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
-            "Accept": "application/vnd.retailer.v8+json"
+            "Accept": "application/vnd.retailer.v10+json"
         }
         return_list = requests.get(getreturn_url, headers=headers)
         json_return_list = return_list.json()["returns"]
@@ -262,17 +262,17 @@ class BolListViewSet(viewsets.ModelViewSet):
         account_name = data['account_name']
         headers = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
-            "Accept": "application/vnd.retailer.v8+json"
+            "Accept": "application/vnd.retailer.v10+json"
         }
         headers_deliveryoption = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
-            "Accept": "application/vnd.retailer.v8+json",
-            "Content-Type": "application/vnd.retailer.v8+json"
+            "Accept": "application/vnd.retailer.v10+json",
+            "Content-Type": "application/vnd.retailer.v10+json"
         }
         headers_label = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
-            "Accept": "application/vnd.retailer.v8+pdf",
-            "Content-Type": "application/vnd.retailer.v8+json"
+            "Accept": "application/vnd.retailer.v10+pdf",
+            "Content-Type": "application/vnd.retailer.v10+json"
         }
         response_list = requests.get(dnlist_url, headers=headers)
         json_obj_list = response_list.json()
@@ -479,7 +479,7 @@ class BolListViewSet(viewsets.ModelViewSet):
             # Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
             response = requests.get(getlabel_url + order.label_id, headers=headers_label)
             if response.status_code == 200:
-                if 'application/vnd.retailer.v8+pdf' in response.headers['content-type']:
+                if 'application/vnd.retailer.v10+pdf' in response.headers['content-type']:
                     with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
                         file.write(response.content)
                     print(order.dn_code + 'PDF file saved successfully')
@@ -541,8 +541,8 @@ class BolListViewSet(viewsets.ModelViewSet):
 
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(account_name),
-                "Accept": "application/vnd.retailer.v8+json",
-                "Content-Type": "application/vnd.retailer.v8+json"
+                "Accept": "application/vnd.retailer.v10+json",
+                "Content-Type": "application/vnd.retailer.v10+json"
             }
             response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
             return Response({"detail": "success"}, status=200)
@@ -983,8 +983,8 @@ class DnDetailViewSet(viewsets.ModelViewSet):
 
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(account_name),
-                "Accept": "application/vnd.retailer.v8+json",
-                "Content-Type": "application/vnd.retailer.v8+json"
+                "Accept": "application/vnd.retailer.v10+json",
+                "Content-Type": "application/vnd.retailer.v10+json"
             }
             response = requests.put(cancelorder_url, json.dumps(cancel_data), headers=headers)
             return Response({"detail": "success"}, status=200)
@@ -1790,8 +1790,8 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             shipment_data = {"orderItems": orderItems,"shippingLabelId": pick_list[i].label_id }
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(pick_list[i].account_name),
-                "Accept": "application/vnd.retailer.v8+json",
-                "Content-Type": "application/vnd.retailer.v8+json"
+                "Accept": "application/vnd.retailer.v10+json",
+                "Content-Type": "application/vnd.retailer.v10+json"
             }
             result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
 
