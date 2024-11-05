@@ -53,7 +53,7 @@ from rest_framework.decorators import action
 dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=OPEN"
 dnorder_url = "https://api.bol.com/retailer/orders/"
 cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
-shipment_url = "https://api.bol.com/retailer/orders/shipment"
+shipment_url = "https://api.bol.com/retailer/shipments"
 createlabel_url = "https://api.bol.com/retailer/shipping-labels"
 deliveryoption_url = "https://api.bol.com/retailer/shipping-labels/delivery-options"
 getlabel_url = "https://api.bol.com/retailer/shipping-labels/"
