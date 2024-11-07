@@ -1786,14 +1786,14 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
             stocklist_list.save()
             orderItems = []
-            orderItems.append({'orderItemId': pick_list[i].orderitem_id})
+            orderItems.append({'orderItemId': pick_list[i].orderitem_id, 'quantity': pick_list[i].pick_qty})
             shipment_data = {"orderItems": orderItems,"shippingLabelId": pick_list[i].label_id }
             headers = {
                 "Authorization": "Bearer " + obtain_access_token(pick_list[i].account_name),
                 "Accept": "application/vnd.retailer.v10+json",
                 "Content-Type": "application/vnd.retailer.v10+json"
             }
-            result = requests.put(shipment_url, json.dumps(shipment_data), headers=headers)
+            result = requests.post(shipment_url, json.dumps(shipment_data), headers=headers)
 
         dn_list = DnListModel.objects.filter(openid=self.request.auth.openid,dn_status=2, is_delete=0)
         for i in range(len(dn_list)):
