@@ -58,8 +58,8 @@
              <q-td key="creater" :props="props">
                {{ props.row.creater }}
              </q-td>
-             <q-td key="create_time" :props="props">
-               {{ props.row.create_time }}
+             <q-td key="sending_date" :props="props">
+               {{ props.row.sending_date }}
              </q-td>
              <q-td key="update_time" :props="props">
                {{ props.row.update_time }}
@@ -136,7 +136,7 @@ export default {
         { name: 'stock_qty', label: this.$t('stock.view_stocklist.can_order_stock'), field: 'stock_qty', align: 'center' },
         { name: 'customer', label: this.$t('baseinfo.view_customer.customer_name'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
-        { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
+        { name: 'sending_date', label: this.$t('shipdate'), field: 'sending_date', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
       ],
       deleteForm: false,

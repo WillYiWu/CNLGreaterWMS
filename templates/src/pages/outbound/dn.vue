@@ -67,7 +67,7 @@
             <q-td key="total_orderquantity" :props="props">{{ props.row.total_orderquantity }}</q-td>
             <q-td key="customer" :props="props">{{ props.row.customer }}</q-td>
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
-            <q-td key="create_time" :props="props">{{ props.row.create_time }}</q-td>
+            <q-td key="sending_date" :props="props">{{ props.row.sending_date }}</q-td>
             <q-td key="update_time" :props="props">{{ props.row.update_time }}</q-td>
             <q-td key="action" :props="props" style="width: 100px">
               <q-btn
@@ -909,7 +909,7 @@ export default {
         { name: 'total_orderquantity', label: this.$t('outbound.view_dn.total_orderquantity'), field: 'total_orderquantity', align: 'center' },
         { name: 'customer', label: this.$t('outbound.view_dn.customer'), field: 'customer', align: 'center' },
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
-        { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
+        { name: 'sending_date', label: this.$t('shipdate'), field: 'sending_date', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
         { name: 'action', label: this.$t('action'), align: 'right' }
       ],
