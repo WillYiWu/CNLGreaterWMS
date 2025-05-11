@@ -1,9 +1,8 @@
 <template>
   <q-page class="flex flex-top">
-<template>
-  <div class="q-pa-md">
-    <div class="q-gutter-y-md" style="max-width: 100%">
-      <q-tabs v-model="detaillink">
+    <div class="q-pa-md">
+      <div class="q-gutter-y-md" style="max-width: 100%">
+        <q-tabs v-model="detaillink">
           <q-tab name="dn" :label="$t('outbound.dn')" icon="img:statics/outbound/dnlist.png" @click="navigate('dn')" />
           <q-tab name="freshorder" :label="$t('outbound.wrongorder')" icon="img:statics/outbound/freshorder.png" @click="navigate('freshorder')" />
           <q-tab name="customercancel" :label="$t('outbound.customercancel')" icon="img:statics/outbound/pickstock.png" @click="navigate('customercancel')" />
@@ -11,10 +10,9 @@
           <q-tab name="neworder" :label="$t('outbound.neworder')" icon="img:statics/outbound/order.png" @click="navigate('neworder')" />
           <q-tab name="pickinglist" :label="$t('outbound.pickinglist')" icon="img:statics/outbound/pickinglist.png" @click="navigate('pickinglist')" />
           <q-tab name="shippedstock" :label="$t('outbound.shippedstock')" icon="img:statics/outbound/outbound.png" @click="navigate('shippedstock')" />
-      </q-tabs>
+        </q-tabs>
+      </div>
     </div>
-  </div>
-</template>
     <div class="main-table">
       <router-view />
     </div>
@@ -26,7 +24,7 @@ export default {
   name: 'Pageoutbound',
   data () {
     return {
-      detaillink: 'dn'
+      detaillink: 'dn',
     }
   },
   methods: {

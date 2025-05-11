@@ -148,7 +148,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '100'
+        rowsPerPage: '120'
       },
       createDate1: '',
       createDate2: '',

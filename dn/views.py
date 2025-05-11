@@ -60,6 +60,21 @@ getlabel_url = "https://api.bol.com/retailer/shipping-labels/"
 getlabelid_url = "https://api.bol.com/shared/process-status/"
 getreturn_url = "https://api.bol.com/retailer/returns?handled=true&fulfilment-method=FBR"
 
+# At the top of the file, with other imports and variables
+current_ship_date = datetime.today().strftime("%Y-%m-%d")
+
+def parse_date(date_str):
+    """Parse date string in either YYYY-MM-DD or YYYY/MM/DD format"""
+    try:
+        # Try with hyphens first
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        try:
+            # Try with slashes
+            return datetime.strptime(date_str, "%Y/%m/%d")
+        except ValueError:
+            # If both fail, return today's date
+            return datetime.today()
 
 def merge_pdfs(pdf_files, output_file):
     # Creating PDF object using the first pdf file
@@ -87,7 +102,7 @@ def obtain_access_token(account_name):
 def ObtainfinanceData():
     FillInStockDashboardData()
     FillInReturnData()
-    dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
+    dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False).order_by('dn_code')
     for i in range(len(dndetail_list)):
         if dndetail_list[i].account_name == "Offline":
             continue
@@ -257,8 +272,11 @@ class BolListViewSet(viewsets.ModelViewSet):
 
     #[Will]New function to pull order data from BOL and store to DNList and DNDetailList
     def create(self, request, *args, **kwargs):
-        FillInStockDashboardData()
+        global current_ship_date
         data = self.request.data
+        date_str = data.get('shipdate', datetime.today().strftime("%Y-%m-%d"))
+        current_ship_date = parse_date(date_str).strftime("%Y-%m-%d")
+        FillInStockDashboardData()
         account_name = data['account_name']
         headers = {
             "Authorization": "Bearer " + obtain_access_token(account_name),
@@ -571,6 +589,7 @@ class DnListViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', "create_time", "update_time", ]
     filter_class = DnListFilter
 
+
     def get_project(self):
         try:
             id = self.kwargs.get('pk')
@@ -579,6 +598,7 @@ class DnListViewSet(viewsets.ModelViewSet):
             return None
 
     def get_queryset(self):
+        global current_ship_date
         id = self.get_project()
         if self.request.user:
             empty_qs = DnListModel.objects.filter(
@@ -591,10 +611,10 @@ class DnListViewSet(viewsets.ModelViewSet):
                         empty_qs[i].delete()
             if id is None:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)) & ~Q(customer='')).order_by('account_name','dn_complete', 'dn_code')
+                    Q(openid=self.request.auth.openid, dn_status__lte=2, is_delete=False, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)) & ~Q(customer='')).order_by('account_name','dn_complete', 'dn_code')
             else:
                 return DnListModel.objects.filter(
-                    Q(openid=self.request.auth.openid, id=id, is_delete=False, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)) & ~Q(customer=''))
+                    Q(openid=self.request.auth.openid, id=id, is_delete=False, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)) & ~Q(customer=''))
         else:
             return DnListModel.objects.none()
 
@@ -686,6 +706,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         #[Will] Show DNDetailList either by all or by dn_code
+        global current_ship_date
         dn_code = self.kwargs.get('dn_code', None)
         dn_complete = int(self.request.query_params.get('dn_complete', None))
         dn_status = int(self.request.query_params.get('dn_status', None))
@@ -696,10 +717,10 @@ class DnDetailViewSet(viewsets.ModelViewSet):
 
         if dn_code != 'undefined':
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
+                                                dn_complete=dn_complete, dn_status=dn_status, dn_code=dn_code, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         else:
             result = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False,
-                                                dn_complete=dn_complete, dn_status=dn_status, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
+                                                dn_complete=dn_complete, dn_status=dn_status, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         return result
 
     def get_serializer_class(self):
@@ -1162,7 +1183,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         #[Will] Rewrite the whole create function of pickinglist, to generate pickinglist with data from DNDetaillist and Bin info
-        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status__lte=2, dn_complete=2, sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59))
+        normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status__lte=2, dn_complete=2, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59))
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
 
@@ -1256,7 +1277,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                  dn_status__lte=2,
                                                  dn_complete=2,
                                                  is_delete=False,
-                                                 sending_date__lte=datetime.today().replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
+                                                 sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         pdf_list = []
         for dnlist in dnlist_list:
             pdf_list.append(dnlist.account_name+dnlist.dn_code+".pdf")

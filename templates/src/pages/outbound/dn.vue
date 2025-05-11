@@ -1,5 +1,21 @@
 <template>
   <div>
+    <div class="q-pa-md">
+      <div class="q-gutter-y-md" style="max-width: 100%">
+        <!-- Date Picker -->
+        <div class="q-mb-md">
+          <q-input readonly outlined dense v-model="selectedDate" :placeholder="$t('Select Date')">
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                  <q-date v-model="selectedDate" />
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+        </div>
+      </div>
+    </div>
     <transition appear enter-active-class="animated fadeIn">
       <q-table
         class="my-sticky-header-column-table shadow-24"
@@ -860,6 +876,7 @@ import { LocalStorage } from 'quasar'
 
 export default {
   name: 'Pagednlist',
+  inject: ['selectedDate'],
   data () {
     return {
       openid: '',
@@ -884,6 +901,7 @@ export default {
       customer_list1: [],
       driver_list: [],
       customer_detail: {},
+      selectedDate: new Date().toISOString().split('T')[0],  // Set default to today's date
       columns: [
         { name: 'dn_code', required: true, label: this.$t('outbound.view_dn.dn_code'), align: 'left', field: 'dn_code' },
         { name: 'account_name', label: this.$t('outbound.view_dn.account_name'), field: 'account_name', align: 'center' },
@@ -898,7 +916,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '100'
+        rowsPerPage: '120'
       },
       newForm: false,
       options1: [],
@@ -906,7 +924,7 @@ export default {
       listNumber: '',
       options: LocalStorage.getItem('goods_code_list'),
       driver_options: LocalStorage.getItem('driver_name_list'),
-      newdn: { account_name: '' },
+      newdn: { account_name: '', shipdate: '' },
       newFormData: {
         dn_code: '',
         customer: '',
@@ -1237,6 +1255,8 @@ export default {
     reFresh (account_name) {
       var _this = this
       _this.newdn.account_name = account_name
+      _this.newdn.shipdate = _this.selectedDate || new Date().toISOString().split('T')[0]
+      
       postauth(_this.pathname + 'bollist/', _this.newdn)
         .then(res => {
           _this.getList()
