@@ -102,7 +102,7 @@ def obtain_access_token(account_name):
 def ObtainfinanceData():
     FillInStockDashboardData()
     FillInReturnData()
-    dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False).order_by('dn_code')
+    dndetail_list = DnDetailModel.objects.filter(dn_status=4, is_delete=False, revenue_counted=False).order_by('dn_code')
     for i in range(len(dndetail_list)):
         if dndetail_list[i].account_name == "Offline":
             continue
@@ -1183,6 +1183,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         #[Will] Rewrite the whole create function of pickinglist, to generate pickinglist with data from DNDetaillist and Bin info
+        global current_ship_date
         normalorder_set = DnDetailModel.objects.filter(openid=self.request.auth.openid, is_delete=False, dn_status__lte=2, dn_complete=2, sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59))
         staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                           id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
