@@ -94,6 +94,7 @@ export default {
   search: '关键字搜索',
   creater: '创建人',
   createtime: '创建时间',
+  shipdate: '发货日期',
   updatetime: '更新时间',
   action: '操作',
   previous: '上一页',

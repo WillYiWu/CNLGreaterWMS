@@ -99,6 +99,7 @@ export default {
   search: 'Search Word',
   creater: 'Creater',
   createtime: 'Create Time',
+  shipdate: 'Ship Date',
   updatetime: 'Update Time',
   action: 'Action',
   previous: 'Previous',
