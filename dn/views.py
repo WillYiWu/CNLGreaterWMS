@@ -131,7 +131,7 @@ def ObtainfinanceData():
                     bol_commision_vat = bol_commission_inc_tax - bol_commission_inc_tax/ 1.21
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
                     product_cost = float(shipped_qty) * float(dndetail_list[i].goods_cost)
-                    selling_date = dndetail_list[i].update_time
+                    selling_date = dndetail_list[i].sending_date
                     openid = dndetail_list[i].openid
 
                     if FinanceListModel.objects.filter(dn_code=dn_code,account_name=account_name).exists():
@@ -215,6 +215,7 @@ def FillInReturnData():
                         finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
                                                    float(finance_record.bol_commission) - float(finance_record.product_cost) - \
                                                     float(finance_record.logistic_cost)
+                        finance_record.selling_date = return_item["processingResults"][0]["processingDateTime"]
                         finance_record.save()
 
 class ShippinglabelViewSet(View):
