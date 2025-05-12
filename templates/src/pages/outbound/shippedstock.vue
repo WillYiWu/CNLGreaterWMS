@@ -168,9 +168,9 @@ export default {
         } else {
           this.createDate2 = `${val}`;
           this.dateArray = val.split('/');
-          this.searchUrl = this.pathnamedn + 'detail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
-          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
-          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.searchUrl = this.pathnamedn + 'detail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'sending_date__month=' + this.dateArray[1] + '&' + 'sending_date__day=' + this.dateArray[2];
+          this.downloadUrl = this.pathnamedn + 'filelist/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'sending_date__month=' + this.dateArray[1] + '&' + 'sending_date__day=' + this.dateArray[2];
+          this.downloadDetailUrl = this.pathnamedn + 'filedetail/?' + 'sending_date__year=' + this.dateArray[0] + '&' + 'sending_date__month=' + this.dateArray[1] + '&' + 'sending_date__day=' + this.dateArray[2];
         }
         this.date_range = this.date_range.replace(/\//g, '-');
         this.getSearchList();
@@ -200,7 +200,7 @@ export default {
     getSearchList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.searchUrl + '&dn_status=4&dn_complete=2', {
+        getauth(_this.searchUrl + '&dn_status=4&dn_complete=2&page_size=120', {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
