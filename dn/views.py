@@ -215,7 +215,7 @@ def FillInReturnData():
                         finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
                                                    float(finance_record.bol_commission) - float(finance_record.product_cost) - \
                                                     float(finance_record.logistic_cost)
-                        finance_record.selling_date = return_item["processingResults"][0]["processingDateTime"]
+                        finance_record.selling_date = pd.to_datetime(return_item["processingResults"][0]["processingDateTime"])
                         finance_record.save()
 
 class ShippinglabelViewSet(View):
