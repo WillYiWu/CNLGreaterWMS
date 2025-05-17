@@ -217,6 +217,42 @@ def FillInReturnData():
                                                     float(finance_record.logistic_cost)
                         finance_record.save()
 
+"""                     New return record mechanism, to be activated by the end of May    
+                        finance_record.returned = True
+                        new_return = True
+                        new_selling_price = 0 - float(finance_record.selling_price)
+                        new_btw_cost = 0 - float(finance_record.btw_cost)
+                        new_bol_commission = 0 - float(finance_record.bol_commission)
+                        new_product_cost = 0 - float(finance_record.product_cost)
+                        transport_list = transportation.objects.filter(min_payment=float(finance_record.logistic_cost)).first()
+                        if transport_list.receiver_city == "NL":
+                            new_logistic_cost = 2.66
+                        elif transport_list.receiver_city == "BE":
+                            new_logistic_cost = 2.79
+                        else:
+                            new_logistic_cost = 2.66
+                        new_profit = float(new_selling_price) - float(new_btw_cost) - \
+                                                   float(new_bol_commission) - float(new_product_cost) - \
+                                                    float(new_logistic_cost)
+                        new_shipped_qty = 0
+                        FinanceListModel.objects.create(dn_code=finance_record.dn_code,
+                                                        orderitem_id=finance_record.orderitem_id,
+                                                        account_name=finance_record.account_name,
+                                                        shipped_qty=new_shipped_qty,
+                                                        goods_code=finance_record.goods_code,
+                                                        goods_desc=finance_record.goods_desc,
+                                                        selling_price=new_selling_price,
+                                                        btw_cost=new_btw_cost,
+                                                        bol_commission=new_bol_commission,
+                                                        logistic_cost=new_logistic_cost,
+                                                        product_cost=new_product_cost,
+                                                        profit = new_profit,
+                                                        selling_date=pd.to_datetime(return_item["processingResults"][0]["processingDateTime"]),
+                                                        returned=new_return,
+                                                        openid=finance_record.openid) """
+                        
+
+
 class ShippinglabelViewSet(View):
     def get(self, request, dn_code, *args, **kwargs):
         if dn_code == "ALL":
