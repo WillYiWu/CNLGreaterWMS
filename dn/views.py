@@ -201,6 +201,7 @@ def FillInReturnData():
                     finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).first()
                     if finance_record.returned == False:
                         finance_record.returned = True
+                        finance_record.save()
                         new_return = True
                         new_selling_price = 0 - float(finance_record.selling_price)
                         new_btw_cost = 0 - float(finance_record.btw_cost)
@@ -218,7 +219,7 @@ def FillInReturnData():
                                                     float(new_logistic_cost)
                         new_shipped_qty = 0
                         FinanceListModel.objects.create(dn_code=finance_record.dn_code,
-                                                        orderitem_id=finance_record.orderitem_id,
+                                                        orderitem_id=finance_record.orderitem_id + '0',
                                                         account_name=finance_record.account_name,
                                                         shipped_qty=new_shipped_qty,
                                                         goods_code=finance_record.goods_code,
