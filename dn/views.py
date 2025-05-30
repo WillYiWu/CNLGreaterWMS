@@ -201,24 +201,6 @@ def FillInReturnData():
                     finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=goods_code).first()
                     if finance_record.returned == False:
                         finance_record.returned = True
-                        finance_record.selling_price = finance_record.selling_price * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                        finance_record.btw_cost = finance_record.btw_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                        finance_record.bol_commission = finance_record.bol_commission * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                        finance_record.product_cost = finance_record.product_cost * (finance_record.shipped_qty - quantity)/finance_record.shipped_qty
-                        if float(finance_record.logistic_cost) == 4.98:
-                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 2.79
-                        elif float(finance_record.logistic_cost) == 5.25:
-                            finance_record.logistic_cost = float(finance_record.logistic_cost) + 3.07
-                        else:
-                            finance_record.logistic_cost = 2.79
-                        finance_record.shipped_qty = finance_record.shipped_qty - quantity
-                        finance_record.profit = float(finance_record.selling_price) - float(finance_record.btw_cost) - \
-                                                   float(finance_record.bol_commission) - float(finance_record.product_cost) - \
-                                                    float(finance_record.logistic_cost)
-                        finance_record.save()
-
-"""                     New return record mechanism, to be activated by the end of May    
-                        finance_record.returned = True
                         new_return = True
                         new_selling_price = 0 - float(finance_record.selling_price)
                         new_btw_cost = 0 - float(finance_record.btw_cost)
@@ -249,7 +231,7 @@ def FillInReturnData():
                                                         profit = new_profit,
                                                         selling_date=pd.to_datetime(return_item["processingResults"][0]["processingDateTime"]),
                                                         returned=new_return,
-                                                        openid=finance_record.openid) """
+                                                        openid=finance_record.openid)
                         
 
 
