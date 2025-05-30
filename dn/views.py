@@ -431,7 +431,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                     dndetail_list.goods_desc = goods_desc
                     dndetail_list.save()
                  """
-            dndetail_list = DnDetailModel.objects.filter(dn_code=order["orderId"], is_delete=False)
+            dndetail_list = DnDetailModel.objects.filter(account_name=account_name, dn_code=order["orderId"], is_delete=False)
             for i in range(len(dndetail_list)):
                 dndetail_list[i].dn_complete = dn_complete
                 dndetail_list[i].save()
