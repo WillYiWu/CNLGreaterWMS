@@ -187,13 +187,13 @@ export default {
         if (val.to) {
           this.createDate2 = `${val.from} - ${val.to}`;
           this.date_range = `${val.from},${val.to} 23:59:59`;
-          this.searchUrl = this.pathname + 'pnl/?' + 'create_time__range=' + this.date_range
-          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'create_time__range=' + this.date_range
+          this.searchUrl = this.pathname + 'pnl/?' + 'selling_date__range=' + this.date_range
+          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'selling_date__range=' + this.date_range
         } else {
           this.createDate2 = `${val}`;
           this.dateArray = val.split('/');
-          this.searchUrl = this.pathname + 'pnl/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
-          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'create_time__year=' + this.dateArray[0] + '&' + 'create_time__month=' + this.dateArray[1] + '&' + 'create_time__day=' + this.dateArray[2];
+          this.searchUrl = this.pathname + 'pnl/?' + 'selling_date__year=' + this.dateArray[0] + '&' + 'selling_date__month=' + this.dateArray[1] + '&' + 'selling_date__day=' + this.dateArray[2];
+          this.downloadhUrl = this.pathname + 'filepnllist/?' + 'selling_date__year=' + this.dateArray[0] + '&' + 'selling_date__month=' + this.dateArray[1] + '&' + 'selling_date__day=' + this.dateArray[2];
         }
         this.date_range = this.date_range.replace(/\//g, '-');
         this.getSearchList();
