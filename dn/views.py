@@ -117,7 +117,7 @@ def ObtainfinanceData():
                 orderitem = response_list['orderItems'][j]
                 if orderitem['orderItemId'] == dndetail_list[i].orderitem_id:
                     country = response_list['shipmentDetails']['countryCode']
-                    transport_list = transportation.objects.filter(receiver_city=country).first()
+                    transport_list = transportation.objects.filter(send_city=dndetail_list[i].account_name, receiver_city=country).first()
                     goods_list = goods.objects.filter(goods_code=orderitem['product']['ean']).first()
 
                     orderitem_id = orderitem['orderItemId']
