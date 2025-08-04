@@ -208,12 +208,15 @@ def FillInReturnData():
                         new_bol_commission = 0 - float(finance_record.bol_commission)
                         new_product_cost = 0 - float(finance_record.product_cost)
                         transport_list = transportation.objects.filter(min_payment=float(finance_record.logistic_cost)).first()
-                        if transport_list.receiver_city == "NL":
-                            new_logistic_cost = 2.66
-                        elif transport_list.receiver_city == "BE":
+                        if transport_list is None:
                             new_logistic_cost = 2.79
                         else:
-                            new_logistic_cost = 2.66
+                            if transport_list.receiver_city == "NL":
+                                new_logistic_cost = 2.66
+                            elif transport_list.receiver_city == "BE":
+                                new_logistic_cost = 2.79
+                            else:
+                                new_logistic_cost = 2.79
                         new_profit = float(new_selling_price) - float(new_btw_cost) - \
                                                    float(new_bol_commission) - float(new_product_cost) - \
                                                     float(new_logistic_cost)
