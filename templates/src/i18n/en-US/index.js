@@ -4,6 +4,7 @@
 export default {
   failed: 'Action failed',
   success: 'Action was successful',
+  row_data: 'Row Count',
   index: {
     app_title: 'APP Title',
     slogan: 'Slogan',

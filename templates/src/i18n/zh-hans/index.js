@@ -4,6 +4,7 @@
 export default {
   failed: 'Action failed',
   success: 'Action was successful',
+  row_data: '数据行数',
   index: {
     app_title: 'APP 名称',
     slogan: '宣传语',

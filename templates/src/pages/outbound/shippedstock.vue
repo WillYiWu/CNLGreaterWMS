@@ -54,6 +54,7 @@
            </q-btn-group>
            </div>
            <q-space />
+           <div class="text-subtitle2 q-mr-md" style="padding-top: 5px;">{{ $t('row_data') }}: {{ table_list.length }}</div>
            <q-input outlined rounded dense debounce="300" color="primary" v-model="filter" :placeholder="$t('search')" @blur="getSearchList()" @keyup.enter="getSearchList()">
              <template v-slot:append>
                <q-icon name="search" @click="getSearchList()"/>
