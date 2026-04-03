@@ -77,7 +77,7 @@ class PickingListModel(models.Model):
     bin_name = models.CharField(max_length=255, verbose_name="Bin Name")
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
     #[Will] Add goods description and customer name and orderitem_id
-    goods_desc = models.CharField(max_length=255, default='', verbose_name="Goods Code")
+    goods_desc = models.CharField(max_length=255, default='', verbose_name="Goods Description")
     orderitem_id = models.CharField(max_length=255, default='', verbose_name="OrderItem ID")
     account_name = models.CharField(max_length=255, default='', verbose_name="Account Name")
     label_id = models.CharField(max_length=255, default='', verbose_name="Label ID")

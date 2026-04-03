@@ -37,109 +37,56 @@
           <q-tr :props="props">
             <template v-if="props.row.id === editid">
               <q-td key="sku_code" :props="props">
-                <q-input dense outlined square v-model="editFormData.sku_code" label="SKU Code (Empty = Unbind)" />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="sku_code" :props="props">{{ props.row.sku_code }}</q-td>
-            </template>
-            
-            <q-td key="sku_desc" :props="props">{{ props.row.sku_desc }}</q-td>
-
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_code" :props="props">
                 <q-input
                   dense
                   outlined
                   square
-                  v-model="editFormData.goods_code"
-                  :label="$t('goods.view_goodslist.goods_code')"
+                  v-model="editFormData.sku_code"
+                  :label="$t('goods.view_sku.sku_code')"
                   autofocus
                   :rules="[val => (val && val.length > 0) || error1]"
                 />
               </q-td>
             </template>
             <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_code" :props="props">{{ props.row.goods_code }}</q-td>
+              <q-td key="sku_code" :props="props">{{ props.row.sku_code }}</q-td>
             </template>
             <template v-if="props.row.id === editid">
-              <q-td key="goods_desc" :props="props">
+              <q-td key="sku_desc" :props="props">
                 <q-input
                   dense
                   outlined
                   square
-                  v-model="editFormData.goods_desc"
-                  :label="$t('goods.view_goodslist.goods_desc')"
+                  v-model="editFormData.sku_desc"
+                  :label="$t('goods.view_sku.sku_desc')"
                   :rules="[val => (val && val.length > 0) || error2]"
                 />
               </q-td>
             </template>
             <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_desc" :props="props">{{ props.row.goods_desc }}</q-td>
+              <q-td key="sku_desc" :props="props">{{ props.row.sku_desc }}</q-td>
             </template>
+            
+            
+            
             <template v-if="props.row.id === editid">
-              <q-td key="goods_supplier" :props="props">
-                <q-select
-                  dense
-                  outlined
-                  square
-                  v-model="editFormData.goods_supplier"
-                  :options="supplier_list"
-                  transition-show="scale"
-                  transition-hide="scale"
-                  :label="$t('goods.view_goodslist.goods_supplier')"
-                  :rules="[val => (val && val.length > 0) || error3]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_supplier" :props="props">{{ props.row.goods_supplier }}</q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_weight" :props="props">
+              <q-td key="sku_cost" :props="props">
                 <q-input
                   dense
                   outlined
                   square
-                  v-model.number="editFormData.goods_weight"
+                  v-model.number="editFormData.sku_cost"
                   type="number"
-                  :label="$t('goods.view_goodslist.goods_weight')"
-                  :rules="[val => (val && val > 0) || error4]"
-                />
-              </q-td>
-            </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_cost" :props="props">
-                <q-input
-                  dense
-                  outlined
-                  square
-                  v-model.number="editFormData.goods_cost"
-                  type="number"
-                  :label="$t('goods.view_goodslist.goods_cost')"
+                  :label="$t('goods.view_sku.sku_cost')"
                   :rules="[val => (val && val > 0) || error15]"
                 />
               </q-td>
             </template>
             <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_cost" :props="props">{{ props.row.goods_cost }}</q-td>
+              <q-td key="sku_cost" :props="props">{{ props.row.sku_cost }}</q-td>
             </template>
-            <template v-if="props.row.id === editid">
-              <q-td key="goods_price" :props="props">
-                <q-input
-                  dense
-                  outlined
-                  square
-                  v-model.number="editFormData.goods_price"
-                  type="number"
-                  :label="$t('goods.view_goodslist.goods_price')"
-                  :rules="[val => (val && val > 0) || error16]"
-                />
-              </q-td>
-            </template>
-            <template v-else-if="props.row.id !== editid">
-              <q-td key="goods_price" :props="props">{{ props.row.goods_price }}</q-td>
-            </template>
+            
+            
             <q-td key="creater" :props="props">{{ props.row.creater }}</q-td>
             <q-td key="create_time" :props="props">{{ props.row.create_time }}</q-td>
             <q-td key="update_time" :props="props">{{ props.row.update_time }}</q-td>
@@ -160,7 +107,7 @@
                   @click="viewData(props.row)"
                 >
                   <q-tooltip content-class="bg-amber text-black shadow-4" :offset="[10, 10]" content-style="font-size: 12px">
-                    {{ $t('goods.view_goodslist.print_goods_label') }}
+                    {{ $t('goods.view_sku.print_goods_label') }}
                   </q-tooltip>
                 </q-btn>
                 <q-btn round flat push color="purple" icon="edit" @click="editData(props.row)">
@@ -213,8 +160,8 @@
             dense
             outlined
             square
-            v-model="newFormData.goods_code"
-            :label="$t('goods.view_goodslist.goods_code')"
+            v-model="newFormData.sku_code"
+            :label="$t('goods.view_sku.sku_code')"
             autofocus
             :rules="[val => (val && val.length > 0) || error1]"
             @keyup.enter="newDataSubmit()"
@@ -223,8 +170,8 @@
             dense
             outlined
             square
-            v-model="newFormData.goods_desc"
-            :label="$t('goods.view_goodslist.goods_desc')"
+            v-model="newFormData.sku_desc"
+            :label="$t('goods.view_sku.sku_desc')"
             :rules="[val => (val && val.length > 0) || error2]"
             @keyup.enter="newDataSubmit()"
           />
@@ -236,7 +183,7 @@
             :options="supplier_list"
             transition-show="scale"
             transition-hide="scale"
-            :label="$t('goods.view_goodslist.goods_supplier')"
+            :label="$t('goods.view_sku.goods_supplier')"
             :rules="[val => (val && val.length > 0) || error3]"
             @keyup.enter="newDataSubmit()"
           />
@@ -244,9 +191,9 @@
             dense
             outlined
             square
-            v-model.number="newFormData.goods_cost"
+            v-model.number="newFormData.sku_cost"
             type="number"
-            :label="$t('goods.view_goodslist.goods_cost')"
+            :label="$t('goods.view_sku.sku_cost')"
             :rules="[val => (val && val > 0) || error15]"
             @keyup.enter="newDataSubmit()"
           />
@@ -256,7 +203,7 @@
             square
             v-model.number="newFormData.goods_price"
             type="number"
-            :label="$t('goods.view_goodslist.goods_price')"
+            :label="$t('goods.view_sku.goods_price')"
             :rules="[val => (val && val > 0) || error16]"
             @keyup.enter="newDataSubmit()"
           />
@@ -289,14 +236,14 @@
           <div class="row" style="height: 50px">
             <div class="col-3"><img src="statics/goods/logo.png" style="width: 60px;height: 50px;margin-top: 5px;margin-left: 5px" /></div>
             <div class="col-9" style="height: 50px;float: contour;margin-top: 10px">
-              <p style="font-size: 20px;font-weight: 550">{{ $t('goods.view_goodslist.goods_code') + ':' + goods_code }}</p>
+              <p style="font-size: 20px;font-weight: 550">{{ $t('goods.view_sku.sku_code') + ':' + sku_code }}</p>
             </div>
           </div>
           <hr />
           <div class="row">
             <div class="col-8" style="margin-top: 30px;padding-left: 3%">
-              <p style="font-size: 20px;font-weight: 550">{{ $t('goods.view_goodslist.goods_name') + ':' }}</p>
-              <p style="font-size: 20px;font-weight: 550">{{ goods_desc }}</p>
+              <p style="font-size: 20px;font-weight: 550">{{ $t('goods.view_sku.goods_name') + ':' }}</p>
+              <p style="font-size: 20px;font-weight: 550">{{ sku_desc }}</p>
             </div>
             <div class="col-4" style="margin-top: 25px;"><img :src="bar_code" style="width: 70%;margin-left: 23px" /></div>
           </div>
@@ -313,16 +260,15 @@ import { getauth, postauth, putauth, deleteauth, getfile } from 'boot/axios_requ
 import { date, exportFile, LocalStorage } from 'quasar';
 
 export default {
-  name: 'Pagegoodslist',
+  name: 'Pagesku',
   data() {
     return {
-      goods_code: '',
-        sku_code: '',
-      goods_desc: '',
+      sku_code: '',
+      sku_desc: '',
       openid: '',
       login_name: '',
       authin: '0',
-      pathname: 'goods/',
+      pathname: 'goods/sku/',
       pathname_previous: '',
       pathname_next: '',
       separator: 'cell',
@@ -343,13 +289,11 @@ export default {
       goods_origin_list: [],
       supplier_list: [],
       columns: [
-        { name: 'sku_code', required: true, label: 'SKU Code', align: 'left', field: 'sku_code' },
-        { name: 'sku_desc', label: 'SKU 描述 (SKU Name)', align: 'left', field: 'sku_desc' },
-        { name: 'goods_code', required: true, label: this.$t('goods.view_goodslist.goods_code'), align: 'left', field: 'goods_code' },
-        { name: 'goods_desc', label: '平台商品标题 (Listing Title)', field: 'goods_desc', align: 'center' },
-        { name: 'goods_supplier', label: this.$t('goods.view_goodslist.goods_supplier'), field: 'goods_supplier', align: 'center' },
-        { name: 'goods_cost', label: this.$t('goods.view_goodslist.goods_cost'), field: 'goods_cost', align: 'center' },
-        { name: 'goods_price', label: this.$t('goods.view_goodslist.goods_price'), field: 'goods_price', align: 'center' },
+        { name: 'sku_code', required: true, label: this.$t('goods.view_sku.sku_code'), align: 'left', field: 'sku_code' },
+        { name: 'sku_desc', label: this.$t('goods.view_sku.sku_desc'), field: 'sku_desc', align: 'center' },
+        
+        { name: "sku_cost", required: true, label: this.$t("goods.view_sku_cost"), align: "left", field: "sku_cost" },
+        
         { name: 'creater', label: this.$t('creater'), field: 'creater', align: 'center' },
         { name: 'create_time', label: this.$t('createtime'), field: 'create_time', align: 'center' },
         { name: 'update_time', label: this.$t('updatetime'), field: 'update_time', align: 'center' },
@@ -362,24 +306,10 @@ export default {
       },
       newForm: false,
       newFormData: {
-        goods_code: '',
         sku_code: '',
-        goods_desc: '',
-        goods_supplier: '',
-        goods_weight: '',
-        goods_w: '',
-        goods_d: '',
-        goods_h: '',
-        goods_unit: '',
-        goods_class: '',
-        goods_brand: '',
-        goods_color: '',
-        goods_shape: '',
-        goods_specs: '',
-        goods_origin: '',
-        goods_cost: '',
-        goods_price: '',
-        creater: ''
+        sku_desc: '',
+        sku_cost: 0,
+        creater: '',
       },
       editid: 0,
       editFormData: {},
@@ -387,13 +317,13 @@ export default {
       deleteForm: false,
       deleteid: 0,
       bar_code: '',
-      error1: this.$t('goods.view_goodslist.error1'),
-      error2: this.$t('goods.view_goodslist.error2'),
-      error3: this.$t('goods.view_goodslist.error3'),
-      error4: this.$t('goods.view_goodslist.error4'),
-      error5: this.$t('goods.view_goodslist.error5'),
-      error6: this.$t('goods.view_goodslist.error6'),
-      error7: this.$t('goods.view_goodslist.error7'),
+      error1: this.$t('goods.view_sku.error1'),
+      error2: this.$t('goods.view_sku.error2'),
+      error3: this.$t('goods.view_sku.error3'),
+      error4: this.$t('goods.view_sku.error4'),
+      error5: this.$t('goods.view_sku.error5'),
+      error6: this.$t('goods.view_sku.error6'),
+      error7: this.$t('goods.view_sku.error7'),
       error8: this.$t('goods.view_unit.error1'),
       error9: this.$t('goods.view_class.error1'),
       error10: this.$t('goods.view_brand.error1'),
@@ -401,8 +331,8 @@ export default {
       error12: this.$t('goods.view_shape.error1'),
       error13: this.$t('goods.view_specs.error1'),
       error14: this.$t('goods.view_origin.error1'),
-      error15: this.$t('goods.view_goodslist.error8'),
-      error16: this.$t('goods.view_goodslist.error9')
+      error15: this.$t('goods.view_sku.error8'),
+      error16: this.$t('goods.view_sku.error9')
     };
   },
   methods: {
@@ -433,7 +363,7 @@ export default {
     getSearchList() {
       var _this = this;
       if (LocalStorage.has('auth')) {
-        getauth(_this.pathname + '?goods_desc__icontains=' + _this.filter, {})
+        getauth(_this.pathname + '?sku_desc__icontains=' + _this.filter, {})
           .then(res => {
             _this.table_list = res.results;
             _this.goods_unit_list = res.goods_unit_list;
@@ -519,20 +449,10 @@ export default {
       var _this = this;
       var goodscodes = [];
       _this.table_list.forEach(i => {
-        goodscodes.push(i.goods_code);
+        goodscodes.push(i.sku_code);
       });
-      _this.newFormData.goods_weight = 100;
-      _this.newFormData.goods_w = 100;
-      _this.newFormData.goods_d = 100;
-      _this.newFormData.goods_h = 100;
-      _this.newFormData.goods_unit = 'piece';
-      _this.newFormData.goods_class = 'NA';
-      _this.newFormData.goods_brand = 'XX';
-      _this.newFormData.goods_color = 'Red';
-      _this.newFormData.goods_shape = 'Rectangle';
-      _this.newFormData.goods_specs = 'NA';
-      _this.newFormData.goods_origin = 'Shanghai';
-      if (goodscodes.indexOf(_this.newFormData.goods_code) === -1 && _this.newFormData.goods_code.length !== 0) {
+      
+      if (goodscodes.indexOf(_this.newFormData.sku_code) === -1 && _this.newFormData.sku_code.length !== 0) {
         _this.newFormData.creater = _this.login_name;
         postauth(_this.pathname, _this.newFormData)
           .then(res => {
@@ -553,15 +473,15 @@ export default {
               color: 'negative'
             });
           });
-      } else if (goodscodes.indexOf(_this.newFormData.goods_code) !== -1) {
+      } else if (goodscodes.indexOf(_this.newFormData.sku_code) !== -1) {
         _this.$q.notify({
           message: _this.$t('notice.goodserror.goods_listerror'),
           icon: 'close',
           color: 'negative'
         });
-      } else if (_this.newFormData.goods_code.length === 0) {
+      } else if (_this.newFormData.sku_code.length === 0) {
         _this.$q.notify({
-          message: _this.$t('goods.view_goodslist.error1'),
+          message: _this.$t('goods.view_sku.error1'),
           icon: 'close',
           color: 'negative'
         });
@@ -572,10 +492,9 @@ export default {
       var _this = this;
       _this.newForm = false;
       _this.newFormData = {
-        goods_code: '',
         sku_code: '',
-        goods_desc: '',
-        goods_supplier: '',
+        sku_desc: '',
+
         goods_weight: '',
         goods_w: '',
         goods_d: '',
@@ -587,7 +506,7 @@ export default {
         goods_shape: '',
         goods_specs: '',
         goods_origin: '',
-        goods_cost: '',
+        sku_cost: '',
         goods_price: '',
         creater: ''
       };
@@ -596,24 +515,10 @@ export default {
       var _this = this;
       _this.editMode = true;
       _this.editid = e.id;
-      _this.editFormData = {
-        goods_code: e.goods_code,
+            _this.editFormData = {
         sku_code: e.sku_code,
-        goods_desc: e.goods_desc,
-        goods_supplier: e.goods_supplier,
-        goods_weight: e.goods_weight,
-        goods_w: e.goods_w,
-        goods_d: e.goods_d,
-        goods_h: e.goods_h,
-        goods_unit: e.goods_unit,
-        goods_class: e.goods_class,
-        goods_brand: e.goods_brand,
-        goods_color: e.goods_color,
-        goods_shape: e.goods_shape,
-        goods_specs: e.goods_specs,
-        goods_origin: e.goods_origin,
-        goods_cost: e.goods_cost,
-        goods_price: e.goods_price,
+        sku_desc: e.sku_desc,
+        sku_cost: e.sku_cost,
         creater: _this.login_name,
         bar_code: e.bar_code
       };
@@ -645,10 +550,9 @@ export default {
       _this.editMode = false;
       _this.editid = 0;
       _this.editFormData = {
-        goods_code: '',
         sku_code: '',
-        goods_desc: '',
-        goods_supplier: '',
+        sku_desc: '',
+
         goods_weight: '',
         goods_w: '',
         goods_d: '',
@@ -660,7 +564,7 @@ export default {
         goods_shape: '',
         goods_specs: '',
         goods_origin: '',
-        goods_cost: '',
+        sku_cost: '',
         goods_price: '',
         creater: ''
       };
@@ -707,8 +611,8 @@ export default {
         }
       ])
         .then(url => {
-          _this.goods_code = e.goods_code;
-          _this.goods_desc = e.goods_desc;
+          _this.sku_code = e.sku_code;
+          _this.sku_desc = e.sku_desc;
           _this.bar_code = url;
         })
         .catch(err => {

@@ -245,6 +245,11 @@ export default {
         link.click();
         link.remove();
       } catch (error) {
+        _this.$q.notify({
+          message: 'Shipping label not found or not generated for this order.',
+          icon: 'close',
+          color: 'warning'
+        })
         console.error(error);
       }
     },

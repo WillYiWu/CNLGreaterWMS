@@ -5,7 +5,13 @@ from rest_framework.exceptions import ValidationError
 
 class GoodsGetSerializer(serializers.ModelSerializer):
     goods_code = serializers.CharField(read_only=True, required=False)
+    sku_code = serializers.CharField(read_only=True, required=False)
+    sku_desc = serializers.SerializerMethodField(read_only=True)
     goods_desc = serializers.CharField(read_only=True, required=False)
+
+    def get_sku_desc(self, obj):
+        sku = SkuModel.objects.filter(sku_code=obj.sku_code).first()
+        return sku.sku_desc if sku else ''
     goods_supplier = serializers.CharField(read_only=True, required=False)
     goods_weight = serializers.FloatField(read_only=True, required=False)
     goods_w = serializers.FloatField(read_only=True, required=False)
@@ -36,6 +42,7 @@ class GoodsPostSerializer(serializers.ModelSerializer):
     openid = serializers.CharField(read_only=False, required=False, validators=[datasolve.openid_validate])
     goods_code = serializers.CharField(read_only=False, required=True, min_length=1,
                                        validators=[datasolve.data_validate])
+    sku_code = serializers.CharField(read_only=False, required=False, allow_blank=True)
     goods_desc = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     goods_supplier = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     goods_weight = serializers.FloatField(read_only=False, required=True, validators=[datasolve.data_validate])
@@ -67,6 +74,7 @@ class GoodsPostSerializer(serializers.ModelSerializer):
 class GoodsUpdateSerializer(serializers.ModelSerializer):
     goods_code = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate],
                                        min_length=1)
+    sku_code = serializers.CharField(read_only=False, required=False, allow_blank=True)
     goods_desc = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     goods_supplier = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
     goods_weight = serializers.FloatField(read_only=False, required=True, validators=[datasolve.data_validate])
@@ -94,6 +102,7 @@ class GoodsUpdateSerializer(serializers.ModelSerializer):
 class GoodsPartialUpdateSerializer(serializers.ModelSerializer):
     goods_code = serializers.CharField(read_only=False, required=False, validators=[datasolve.data_validate],
                                        min_length=1)
+    sku_code = serializers.CharField(read_only=False, required=False, allow_blank=True)
     goods_desc = serializers.CharField(read_only=False, required=False, validators=[datasolve.data_validate])
     goods_supplier = serializers.CharField(read_only=False, required=False, validators=[datasolve.data_validate])
     goods_weight = serializers.FloatField(read_only=False, required=False, validators=[datasolve.data_validate])
@@ -145,3 +154,53 @@ class FileRenderSerializer(serializers.ModelSerializer):
         model = ListModel
         ref_name = 'GOODSFileRenderSerializer'
         exclude = ['openid', 'is_delete', ]
+
+from .models import SkuModel
+
+class SkuGetSerializer(serializers.ModelSerializer):
+    sku_code = serializers.CharField(read_only=True, required=False)
+    sku_desc = serializers.CharField(read_only=True, required=False)
+    sku_cost = serializers.FloatField(read_only=True, required=False)
+    creater = serializers.CharField(read_only=True, required=False)
+    create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+    update_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
+
+    class Meta:
+        model = SkuModel
+        exclude = ['openid', 'is_delete', ]
+        read_only_fields = ['id']
+
+class SkuPostSerializer(serializers.ModelSerializer):
+    openid = serializers.CharField(read_only=False, required=False, validators=[datasolve.openid_validate])
+    sku_code = serializers.CharField(read_only=False, required=True, min_length=1, validators=[datasolve.data_validate])
+    sku_desc = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
+    sku_cost = serializers.FloatField(read_only=False, required=True, validators=[datasolve.data_validate])
+    creater = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
+
+    class Meta:
+        model = SkuModel
+        exclude = ['is_delete', ]
+        read_only_fields = ['id', 'create_time', 'update_time', ]
+
+class SkuUpdateSerializer(serializers.ModelSerializer):
+    sku_code = serializers.CharField(read_only=False, required=True, min_length=1, validators=[datasolve.data_validate])
+    sku_desc = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
+    sku_cost = serializers.FloatField(read_only=False, required=True, validators=[datasolve.data_validate])
+    creater = serializers.CharField(read_only=False, required=True, validators=[datasolve.data_validate])
+
+    class Meta:
+        model = SkuModel
+        exclude = ['openid', 'is_delete', ]
+        read_only_fields = ['id', 'create_time', 'update_time', ]
+
+class SkuPartialUpdateSerializer(serializers.ModelSerializer):
+    sku_code = serializers.CharField(read_only=False, required=False, min_length=1, validators=[datasolve.data_validate])
+    sku_desc = serializers.CharField(read_only=False, required=False, validators=[datasolve.data_validate])
+    sku_cost = serializers.FloatField(read_only=False, required=False, validators=[datasolve.data_validate])
+    creater = serializers.CharField(read_only=False, required=False, validators=[datasolve.data_validate])
+
+    class Meta:
+        model = SkuModel
+        exclude = ['openid', 'is_delete', ]
+        read_only_fields = ['id', 'create_time', 'update_time', ]
+

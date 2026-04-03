@@ -192,6 +192,7 @@ export default {
     view_tradelist: {
       mode_code: 'Mode Of Doing Business',
       bin_name: 'Location Name',
+      sku_code: 'SKU Code',
       goods_code: 'Goods Code',
       goods_qty: 'Quantity On Hand',
       creater: 'Creater',
@@ -283,7 +284,29 @@ export default {
     communitymall: 'Community Mall'
   },
   goods: {
-    goods_list: 'Goods List',
+    sku: 'Global SKU',
+
+    view_sku: {
+      sku_code: 'SKU Code',
+      sku_desc: 'SKU Description',
+      goods_supplier: 'Goods Supplier',
+      goods_weight: 'Goods Weight(g)',
+      goods_w: 'Goods Width(mm)',
+      goods_d: 'Goods Depth(mm)',
+      goods_h: 'Goods Height(mm)',
+      goods_cost: 'SKU Cost',
+      goods_price: 'SKU Price',
+      print_goods_label: 'Print SKU Label',
+      error1: 'Please Enter the SKU Code',
+      error2: 'Please Enter the SKU Description',
+      error3: 'Please Enter the Goods Supplier',
+      error4: 'Goods Weight Must Greater Than 0',
+      error5: 'Goods Width Must Greater Than 0',
+      error6: 'Goods Depth Must Greater Than 0',
+      error7: 'Goods Height Must Greater Than 0',
+      error8: 'SKU Cost Must Greater Than 0',
+      error9: 'SKU Price Must Greater Than 0'
+    },    goods_list: 'Goods List',
     unit: 'Unit',
     class: 'Class',
     color: 'Color',
@@ -292,6 +315,7 @@ export default {
     specs: 'Specs',
     origin: 'Origin',
     view_goodslist: {
+      sku_code: 'SKU Code',
       goods_code: 'Goods Code',
       goods_desc: 'Goods Desc',
       goods_name: 'Goods Name',
@@ -448,6 +472,7 @@ export default {
     emptybin: 'Empty Bin',
     occupiedbin: 'Occupied Bin',
     view_stocklist: {
+      sku_code: 'SKU Code',
       goods_code: 'Goods Code',
       goods_desc: 'Goods Desc',
       goods_name: 'Goods Name',
@@ -539,7 +564,8 @@ export default {
     scan_inventory: 'Inventory',
     scan_goodsquery: 'Goods query',
     scan_locationquery: 'Location query',
-    scan_goods_code: 'Goods Code',
+    scan_sku_code: 'SKU Code',
+      goods_code: 'Goods Code',
     scan_bin_name: 'Bin Name',
     scan_goods_label: 'Goods label',
     scan_goods_label_error: 'The Goods Label Does Not Exist',

@@ -33,8 +33,8 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td key="bin_name" :props="props">{{ props.row.bin_name }}</q-td>
-            <q-td key="goods_code" :props="props">{{ props.row.goods_code }}</q-td>
-            <q-td key="goods_desc" :props="props">{{ props.row.goods_desc }}</q-td>
+            <q-td key="sku_code" :props="props">{{ props.row.sku_code }}</q-td>
+            <q-td key="sku_desc" :props="props">{{ props.row.sku_desc }}</q-td>
             <q-td key="goods_qty" :props="props">{{ props.row.goods_qty }}</q-td>
             <q-td key="pick_qty" :props="props">{{ props.row.pick_qty }}</q-td>
             <q-td key="picked_qty" :props="props">{{ props.row.picked_qty }}</q-td>
@@ -73,7 +73,7 @@
     <q-dialog v-model="moveForm">
       <q-card class="shadow-24">
         <q-bar class="bg-light-blue-10 text-white rounded-borders" style="height: 50px">
-          <div>{{ movedata.goods_code }} {{ $t('frombin') }} {{ movedata.bin_name }}</div>
+          <div>{{ movedata.sku_code }} {{ $t('frombin') }} {{ movedata.bin_name }}</div>
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
             <q-tooltip>{{ $t('index.close') }}</q-tooltip>
@@ -149,8 +149,8 @@ export default {
       warehouse_list: [],
       columns: [
         { name: 'bin_name', required: true, label: this.$t('warehouse.view_binset.bin_name'), align: 'left', field: 'bin_name' },
-        { name: 'goods_code', label: this.$t('stock.view_stocklist.goods_code'), field: 'goods_code', align: 'center' },
-        { name: 'goods_desc', label: this.$t('stock.view_stocklist.goods_desc'), field: 'onhand_stock', align: 'center' },
+        { name: 'sku_code', label: this.$t('stock.view_stocklist.sku_code'), field: 'sku_code', align: 'center' },
+        { name: 'sku_desc', label: this.$t('stock.view_stocklist.sku_desc'), field: 'onhand_stock', align: 'center' },
         { name: 'goods_qty', label: this.$t('stock.view_stocklist.onhand_stock'), field: 'goods_qty', align: 'center' },
         { name: 'pick_qty', label: this.$t('stock.view_stocklist.pick_stock'), field: 'pick_qty', align: 'center' },
         { name: 'picked_qty', label: this.$t('stock.view_stocklist.picked_stock'), field: 'picked_qty', align: 'center' },

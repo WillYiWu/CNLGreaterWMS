@@ -7,6 +7,9 @@
         v-model="detaillink"
       >
         <transition appear enter-active-class="animated zoomIn">
+          <q-route-tab name="sku" :label="$t('goods.sku')" icon="img:statics/goods/goodslist.png" :to="{ name: 'sku' }" exact/>
+        </transition>
+        <transition appear enter-active-class="animated zoomIn">
           <q-route-tab name="goodslist" :label="$t('goods.goods_list')" icon="img:statics/goods/goodslist.png" :to="{ name: 'goodslist' }" exact/>
         </transition>
         <transition appear enter-active-class="animated zoomIn">
@@ -45,7 +48,7 @@ export default {
   name: 'Pagegoods',
   data () {
     return {
-      detaillink: 'goodslist'
+      detaillink: 'sku'
     }
   },
   methods: {

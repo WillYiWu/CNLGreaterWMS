@@ -6,8 +6,8 @@ class StockListFilter(FilterSet):
         model = StockListModel
         fields = {
             "id": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
-            "goods_code": ['exact', 'iexact', 'contains', 'icontains'],
-            "goods_desc": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_code": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_desc": ['exact', 'iexact', 'contains', 'icontains'],
             "goods_qty": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],
             "onhand_stock": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],
             "can_order_stock": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],
@@ -34,8 +34,8 @@ class StockBinFilter(FilterSet):
         fields = {
             "id": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
             "bin_name": ['exact', 'iexact', 'contains', 'icontains'],
-            "goods_code": ['exact', 'iexact', 'contains', 'icontains'],
-            "goods_desc": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_code": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_desc": ['exact', 'iexact', 'contains', 'icontains'],
             "goods_qty": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],
             "pick_qty": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],
             "picked_qty": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'range'],

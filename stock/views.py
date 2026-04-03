@@ -36,9 +36,9 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0).order_by("bin_name", "goods_code")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0).order_by("bin_name", "sku_code")
             else:
-                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0,id=id).order_by("bin_name", "goods_code")
+                return StockBinModel.objects.filter(openid=self.request.auth.openid,goods_qty__gt=0,id=id).order_by("bin_name", "sku_code")
         else:
             return StockBinModel.objects.none()
 
@@ -58,13 +58,13 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
             data = self.request.data
             goods_qty = int(data['goods_qty'])
             bin_name = str(data['bin_name'])
-            goods_code = str(data['goods_code'])
+            sku_code = str(data['sku_code'])
             stock_bin = StockBinModel.objects.filter(openid=self.request.auth.openid,
                                          bin_name=bin_name,
-                                         goods_code=goods_code).first()
+                                         sku_code=sku_code).first()
             old_qty = stock_bin.goods_qty
             stock_list = StockListModel.objects.filter(openid=self.request.auth.openid,
-                                                       goods_code=goods_code).first()
+                                                       sku_code=sku_code).first()
             if stock_bin.bin_property == "Normal":
                 stock_list.can_order_stock = int(stock_list.can_order_stock) - (old_qty - goods_qty)
             elif stock_bin.bin_property == "Inspect":
@@ -164,7 +164,7 @@ class StockBinViewSet(viewsets.ModelViewSet):
                 move_to_bin_detail = binset.objects.filter(openid=self.request.auth.openid,
                                                    bin_name=str(data['move_to_bin'])).first()
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                            goods_code=str(data['goods_code'])).first()
+                                                            sku_code=str(data['sku_code'])).first()
                 if int(data['move_qty']) <= 0:
                     raise APIException({"detail": "Move QTY Must > 0"})
                 else:
@@ -221,12 +221,12 @@ class StockBinViewSet(viewsets.ModelViewSet):
                                 pass
                         StockBinModel.objects.create(openid=self.request.auth.openid,
                                                      bin_name=str(data['move_to_bin']),
-                                                     goods_code=str(data['goods_code']),
-                                                     goods_desc=goods_qty_change.goods_desc,
+                                                     sku_code=str(data['sku_code']),
+                                                     sku_desc=goods_qty_change.sku_desc,
                                                      goods_qty=int(data['move_qty']),
                                                      bin_size=move_to_bin_detail.bin_size,
                                                      bin_property=move_to_bin_detail.bin_property,
-                                                     t_code=Md5.md5(str(data['goods_code'])),
+                                                     t_code=Md5.md5(str(data['sku_code'])),
                                                      create_time=qs.create_time
                                                      )
                         if move_to_bin_detail.empty_label == True:
@@ -286,12 +286,12 @@ class StockBinViewSet(viewsets.ModelViewSet):
                                 pass
                         StockBinModel.objects.create(openid=self.request.auth.openid,
                                                      bin_name=str(data['move_to_bin']),
-                                                     goods_code=str(data['goods_code']),
-                                                     goods_desc=goods_qty_change.goods_desc,
+                                                     sku_code=str(data['sku_code']),
+                                                     sku_desc=goods_qty_change.sku_desc,
                                                      goods_qty=int(data['move_qty']),
                                                      bin_size=move_to_bin_detail.bin_size,
                                                      bin_property=move_to_bin_detail.bin_property,
-                                                     t_code=Md5.md5(str(data['goods_code'])),
+                                                     t_code=Md5.md5(str(data['sku_code'])),
                                                      create_time=qs.create_time
                                                      )
                         if move_to_bin_detail.empty_label == True:
@@ -327,7 +327,7 @@ class StockBinViewSet(viewsets.ModelViewSet):
             move_to_bin_detail = binset.objects.filter(openid=self.request.auth.openid,
                                                        bin_name=str(data[j]['move_to_bin'])).first()
             goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                        goods_code=str(data[j]['goods_code'])).first()
+                                                        sku_code=str(data[j]['sku_code'])).first()
             qs_project = qs.filter(t_code=data[j]['t_code']).first()
             if int(data[j]['move_qty']) <= 0:
                 raise APIException({"detail": "Move QTY Must > 0"})
@@ -398,12 +398,12 @@ class StockBinViewSet(viewsets.ModelViewSet):
                             pass
                     StockBinModel.objects.create(openid=self.request.auth.openid,
                                                  bin_name=str(data[j]['move_to_bin']),
-                                                 goods_code=str(data[j]['goods_code']),
-                                                 goods_desc=goods_qty_change.goods_desc,
+                                                 sku_code=str(data[j]['sku_code']),
+                                                 sku_desc=goods_qty_change.sku_desc,
                                                  goods_qty=int(data[j]['move_qty']),
                                                  bin_size=move_to_bin_detail.bin_size,
                                                  bin_property=move_to_bin_detail.bin_property,
-                                                 t_code=Md5.md5(str(data[j]['goods_code'])),
+                                                 t_code=Md5.md5(str(data[j]['sku_code'])),
                                                  create_time=qs_project.create_time
                                                  )
                     if move_to_bin_detail.empty_label == True:
@@ -475,12 +475,12 @@ class StockBinViewSet(viewsets.ModelViewSet):
                             pass
                     StockBinModel.objects.create(openid=self.request.auth.openid,
                                                  bin_name=str(data[j]['move_to_bin']),
-                                                 goods_code=str(data[j]['goods_code']),
-                                                 goods_desc=goods_qty_change.goods_desc,
+                                                 sku_code=str(data[j]['sku_code']),
+                                                 sku_desc=goods_qty_change.sku_desc,
                                                  goods_qty=int(data[j]['move_qty']),
                                                  bin_size=move_to_bin_detail.bin_size,
                                                  bin_property=move_to_bin_detail.bin_property,
-                                                 t_code=Md5.md5(str(data[j]['goods_code'])),
+                                                 t_code=Md5.md5(str(data[j]['sku_code'])),
                                                  create_time=qs_project.create_time
                                                  )
                     if move_to_bin_detail.empty_label == True:

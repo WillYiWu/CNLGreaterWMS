@@ -3,8 +3,8 @@ from rest_framework_csv.renderers import CSVStreamingRenderer
 def file_headers_bin():
     return [
         'bin_name',
-        'goods_code',
-        'goods_desc',
+        'sku_code',
+        'sku_desc',
         'goods_qty',
         'goods_cost',
         'pick_qty',
@@ -18,8 +18,8 @@ def file_headers_bin():
 def cn_data_header_bin():
     return dict([
         ('bin_name', u'库位名称'),
-        ('goods_code', u'商品编码'),
-        ('goods_desc', u'商品描述'),
+        ('sku_code', u'商品编码'),
+        ('sku_desc', u'商品描述'),
         ('goods_qty', u'商品数量'),
         ('goods_cost', u'商品成本'),
         ('pick_qty', u'等待拣货数量'),
@@ -33,8 +33,8 @@ def cn_data_header_bin():
 def en_data_header_bin():
     return dict([
         ('bin_name', u'Bin Name'),
-        ('goods_code', u'Goods Code'),
-        ('goods_desc', u'Goods Description'),
+        ('sku_code', u'Goods Code'),
+        ('sku_desc', u'Goods Description'),
         ('goods_qty', u'Goods Qty'),
         ('goods_cost', u'Goods Cost'),
         ('pick_qty', u'Pick Stock'),
@@ -47,8 +47,8 @@ def en_data_header_bin():
 
 def file_headers_list():
     return [
-        'goods_code',
-        'goods_desc',
+        'sku_code',
+        'sku_desc',
         'goods_qty',
         'onhand_stock',
         'can_order_stock',
@@ -62,8 +62,8 @@ def file_headers_list():
 
 def cn_data_header_list():
     return dict([
-        ('goods_code', u'商品编码'),
-        ('goods_desc', u'商品描述'),
+        ('sku_code', u'商品编码'),
+        ('sku_desc', u'商品描述'),
         ('goods_qty', u'商品数量'),
         ('onhand_stock', u'现有库存'),
         ('can_order_stock', u'可被下单数量'),
@@ -77,8 +77,8 @@ def cn_data_header_list():
 
 def en_data_header_list():
     return dict([
-        ('goods_code', u'Goods Code'),
-        ('goods_desc', u'Goods Description'),
+        ('sku_code', u'Goods Code'),
+        ('sku_desc', u'Goods Description'),
         ('goods_qty', u'Goods Qty'),
         ('onhand_stock', u'Onhand Stock'),
         ('can_order_stock', u'Can Order Stock'),

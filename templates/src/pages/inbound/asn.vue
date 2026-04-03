@@ -242,7 +242,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData1.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(1)"
                 @input-value="setOptions"
@@ -279,7 +279,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData2.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(2)"
                 @input-value="setOptions"
@@ -315,7 +315,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData3.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(3)"
                 @input-value="setOptions"
@@ -351,7 +351,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData4.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(4)"
                 @input-value="setOptions"
@@ -387,7 +387,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData5.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(5)"
                 @input-value="setOptions"
@@ -423,7 +423,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData6.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(6)"
                 @input-value="setOptions"
@@ -459,7 +459,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData7.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(7)"
                 @input-value="setOptions"
@@ -495,7 +495,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData8.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(8)"
                 @input-value="setOptions"
@@ -531,7 +531,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData9.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(9)"
                 @input-value="setOptions"
@@ -567,7 +567,7 @@
                 hide-selected
                 fill-input
                 v-model="goodsData10.code"
-                :label="$t('goods.view_goodslist.goods_code')"
+                :label="$t('goods.view_sku.sku_code')"
                 :options="options"
                 @focus="getFocus(10)"
                 @input-value="setOptions"
@@ -661,7 +661,7 @@
         <q-markup-table>
           <thead>
             <tr>
-              <th class="text-left">{{ $t('goods.view_goodslist.goods_code') }}</th>
+              <th class="text-left">{{ $t('goods.view_sku.sku_code') }}</th>
               <th class="text-right">{{ $t('stock.view_stocklist.goods_qty') }}</th>
               <th class="text-right">{{ $t('inbound.view_asn.total_weight') }}</th>
               <th class="text-right">{{ $t('inbound.view_asn.total_volume') }}</th>
@@ -671,7 +671,7 @@
           </thead>
           <tbody>
             <tr v-for="(view, index) in viewprint_table" :key="index">
-              <td class="text-left">{{ view.goods_code }}</td>
+              <td class="text-left">{{ view.sku_code }}</td>
               <td class="text-right">{{ view.goods_qty }}</td>
               <td class="text-right">{{ view.goods_weight }}</td>
               <td class="text-right">{{ view.goods_volume }}</td>
@@ -707,7 +707,7 @@
           <div v-for="(item, index) in sorted_list.goodsData" :key="index">
             <q-input dense outlined square bottom-slots type="number" v-model="item.goods_actual_qty" :label="$t('inbound.view_asn.goods_actual_qty')">
               <template v-slot:append>
-                {{ item.goods_code }}
+                {{ item.sku_code }}
               </template>
             </q-input>
           </div>
@@ -763,7 +763,7 @@ export default {
         rowsPerPage: '60'
       },
       newForm: false,
-      options: SessionStorage.getItem('goods_code'),
+      options: SessionStorage.getItem('sku_code'),
       options1: [],
       isEdit: false,
       listNumber: '',
@@ -771,7 +771,7 @@ export default {
       newFormData: {
         asn_code: '',
         supplier: '',
-        goods_code: [],
+        sku_code: [],
         goods_qty: [],
         creater: ''
       },
@@ -993,7 +993,7 @@ export default {
       _this.newFormData.creater = _this.login_name
       let cancelRequest = false
       if (_this.newFormData.supplier !== '') {
-        _this.newFormData.goods_code = []
+        _this.newFormData.sku_code = []
         _this.newFormData.goods_qty = []
         let goodsDataCheck = 0
         for (let i = 0; i < 10; i++) {
@@ -1007,7 +1007,7 @@ export default {
                 color: 'negative'
               })
             } else {
-              _this.newFormData.goods_code.push(_this[goodsData].code)
+              _this.newFormData.sku_code.push(_this[goodsData].code)
               _this.newFormData.goods_qty.push(_this[goodsData].qty)
             }
             goodsDataCheck += 1
@@ -1058,7 +1058,7 @@ export default {
       _this.newFormData = {
         asn_code: '',
         supplier: '',
-        goods_code: [],
+        sku_code: [],
         goods_qty: [],
         creater: ''
       }
@@ -1087,7 +1087,7 @@ export default {
           _this.newForm = true
           _this.editid = e.id
           res.results.forEach((detail, index) => {
-            _this[`goodsData${index + 1}`] = { code: detail.goods_code, qty: detail.goods_qty }
+            _this[`goodsData${index + 1}`] = { code: detail.sku_code, qty: detail.goods_qty }
           })
         })
       }
@@ -1097,7 +1097,7 @@ export default {
       _this.newFormData.creater = _this.login_name
       let cancelRequest = false
       if (_this.newFormData.supplier !== '') {
-        _this.newFormData.goods_code = []
+        _this.newFormData.sku_code = []
         _this.newFormData.goods_qty = []
         let goodsDataCheck = 0
         for (let i = 0; i < 10; i++) {
@@ -1111,7 +1111,7 @@ export default {
                 color: 'negative'
               })
             } else {
-              _this.newFormData.goods_code.push(_this[goodsData].code)
+              _this.newFormData.sku_code.push(_this[goodsData].code)
               _this.newFormData.goods_qty.push(_this[goodsData].qty)
             }
             goodsDataCheck += 1
@@ -1163,7 +1163,7 @@ export default {
       _this.newFormData = {
         asn_code: '',
         supplier: '',
-        goods_code: [],
+        sku_code: [],
         goods_qty: [],
         creater: ''
       }
@@ -1301,12 +1301,12 @@ export default {
         this[`goodsData${this.listNumber}`].code = ''
       }
       const needle = val.toLowerCase()
-      getauth('goods/?goods_code__icontains=' + needle).then(res => {
+      getauth('goods/sku/?sku_code__icontains=' + needle).then(res => {
         const goodscodelist = []
         for (let i = 0; i < res.results.length; i++) {
-          goodscodelist.push(res.results[i].goods_code)
+          goodscodelist.push(res.results[i].sku_code)
           if (this.listNumber) {
-            if (res.results[i].goods_code === val) {
+            if (res.results[i].sku_code === val) {
               this[`goodsData${this.listNumber}`].code = val
             }
           }
@@ -1437,9 +1437,9 @@ export default {
     } else {
       _this.authin = '0'
     }
-    if (SessionStorage.has('goods_code')) {
+    if (SessionStorage.has('sku_code')) {
     } else {
-      SessionStorage.set('goods_code', [])
+      SessionStorage.set('sku_code', [])
     }
   },
   mounted () {

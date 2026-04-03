@@ -1,11 +1,11 @@
 from rest_framework import viewsets
-from .models import ListModel
+from .models import ListModel, SkuModel
 from . import serializers
 from .page import MyPageNumberPagination
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from .filter import Filter
+from .filter import Filter, SkuFilter
 from rest_framework.exceptions import APIException
 from goodsunit.models import ListModel as goods_unit
 from goodsclass.models import ListModel as goods_class
@@ -238,6 +238,99 @@ class APIViewSet(viewsets.ModelViewSet):
                     raise APIException({"detail": "Goods Unit does not exists or it has been changed"})
             else:
                 raise APIException({"detail": "Supplier does not exists or it has been changed"})
+
+    def destroy(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot delete data which not yours"})
+        else:
+            qs.is_delete = True
+            qs.save()
+            serializer = self.get_serializer(qs, many=False)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
+class SkuAPIViewSet(viewsets.ModelViewSet):
+    pagination_class = MyPageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ]
+    ordering_fields = ['id', "create_time", "update_time", ]
+    filter_class = SkuFilter
+
+    def get_project(self):
+        try:
+            id = self.kwargs.get('pk')
+            return id
+        except:
+            return None
+
+    def get_queryset(self):
+        id = self.get_project()
+        if self.request.user:
+            search_word = self.request.GET.get('search', '')
+            if search_word:
+                if id is None:
+                    data_list = SkuModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
+                    search_list = data_list.filter(Q(sku_code__icontains=search_word) | Q(sku_desc__icontains=search_word))
+                    return search_list
+                else:
+                    data_list = SkuModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
+                    search_list = data_list.filter(Q(sku_code__icontains=search_word) | Q(sku_desc__icontains=search_word))
+                    return search_list
+            else:
+                if id is None:
+                    return SkuModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
+                else:
+                    return SkuModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
+        else:
+            return SkuModel.objects.none()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve', 'destroy']:
+            return serializers.SkuGetSerializer
+        elif self.action in ['create']:
+            return serializers.SkuPostSerializer
+        elif self.action in ['update']:
+            return serializers.SkuUpdateSerializer
+        elif self.action in ['partial_update']:
+            return serializers.SkuPartialUpdateSerializer
+        else:
+            return self.http_method_not_allowed(request=self.request)
+
+    def create(self, request, *args, **kwargs):
+        data = self.request.data
+        data['openid'] = self.request.auth.openid
+        if SkuModel.objects.filter(openid=data['openid'], sku_code=data['sku_code'], is_delete=False).exists():
+            raise APIException({"detail": "SKU Exists"})
+        else:
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
+    def update(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot update data which not yours"})
+        else:
+            data = self.request.data
+            serializer = self.get_serializer(qs, data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
+
+    def partial_update(self, request, pk):
+        qs = self.get_object()
+        if qs.openid != self.request.auth.openid:
+            raise APIException({"detail": "Cannot partial_update data which not yours"})
+        else:
+            data = self.request.data
+            serializer = self.get_serializer(qs, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=200, headers=headers)
 
     def destroy(self, request, pk):
         qs = self.get_object()

@@ -3,8 +3,8 @@ from .models import StockListModel, StockBinModel
 from utils import datasolve
 
 class StockListGetSerializer(serializers.ModelSerializer):
-    goods_code = serializers.CharField(read_only=True, required=False)
-    goods_desc = serializers.CharField(read_only=True, required=False)
+    sku_code = serializers.CharField(read_only=True, required=False)
+    sku_desc = serializers.CharField(read_only=True, required=False)
     goods_qty = serializers.IntegerField(read_only=True, required=False)
     onhand_stock = serializers.IntegerField(read_only=True, required=False)
     can_order_stock = serializers.IntegerField(read_only=True, required=False)
@@ -29,8 +29,8 @@ class StockListGetSerializer(serializers.ModelSerializer):
 
 class StockBinGetSerializer(serializers.ModelSerializer):
     bin_name = serializers.CharField(read_only=True, required=False)
-    goods_code = serializers.CharField(read_only=True, required=False)
-    goods_desc = serializers.CharField(read_only=True, required=False)
+    sku_code = serializers.CharField(read_only=True, required=False)
+    sku_desc = serializers.CharField(read_only=True, required=False)
     goods_qty = serializers.IntegerField(read_only=True, required=False)
     pick_qty = serializers.IntegerField(read_only=True, required=False)
     picked_qty = serializers.IntegerField(read_only=True, required=False)
@@ -69,8 +69,8 @@ class StockBinPostSerializer(serializers.ModelSerializer):
 
 class FileBinListRenderSerializer(serializers.ModelSerializer):
     bin_name = serializers.CharField(read_only=False, required=False)
-    goods_code = serializers.CharField(read_only=False, required=False)
-    goods_desc = serializers.CharField(read_only=False, required=False)
+    sku_code = serializers.CharField(read_only=False, required=False)
+    sku_desc = serializers.CharField(read_only=False, required=False)
     goods_qty = serializers.IntegerField(read_only=False, required=False)
     pick_qty = serializers.IntegerField(read_only=False, required=False)
     picked_qty = serializers.IntegerField(read_only=False, required=False)
@@ -85,8 +85,8 @@ class FileBinListRenderSerializer(serializers.ModelSerializer):
         exclude = ['openid', ]
 
 class FileListRenderSerializer(serializers.ModelSerializer):
-    goods_code = serializers.CharField(read_only=True, required=False)
-    goods_desc = serializers.CharField(read_only=True, required=False)
+    sku_code = serializers.CharField(read_only=True, required=False)
+    sku_desc = serializers.CharField(read_only=True, required=False)
     goods_qty = serializers.IntegerField(read_only=True, required=False)
     onhand_stock = serializers.IntegerField(read_only=True, required=False)
     can_order_stock = serializers.IntegerField(read_only=True, required=False)

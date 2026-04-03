@@ -215,6 +215,11 @@ const routes = [{
             component: () => import('pages/goods/goodslist.vue')
           },
           {
+            path: 'sku',
+            name: 'sku',
+            component: () => import('pages/goods/sku.vue')
+          },
+          {
             path: 'goodslist',
             name: 'goodslist',
             component: () => import('pages/goods/goodslogin.vue')

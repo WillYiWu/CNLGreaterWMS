@@ -1,5 +1,5 @@
 from django_filters import FilterSet
-from .models import ListModel
+from .models import ListModel, SkuModel
 
 class Filter(FilterSet):
     class Meta:
@@ -24,6 +24,20 @@ class Filter(FilterSet):
             "safety_stock": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
             "goods_cost": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
             "goods_price": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
+            "creater": ['exact', 'iexact', 'contains', 'icontains'],
+            "is_delete": ['exact', 'iexact'],
+            "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],
+            "update_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range']
+        }
+
+class SkuFilter(FilterSet):
+    class Meta:
+        model = SkuModel
+        fields = {
+            "id": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
+            "sku_code": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_desc": ['exact', 'iexact', 'contains', 'icontains'],
+            "sku_cost": ['exact', 'iexact', 'gt', 'gte', 'lt', 'lte', 'isnull', 'in', 'range'],
             "creater": ['exact', 'iexact', 'contains', 'icontains'],
             "is_delete": ['exact', 'iexact'],
             "create_time": ['year', 'month', 'day', 'week_day', 'gt', 'gte', 'lt', 'lte', 'range'],

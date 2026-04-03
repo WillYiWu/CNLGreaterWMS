@@ -13,7 +13,7 @@ from .filter import AsnListFilter, AsnDetailFilter
 from rest_framework.exceptions import APIException
 from supplier.models import ListModel as supplier
 from warehouse.models import ListModel as warehouse
-from goods.models import ListModel as goods
+from goods.models import SkuModel as goods
 from payment.models import TransportationFeeListModel as transportation
 from stock.models import StockListModel as stocklist
 from stock.models import StockBinModel as stockbin
@@ -125,7 +125,7 @@ class AsnListViewSet(viewsets.ModelViewSet):
                                               asn_status=1, is_delete=False)
                 for i in range(len(asn_detail_list)):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                goods_code=str(asn_detail_list[i].goods_code)).first()
+                                                                sku_code=str(asn_detail_list[i].sku_code)).first()
                     goods_qty_change.goods_qty = goods_qty_change.goods_qty - int(asn_detail_list[i].goods_qty)
                     goods_qty_change.asn_stock = goods_qty_change.asn_stock - int(asn_detail_list[i].goods_qty)
                     goods_qty_change.save()
@@ -188,12 +188,12 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
         if AsnListModel.objects.filter(openid=self.request.auth.openid, asn_code=str(data['asn_code']), is_delete=False).exists():
             if supplier.objects.filter(openid=self.request.auth.openid, supplier_name=str(data['supplier']), is_delete=False).exists():
                 staff_name = staff.objects.filter(openid=self.request.auth.openid, id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
-                for i in range(len(data['goods_code'])):
+                for i in range(len(data['sku_code'])):
                     check_data = {
                         'openid': self.request.auth.openid,
                         'asn_code': str(data['asn_code']),
                         'supplier': str(data['supplier']),
-                        'goods_code': str(data['goods_code'][i]),
+                        'sku_code': str(data['sku_code'][i]),
                         'goods_qty': int(data['goods_qty'][i]),
                         'creater': str(staff_name)
                     }
@@ -203,35 +203,35 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
                 weight_list = []
                 volume_list = []
                 cost_list = []
-                for j in range(len(data['goods_code'])):
+                for j in range(len(data['sku_code'])):
                     goods_detail = goods.objects.filter(openid=self.request.auth.openid,
-                                                        goods_code=str(data['goods_code'][j]),
+                                                        sku_code=str(data['sku_code'][j]),
                                                         is_delete=False).first()
-                    goods_weight = round(goods_detail.goods_weight * int(data['goods_qty'][j]) / 1000, 4)
-                    goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
-                    goods_cost = round(goods_detail.goods_cost * int(data['goods_qty'][j]), 2)
-                    if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j])).exists():
+                    goods_weight = 0
+                    goods_volume = 0
+                    goods_cost = round(goods_detail.sku_cost * int(data['goods_qty'][j]), 2)
+                    if stocklist.objects.filter(openid=self.request.auth.openid, sku_code=str(data['sku_code'][j])).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j])).first()
+                                                 sku_code=str(data['sku_code'][j])).first()
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty + int(data['goods_qty'][j])
                         goods_qty_change.asn_stock = goods_qty_change.asn_stock + int(data['goods_qty'][j])
                         goods_qty_change.save()
                     else:
                         stocklist.objects.create(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j]),
-                                                 goods_desc=goods_detail.goods_desc,
+                                                 sku_code=str(data['sku_code'][j]),
+                                                 sku_desc=goods_detail.sku_desc,
                                                  goods_qty=int(data['goods_qty'][j]),
                                                  asn_stock=int(data['goods_qty'][j]))
                     post_data = AsnDetailModel(openid=self.request.auth.openid,
                                                asn_code=str(data['asn_code']),
                                                supplier=str(data['supplier']),
-                                               goods_code=str(data['goods_code'][j]),
-                                               goods_desc=str(goods_detail.goods_desc),
+                                               sku_code=str(data['sku_code'][j]),
+                                               sku_desc=str(goods_detail.sku_desc),
                                                goods_qty=int(data['goods_qty'][j]),
                                                goods_actual_qty=int(data['goods_qty'][j]),
                                                goods_weight=goods_weight,
                                                goods_volume=goods_volume,
-                                               goods_cost=goods_cost,
+                                               sku_cost=goods_cost,
                                                creater=str(staff_name))
                     post_data_list.append(post_data)
                     weight_list.append(goods_weight)
@@ -283,12 +283,12 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
                                        is_delete=False).exists():
                 staff_name = staff.objects.filter(openid=self.request.auth.openid,
                                                   id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
-                for i in range(len(data['goods_code'])):
+                for i in range(len(data['sku_code'])):
                     check_data = {
                         'openid': self.request.auth.openid,
                         'asn_code': str(data['asn_code']),
                         'supplier': str(data['supplier']),
-                        'goods_code': str(data['goods_code'][i]),
+                        'sku_code': str(data['sku_code'][i]),
                         'goods_qty': int(data['goods_qty'][i]),
                         'creater': str(staff_name)
                     }
@@ -298,7 +298,7 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
                                               asn_code=str(data['asn_code']), is_delete=False)
                 for v in range(len(asn_detail_list)):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                goods_code=str(asn_detail_list[v].goods_code)).first()
+                                                                sku_code=str(asn_detail_list[v].sku_code)).first()
                     goods_qty_change.goods_qty = goods_qty_change.goods_qty - asn_detail_list[v].goods_qty
                     if goods_qty_change.goods_qty < 0:
                         goods_qty_change.goods_qty = 0
@@ -311,30 +311,30 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
                 post_data_list = []
                 weight_list = []
                 volume_list = []
-                for j in range(len(data['goods_code'])):
+                for j in range(len(data['sku_code'])):
                     goods_detail = goods.objects.filter(openid=self.request.auth.openid,
-                                                        goods_code=str(data['goods_code'][j]),
+                                                        sku_code=str(data['sku_code'][j]),
                                                         is_delete=False).first()
-                    goods_weight = round(goods_detail.goods_weight * int(data['goods_qty'][j]) / 1000, 4)
-                    goods_volume = round(goods_detail.unit_volume * int(data['goods_qty'][j]), 4)
-                    goods_cost = round(goods_detail.goods_cost * int(data['goods_qty'][j]), 2)
-                    if stocklist.objects.filter(openid=self.request.auth.openid, goods_code=str(data['goods_code'][j])).exists():
+                    goods_weight = 0
+                    goods_volume = 0
+                    goods_cost = round(goods_detail.sku_cost * int(data['goods_qty'][j]), 2)
+                    if stocklist.objects.filter(openid=self.request.auth.openid, sku_code=str(data['sku_code'][j])).exists():
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j])).first()
+                                                 sku_code=str(data['sku_code'][j])).first()
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty + int(data['goods_qty'][j])
                         goods_qty_change.asn_stock = goods_qty_change.asn_stock + int(data['goods_qty'][j])
                         goods_qty_change.save()
                     else:
                         stocklist.objects.create(openid=self.request.auth.openid,
-                                                 goods_code=str(data['goods_code'][j]),
-                                                 goods_desc=goods_detail.goods_desc,
+                                                 sku_code=str(data['sku_code'][j]),
+                                                 sku_desc=goods_detail.sku_desc,
                                                  goods_qty=int(data['goods_qty'][j]),
                                                  asn_stock=int(data['goods_qty'][j]))
                     post_data = AsnDetailModel(openid=self.request.auth.openid,
                                                asn_code=str(data['asn_code']),
                                                supplier=str(data['supplier']),
-                                               goods_code=str(data['goods_code'][j]),
-                                               goods_desc=str(goods_detail.goods_desc),
+                                               sku_code=str(data['sku_code'][j]),
+                                               sku_desc=str(goods_detail.sku_desc),
                                                goods_qty=int(data['goods_qty'][j]),
                                                goods_weight=goods_weight,
                                                goods_volume=goods_volume,
@@ -488,7 +488,7 @@ class AsnPreLoadViewSet(viewsets.ModelViewSet):
                                                                     asn_status=1, is_delete=False)
                     for i in range(len(asn_detail_list)):
                         goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                    goods_code=str(asn_detail_list[i].goods_code)).first()
+                                                                    sku_code=str(asn_detail_list[i].sku_code)).first()
                         goods_qty_change.asn_stock = goods_qty_change.asn_stock - asn_detail_list[i].goods_qty
                         if goods_qty_change.asn_stock < 0:
                             goods_qty_change.asn_stock = 0
@@ -548,7 +548,7 @@ class AsnPreSortViewSet(viewsets.ModelViewSet):
                                                                 asn_status=2, is_delete=False)
                 for i in range(len(asn_detail_list)):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                goods_code=str(asn_detail_list[i].goods_code)).first()
+                                                                sku_code=str(asn_detail_list[i].sku_code)).first()
                     goods_qty_change.pre_load_stock = goods_qty_change.pre_load_stock - asn_detail_list[i].goods_qty
                     if goods_qty_change.pre_load_stock < 0:
                         goods_qty_change.pre_load_stock = 0
@@ -606,21 +606,21 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
             data = self.request.data
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                            goods_code=str(
-                                                                data['goodsData'][j].get('goods_code'))).first()
+                                                            sku_code=str(
+                                                                data['goodsData'][j].get('sku_code'))).first()
                 asn_detail = AsnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                            asn_code=str(data['asn_code']),
                                                            asn_status=3, supplier=str(data['supplier']),
-                                                           goods_code=str(
-                                                               data['goodsData'][j].get('goods_code'))).first()
+                                                           sku_code=str(
+                                                               data['goodsData'][j].get('sku_code'))).first()
                 goods_detail = goods.objects.filter(openid=self.request.auth.openid,
-                                                    goods_code=str(data['goodsData'][j].get('goods_code')),
+                                                    sku_code=str(data['goodsData'][j].get('sku_code')),
                                                     is_delete=False).first()
                 if int(data['goodsData'][j].get('goods_actual_qty')) == 0:
                     asn_detail.goods_actual_qty = int(data['goodsData'][j].get('goods_actual_qty'))
                     asn_detail.goods_shortage_qty = asn_detail.goods_qty
-                    asn_detail.goods_cost = 0
-                    qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
+                    asn_detail.sku_cost = 0
+                    qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
                     goods_qty_change.goods_qty = goods_qty_change.goods_qty - asn_detail.goods_qty
                     goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                     asn_detail.asn_status = 5
@@ -634,8 +634,8 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
                     if goods_qty_check > 0:
                         asn_detail.goods_shortage_qty = goods_qty_check
                         asn_detail.goods_more_qty = 0
-                        asn_detail.goods_cost = asn_detail.goods_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
-                        qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
+                        asn_detail.sku_cost = asn_detail.sku_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
+                        qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty - goods_qty_check
                         goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                         goods_qty_change.sorted_stock = goods_qty_change.sorted_stock + int(data['goodsData'][j].get('goods_actual_qty'))
@@ -647,8 +647,8 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
                     elif goods_qty_check < 0:
                         asn_detail.goods_shortage_qty = 0
                         asn_detail.goods_more_qty = abs(goods_qty_check)
-                        asn_detail.goods_cost = asn_detail.goods_cost + (asn_detail.goods_more_qty * goods_detail.goods_cost)
-                        qs.total_cost = qs.total_cost + (asn_detail.goods_more_qty * goods_detail.goods_cost)
+                        asn_detail.sku_cost = asn_detail.sku_cost + (asn_detail.goods_more_qty * goods_detail.sku_cost)
+                        qs.total_cost = qs.total_cost + (asn_detail.goods_more_qty * goods_detail.sku_cost)
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty + abs(goods_qty_check)
                         goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                         goods_qty_change.sorted_stock = goods_qty_change.sorted_stock + int(data['goodsData'][j].get('goods_actual_qty'))
@@ -673,20 +673,20 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
         else:
             for j in range(len(data['goodsData'])):
                 goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                            goods_code=str(
-                                                                data['goodsData'][j].get('goods_code'))).first()
+                                                            sku_code=str(
+                                                                data['goodsData'][j].get('sku_code'))).first()
                 asn_detail = AsnDetailModel.objects.filter(openid=self.request.auth.openid,
                                                            asn_code=str(data['asn_code']),
-                                                           goods_code=str(
-                                                               data['goodsData'][j].get('goods_code'))).first()
+                                                           sku_code=str(
+                                                               data['goodsData'][j].get('sku_code'))).first()
                 goods_detail = goods.objects.filter(openid=self.request.auth.openid,
-                                                    goods_code=str(data['goodsData'][j].get('goods_code')),
+                                                    sku_code=str(data['goodsData'][j].get('sku_code')),
                                                     is_delete=False).first()
                 if int(data['goodsData'][j].get('goods_actual_qty')) == 0:
                     asn_detail.goods_actual_qty = int(data['goodsData'][j].get('goods_actual_qty'))
                     asn_detail.goods_shortage_qty = asn_detail.goods_qty
-                    asn_detail.goods_cost = 0
-                    qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
+                    asn_detail.sku_cost = 0
+                    qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
                     goods_qty_change.goods_qty = goods_qty_change.goods_qty - asn_detail.goods_qty
                     goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                     asn_detail.asn_status = 5
@@ -700,8 +700,8 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
                     if goods_qty_check > 0:
                         asn_detail.goods_shortage_qty = goods_qty_check
                         asn_detail.goods_more_qty = 0
-                        asn_detail.goods_cost = asn_detail.goods_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
-                        qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.goods_cost)
+                        asn_detail.sku_cost = asn_detail.sku_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
+                        qs.total_cost = qs.total_cost - (asn_detail.goods_shortage_qty * goods_detail.sku_cost)
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty - goods_qty_check
                         goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                         goods_qty_change.sorted_stock = goods_qty_change.sorted_stock + int(data['goodsData'][j].get('goods_actual_qty'))
@@ -713,8 +713,8 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
                     elif goods_qty_check < 0:
                         asn_detail.goods_shortage_qty = 0
                         asn_detail.goods_more_qty = abs(goods_qty_check)
-                        asn_detail.goods_cost = asn_detail.goods_cost + (asn_detail.goods_more_qty * goods_detail.goods_cost)
-                        qs.total_cost = qs.total_cost + (asn_detail.goods_more_qty * goods_detail.goods_cost)
+                        asn_detail.sku_cost = asn_detail.sku_cost + (asn_detail.goods_more_qty * goods_detail.sku_cost)
+                        qs.total_cost = qs.total_cost + (asn_detail.goods_more_qty * goods_detail.sku_cost)
                         goods_qty_change.goods_qty = goods_qty_change.goods_qty + abs(goods_qty_check)
                         goods_qty_change.pre_sort_stock = goods_qty_change.pre_sort_stock - asn_detail.goods_qty
                         goods_qty_change.sorted_stock = goods_qty_change.sorted_stock + int(data['goodsData'][j].get('goods_actual_qty'))
@@ -784,7 +784,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                     asn_detail = AsnListModel.objects.filter(openid=self.request.auth.openid,
                                                              asn_code=str(data['asn_code'])).first()
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                goods_code=str(data['goods_code'])).first()
+                                                                sku_code=str(data['sku_code'])).first()
                     if int(data['goods_actual_qty']) <= 0:
                         raise APIException({"detail": "Move QTY Must > 0"})
                     else:
@@ -806,33 +806,33 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                 goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['goods_actual_qty'])
                             qs.save()
                             goods_qty_change.save()
-                            goods_cost = goods.objects.filter(goods_code=str(data['goods_code'])).first().goods_cost
+                            sku_cost = goods.objects.filter(sku_code=str(data['sku_code'])).first().sku_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
-                                                    goods_code=str(data['goods_code']),
-                                                    goods_desc=goods_qty_change.goods_desc,
+                                                    sku_code=str(data['sku_code']),
+                                                    sku_desc=goods_qty_change.sku_desc,
                                                     goods_qty=int(data['goods_actual_qty']),
-                                                    goods_cost=goods_cost,
+                                                    goods_cost=sku_cost,
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
-                                                    t_code=Md5.md5(str(data['goods_code'])),
+                                                    t_code=Md5.md5(str(data['sku_code'])),
                                                     create_time=qs.create_time
                                                     )
                             qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
-                                                             goods_code=str(data['goods_code']),
+                                                             goods_code=str(data['sku_code']),
                                                              goods_qty=int(data['goods_actual_qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
                             line_data = cyclecount.objects.filter(openid=self.request.auth.openid,
                                                                   bin_name=str(data['bin_name']),
-                                                                  goods_code=str(data['goods_code']),
+                                                                  goods_code=str(data['sku_code']),
                                                                   create_time__gte=cur_date)
                             bin_check = stockbin.objects.filter(openid=self.request.auth.openid,
                                                                 bin_name=str(data['bin_name']),
-                                                                goods_code=str(data['goods_code']),
+                                                                sku_code=str(data['sku_code']),
                                                                 )
                             if bin_check.exists():
                                 bin_stock = bin_check.aggregate(sum=Sum('goods_qty'))["sum"]
@@ -844,7 +844,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
-                                                          goods_code=str(data['goods_code']),
+                                                          goods_code=str(data['sku_code']),
                                                           goods_qty=int(data['goods_actual_qty']),
                                                           creater=str(staff_name)
                                                           )
@@ -868,18 +868,18 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
-                                                             goods_code=str(data['goods_code']),
+                                                             goods_code=str(data['sku_code']),
                                                              goods_qty=int(data['goods_actual_qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
                             line_data = cyclecount.objects.filter(openid=self.request.auth.openid,
                                                                   bin_name=str(data['bin_name']),
-                                                                  goods_code=str(data['goods_code']),
+                                                                  goods_code=str(data['sku_code']),
                                                                   create_time__gte=cur_date)
                             bin_check = stockbin.objects.filter(openid=self.request.auth.openid,
                                                                 bin_name=str(data['bin_name']),
-                                                                goods_code=str(data['goods_code']),
+                                                                sku_code=str(data['sku_code']),
                                                                 )
                             if bin_check.exists():
                                 bin_stock = bin_check.aggregate(sum=Sum('goods_qty'))["sum"]
@@ -891,7 +891,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
-                                                          goods_code=str(data['goods_code']),
+                                                          goods_code=str(data['sku_code']),
                                                           goods_qty=int(data['goods_actual_qty']),
                                                           creater=str(staff_name),
                                                           t_code=Md5.md5(str(data['bin_name']))
@@ -906,16 +906,16 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 asn_detail.asn_status = 5
                                 asn_detail.save()
-                            goods_cost = goods.objects.filter(goods_code=str(data['goods_code'])).first().goods_cost
+                            sku_cost = goods.objects.filter(sku_code=str(data['sku_code'])).first().sku_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
-                                                    goods_code=str(data['goods_code']),
-                                                    goods_desc=goods_qty_change.goods_desc,
+                                                    sku_code=str(data['sku_code']),
+                                                    sku_desc=goods_qty_change.sku_desc,
                                                     goods_qty=int(data['goods_actual_qty']),
-                                                    goods_cost=goods_cost,
+                                                    goods_cost=sku_cost,
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
-                                                    t_code=Md5.md5(str(data['goods_code'])),
+                                                    t_code=Md5.md5(str(data['sku_code'])),
                                                     create_time=qs.create_time)
                             if bin_detail.empty_label == True:
                                 bin_detail.empty_label = False
@@ -943,11 +943,11 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                                   id=self.request.META.get('HTTP_OPERATOR')).first().staff_name
                 for i in range(len(data['res_data'])):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
-                                                                goods_code=str(data['res_data'][i]['goods_code'])).first()
+                                                                sku_code=str(data['res_data'][i]['sku_code'])).first()
                     if int(data['res_data'][i]['qty']) <= 0:
                         continue
                     else:
-                        qs = qs_list.filter(goods_code=str(data['res_data'][i]['goods_code'])).first()
+                        qs = qs_list.filter(sku_code=str(data['res_data'][i]['sku_code'])).first()
                         move_qty = qs.goods_actual_qty - qs.sorted_qty - int(data['res_data'][i]['qty'])
                         if move_qty > 0:
                             qs.sorted_qty = qs.sorted_qty + int(data['res_data'][i]['qty'])
@@ -966,29 +966,29 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             goods_qty_change.save()
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
-                                                    goods_code=str(data['res_data'][i]['goods_code']),
-                                                    goods_desc=goods_qty_change.goods_desc,
+                                                    sku_code=str(data['res_data'][i]['sku_code']),
+                                                    sku_desc=goods_qty_change.sku_desc,
                                                     goods_qty=int(data['res_data'][i]['qty']),
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
-                                                    t_code=Md5.md5(str(data['res_data'][i]['goods_code'])),
+                                                    t_code=Md5.md5(str(data['res_data'][i]['sku_code'])),
                                                     create_time=qs.create_time
                                                     )
                             qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
-                                                             goods_code=str(data['res_data'][i]['goods_code']),
+                                                             goods_code=str(data['res_data'][i]['sku_code']),
                                                              goods_qty=int(data['res_data'][i]['qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
                             line_data = cyclecount.objects.filter(openid=self.request.auth.openid,
                                                                   bin_name=str(data['bin_name']),
-                                                                  goods_code=str(data['res_data'][i]['goods_code']),
+                                                                  goods_code=str(data['res_data'][i]['sku_code']),
                                                                   create_time__gte=cur_date)
                             bin_check = stockbin.objects.filter(openid=self.request.auth.openid,
                                                                 bin_name=str(data['bin_name']),
-                                                                goods_code=str(data['res_data'][i]['goods_code']),
+                                                                sku_code=str(data['res_data'][i]['sku_code']),
                                                                 )
                             if bin_check.exists():
                                 bin_stock = bin_check.aggregate(sum=Sum('goods_qty'))["sum"]
@@ -1000,7 +1000,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
-                                                          goods_code=str(data['res_data'][i]['goods_code']),
+                                                          goods_code=str(data['res_data'][i]['sku_code']),
                                                           goods_qty=int(data['res_data'][i]['qty']),
                                                           creater=str(staff_name)
                                                           )
@@ -1024,18 +1024,18 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             qtychangerecorder.objects.create(openid=self.request.auth.openid,
                                                              mode_code=qs.asn_code,
                                                              bin_name=str(data['bin_name']),
-                                                             goods_code=str(data['res_data'][i]['goods_code']),
+                                                             goods_code=str(data['res_data'][i]['sku_code']),
                                                              goods_qty=int(data['res_data'][i]['qty']),
                                                              creater=str(staff_name)
                                                              )
                             cur_date = timezone.now().date()
                             line_data = cyclecount.objects.filter(openid=self.request.auth.openid,
                                                                   bin_name=str(data['bin_name']),
-                                                                  goods_code=str(data['res_data'][i]['goods_code']),
+                                                                  goods_code=str(data['res_data'][i]['sku_code']),
                                                                   create_time__gte=cur_date)
                             bin_check = stockbin.objects.filter(openid=self.request.auth.openid,
                                                                 bin_name=str(data['bin_name']),
-                                                                goods_code=str(data['res_data'][i]['goods_code']),
+                                                                sku_code=str(data['res_data'][i]['sku_code']),
                                                                 )
                             if bin_check.exists():
                                 bin_stock = bin_check.aggregate(sum=Sum('goods_qty'))["sum"]
@@ -1047,7 +1047,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 cyclecount.objects.create(openid=self.request.auth.openid,
                                                           bin_name=str(data['bin_name']),
-                                                          goods_code=str(data['res_data'][i]['goods_code']),
+                                                          goods_code=str(data['res_data'][i]['sku_code']),
                                                           goods_qty=int(data['res_data'][i]['qty']),
                                                           creater=str(staff_name),
                                                           t_code=Md5.md5(str(data['bin_name']))
@@ -1064,12 +1064,12 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                 asn_detail.save()
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
-                                                    goods_code=str(data['res_data'][i]['goods_code']),
-                                                    goods_desc=goods_qty_change.goods_desc,
+                                                    sku_code=str(data['res_data'][i]['sku_code']),
+                                                    sku_desc=goods_qty_change.sku_desc,
                                                     goods_qty=int(data['res_data'][i]['qty']),
                                                     bin_size=bin_detail.bin_size,
                                                     bin_property=bin_detail.bin_property,
-                                                    t_code=Md5.md5(str(data['res_data'][i]['goods_code'])),
+                                                    t_code=Md5.md5(str(data['res_data'][i]['sku_code'])),
                                                     create_time=qs.create_time)
                             if bin_detail.empty_label == True:
                                 bin_detail.empty_label = False

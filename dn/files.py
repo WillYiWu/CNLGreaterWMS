@@ -42,8 +42,8 @@ def detail_file_headers():
     return [
         'dn_code',
         'dn_status',
-        'goods_code',
-        'goods_desc',
+        'sku_code',
+        'sku_desc',
         'goods_qty',
         'pick_qty',
         'picked_qty',
@@ -64,8 +64,8 @@ def detail_cn_data_header():
     return dict([
         ('dn_code', u'发货单单号'),
         ('dn_status', u'发货单状态'),
-        ('goods_code', u'发货单货物名称'),
-        ('goods_desc', u'发货单货物描述'),
+        ('sku_code', u'发货单货物名称'),
+        ('sku_desc', u'发货单货物描述'),
         ('goods_qty', u'发货单数量'),
         ('pick_qty', u'需要拣货数量'),
         ('picked_qty', u'已拣货数量'),
@@ -87,8 +87,8 @@ def detail_en_data_header():
     return dict([
         ('dn_code', u'DN Code'),
         ('dn_status', u'DN Status'),
-        ('goods_code', u'Goods Code'),
-        ('goods_desc', u'Goods Description'),
+        ('sku_code', u'Goods Code'),
+        ('sku_desc', u'Goods Description'),
         ('goods_qty', u'Goods Qty'),
         ('pick_qty', u'Pick Qty'),
         ('picked_qty', u'Picked Qty'),

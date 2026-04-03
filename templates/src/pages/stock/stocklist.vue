@@ -32,8 +32,8 @@
         </template>
         <template v-slot:body="props">
           <q-tr :props="props">
-            <q-td key="goods_code" :props="props">{{ props.row.goods_code }}</q-td>
-            <q-td key="goods_desc" :props="props">{{ props.row.goods_desc }}</q-td>
+            <q-td key="sku_code" :props="props">{{ props.row.sku_code }}</q-td>
+            <q-td key="sku_desc" :props="props">{{ props.row.sku_desc }}</q-td>
             <q-td key="goods_qty" :props="props">{{ props.row.goods_qty }}</q-td>
             <q-td key="onhand_stock" :props="props">{{ props.row.onhand_stock }}</q-td>
             <q-td key="can_order_stock" :props="props">{{ props.row.can_order_stock }}</q-td>
@@ -83,8 +83,8 @@ export default {
       bin_property_list: [],
       warehouse_list: [],
       columns: [
-        { name: 'goods_code', required: true, label: this.$t('stock.view_stocklist.goods_code'), align: 'left', field: 'goods_code' },
-        { name: 'goods_desc', label: this.$t('stock.view_stocklist.goods_desc'), field: 'goods_desc', align: 'center' },
+        { name: 'sku_code', required: true, label: this.$t('stock.view_stocklist.sku_code'), align: 'left', field: 'sku_code' },
+        { name: 'sku_desc', label: this.$t('stock.view_stocklist.sku_desc'), field: 'sku_desc', align: 'center' },
         { name: 'goods_qty', label: this.$t('stock.view_stocklist.goods_qty'), field: 'goods_qty', align: 'center' },
         { name: 'onhand_stock', label: this.$t('stock.view_stocklist.onhand_stock'), field: 'onhand_stock', align: 'center' },
         { name: 'can_order_stock', label: this.$t('stock.view_stocklist.can_order_stock'), field: 'can_order_stock', align: 'center' },
@@ -121,7 +121,7 @@ export default {
     getSearchList() {
       var _this = this;
       if (LocalStorage.has('auth')) {
-        getauth(_this.pathname + '&goods_code__icontains=' + _this.filter, {})
+        getauth(_this.pathname + '?sku_code__icontains=' + _this.filter, {})
           .then(res => {
             _this.table_list = res.results;
             _this.pathname_previous = res.previous;

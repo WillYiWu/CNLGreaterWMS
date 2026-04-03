@@ -1,7 +1,24 @@
 from django.db import models
 
+class SkuModel(models.Model):
+    sku_code = models.CharField(max_length=255, unique=True, verbose_name="SKU Code")
+    sku_desc = models.CharField(max_length=255, verbose_name="SKU Description")
+    sku_cost = models.FloatField(default=0, verbose_name="SKU Average Cost")
+    creater = models.CharField(max_length=255, verbose_name="Who created")
+    openid = models.CharField(max_length=255, verbose_name="Openid")
+    is_delete = models.BooleanField(default=False, verbose_name='Delete Label')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Time")
+    update_time = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Update Time")
+
+    class Meta:
+        db_table = 'sku'
+        verbose_name = 'Global SKU'
+        verbose_name_plural = "Global SKU"
+        ordering = ['-id']
+
 class ListModel(models.Model):
     goods_code = models.CharField(max_length=255, verbose_name="Goods Code")
+    sku_code = models.CharField(max_length=255, default='', verbose_name="SKU Code")
     goods_desc = models.CharField(max_length=255, verbose_name="Goods Description")
     goods_supplier = models.CharField(max_length=255, verbose_name="Goods Supplier")
     goods_weight = models.FloatField(default=0, verbose_name="Goods Weight")
