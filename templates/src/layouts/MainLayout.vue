@@ -765,6 +765,7 @@ export default {
                 LocalStorage.set('login_name', _this.login_name)
                 LocalStorage.set('login_id', _this.login_id)
                 LocalStorage.set('login_mode', 'admin')
+                LocalStorage.set('staff_type', 'Admin')
                 _this.$q.notify({
                   message: 'Success Login',
                   icon: 'check',
@@ -856,9 +857,17 @@ export default {
     },
     staffType () {
       var _this = this
-      getauth('staff/?staff_name=' + _this.login_name).then((res) => {
-        LocalStorage.set('staff_type', res.results[0].staff_type)
-      })
+      if (LocalStorage.getItem('login_mode') === 'admin') {
+        LocalStorage.set('staff_type', 'Admin')
+      } else {
+        getauth('staff/?staff_name=' + _this.login_name).then((res) => {
+          if (res.results && res.results.length > 0) {
+            LocalStorage.set('staff_type', res.results[0].staff_type)
+          }
+        }).catch((err) => {
+          console.log('staffType error', err)
+        })
+      }
     },
     langChange (e) {
       var _this = this
