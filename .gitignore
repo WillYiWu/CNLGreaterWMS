@@ -4,10 +4,17 @@ Authorization/
 authorization.txt
 authorization.json
 db.sqlite3
+db.sqlite3-*
 .idea/
 delete.py
 *.xlsx
+*.pdf
+.DS_Store
 logs/
 templates/dist/spa/js/
+templates/dist/spa/css/
+templates/dist/spa/media/
 token.json
 templates/src/boot/axios_request.js
+*.bak
+*.pyc
