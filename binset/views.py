@@ -28,7 +28,7 @@ class ScannerBinsetTagView(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
     lookup_field = 'bar_code'
     def get_project(self):
         try:
@@ -79,7 +79,7 @@ class APIViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -185,7 +185,7 @@ class FileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:

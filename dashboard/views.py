@@ -35,7 +35,7 @@ class ReceiptsViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnDetailFilter
+    filterset_class = AsnDetailFilter
 
     def get_project(self):
         try:
@@ -120,7 +120,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = FinanceListFilter
+    filterset_class = FinanceListFilter
 
     def get_project(self):
         try:
@@ -191,7 +191,7 @@ class SalesViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = FinanceListFilter
+    filterset_class = FinanceListFilter
 
     def get_project(self):
         try:

@@ -285,7 +285,7 @@ class BolListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPaginationDNList
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -627,7 +627,7 @@ class DnListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPaginationDNList
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
 
     def get_project(self):
@@ -735,7 +735,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnDetailFilter
+    filterset_class = DnDetailFilter
 
     def get_project(self):
         try:
@@ -1062,7 +1062,7 @@ class DnViewPrintViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -1123,7 +1123,7 @@ class DnNewOrderViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -1196,7 +1196,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -1779,7 +1779,7 @@ class DnPickingListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -1818,7 +1818,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnPickingListFilter
+    filterset_class = DnPickingListFilter
 
     def get_queryset(self):
         if self.request.user:
@@ -1889,7 +1889,7 @@ class DnPickedViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -2095,7 +2095,7 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -2191,7 +2191,7 @@ class DnPODViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -2284,7 +2284,7 @@ class FileListDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnListFilter
+    filterset_class = DnListFilter
 
     def get_project(self):
         try:
@@ -2348,7 +2348,7 @@ class FileDetailDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileDetailRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnDetailFilter
+    filterset_class = DnDetailFilter
 
     def get_project(self):
         try:

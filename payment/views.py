@@ -36,7 +36,7 @@ class TransportationFeeListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = TransportationFeeListFilter
+    filterset_class = TransportationFeeListFilter
 
     def get_project(self):
         try:
@@ -115,7 +115,7 @@ class FreightfileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FreightfileRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = TransportationFeeListFilter
+    filterset_class = TransportationFeeListFilter
 
     def get_project(self):
         try:
@@ -170,7 +170,7 @@ class FinanceListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = FinanceListFilter
+    filterset_class = FinanceListFilter
 
     def get_project(self):
         try:
@@ -202,7 +202,7 @@ class FinanceListDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FinanceListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = FinanceListFilter
+    filterset_class = FinanceListFilter
 
     def get_project(self):
         try:

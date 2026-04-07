@@ -31,7 +31,7 @@ class APIViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:

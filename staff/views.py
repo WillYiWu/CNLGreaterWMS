@@ -36,7 +36,7 @@ class APIViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def list(self, request, *args, **kwargs):
         staff_name = str(request.GET.get('staff_name'))
@@ -158,7 +158,7 @@ class TypeAPIViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = TypeFilter
+    filterset_class = TypeFilter
 
     def get_queryset(self):
         if self.request.user:
@@ -177,7 +177,7 @@ class FileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileRenderCN,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -233,7 +233,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AccountFilter
+    filterset_class = AccountFilter
 
     def get_project(self):
         try:

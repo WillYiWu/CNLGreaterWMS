@@ -89,8 +89,8 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Enable WAL mode for better performance
-    cursor.execute("PRAGMA journal_mode=WAL")
+    # Use DELETE mode (not WAL) for better compatibility with Docker file sharing
+    cursor.execute("PRAGMA journal_mode=DELETE")
 
     # =========================================================================
     # STEP 1: Create 'sku' table if it doesn't exist

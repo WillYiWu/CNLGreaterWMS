@@ -32,7 +32,7 @@ class QTYRecorderViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = QTYRecorderListFilter
+    filterset_class = QTYRecorderListFilter
 
     def get_queryset(self):
         if self.request.user:
@@ -69,7 +69,7 @@ class CyclecountModeDayViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -132,7 +132,7 @@ class CyclecountModeAllViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -180,7 +180,7 @@ class FileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time"]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -238,7 +238,7 @@ class FileDownloadAllView(viewsets.ModelViewSet):
     renderer_classes = (FileRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time"]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -353,7 +353,7 @@ class ManualCyclecountViewSet(viewsets.ModelViewSet):
     pagination_class = None
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = ManualFilter
+    filterset_class = ManualFilter
 
     def get_project(self):
         try:
@@ -424,7 +424,7 @@ class ManualCyclecountRecorderViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = ManualFilter
+    filterset_class = ManualFilter
 
     def get_project(self):
         try:
@@ -470,7 +470,7 @@ class ManualFileDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time"]
-    filter_class = ManualFilter
+    filterset_class = ManualFilter
 
     def get_project(self):
         try:

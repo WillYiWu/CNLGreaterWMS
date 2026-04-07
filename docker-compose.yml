@@ -27,20 +27,25 @@ services:
 #      context: ./
 #      dockerfile: ./docker/backend/Dockerfile 
     container_name: greaterwms_backend
-    image: greaterwms/greaterwms_backend:latest
+    image: greaterwms-backend:latest
     restart: always
     volumes:
       - ./:/GreaterWMS/:rw #将前目录挂载到容器下
       - ./supervisord.conf:/etc/supervisor/supervisord.conf
+      - ./db.sqlite3:/app/db.sqlite3  # 数据库持久化到宿主机
     ports:
       - '8000:8000'
     environment:
       PYTHONUNBUFFERED: 1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
     command:
       - /bin/bash
       - -c
       - |
-        bash backend_start.sh && /etc/init.d/supervisor start
+        mkdir -p /app/templates && cp -r /GreaterWMS/templates/* /app/templates/ && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000 --noreload
     networks:
       - basic
 #  greaterwms-mysql:

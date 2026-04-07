@@ -25,7 +25,7 @@ class SannerDnDetailPickingListView(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = DnDetailFilter
+    filterset_class = DnDetailFilter
 
 
     def get_project(self):
@@ -59,7 +59,7 @@ class ListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
 
     def get_project(self):
         try:
@@ -94,7 +94,7 @@ class SannerView(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = Filter
+    filterset_class = Filter
     lookup_field = 'bar_code'
     def get_project(self):
         try:

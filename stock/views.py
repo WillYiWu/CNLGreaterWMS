@@ -23,7 +23,7 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = StockBinFilter
+    filterset_class = StockBinFilter
 
     def get_project(self):
         try:
@@ -90,7 +90,7 @@ class StockListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = StockListFilter
+    filterset_class = StockListFilter
 
     def get_project(self):
         try:
@@ -123,7 +123,7 @@ class StockBinViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = StockBinFilter
+    filterset_class = StockBinFilter
 
     def get_project(self):
         try:
@@ -508,7 +508,7 @@ class FileListDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = StockListFilter
+    filterset_class = StockListFilter
 
     def get_project(self):
         try:
@@ -562,7 +562,7 @@ class FileBinListDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileBinListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = StockBinFilter
+    filterset_class = StockBinFilter
 
     def get_project(self):
         try:

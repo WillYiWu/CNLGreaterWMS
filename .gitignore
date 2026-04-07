@@ -10,3 +10,4 @@ delete.py
 logs/
 templates/dist/spa/js/
 token.json
+templates/src/boot/axios_request.js

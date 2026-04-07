@@ -47,7 +47,7 @@ class AsnListViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPaginationASNList
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -154,7 +154,7 @@ class AsnDetailViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnDetailFilter
+    filterset_class = AsnDetailFilter
 
     def get_project(self):
         try:
@@ -389,7 +389,7 @@ class AsnViewPrintViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -450,7 +450,7 @@ class AsnPreLoadViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -512,7 +512,7 @@ class AsnPreSortViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -573,7 +573,7 @@ class AsnSortedViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -739,7 +739,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
     pagination_class = MyPageNumberPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnDetailFilter
+    filterset_class = AsnDetailFilter
 
     def get_project(self):
         try:
@@ -1080,7 +1080,7 @@ class FileListDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileListRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnListFilter
+    filterset_class = AsnListFilter
 
     def get_project(self):
         try:
@@ -1145,7 +1145,7 @@ class FileDetailDownloadView(viewsets.ModelViewSet):
     renderer_classes = (FileDetailRenderCN, ) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
     filter_backends = [DjangoFilterBackend, OrderingFilter, ]
     ordering_fields = ['id', "create_time", "update_time", ]
-    filter_class = AsnDetailFilter
+    filterset_class = AsnDetailFilter
 
     def get_project(self):
         try:
