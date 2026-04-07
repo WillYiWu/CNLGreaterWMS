@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import DnListModel, DnDetailModel, PickingListModel
+from goods.models import ListModel as GoodsListModel
 from utils import datasolve
 class SannerDnDetailGetSerializer(serializers.ModelSerializer):
     dn_code = serializers.CharField(read_only=True, required=False)
@@ -105,6 +106,23 @@ class DNDetailGetSerializer(serializers.ModelSerializer):
     create_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     update_time = serializers.DateTimeField(read_only=True, format='%Y-%m-%d %H:%M:%S')
     back_order_label = serializers.BooleanField(read_only=True, required=False)
+    sku_code = serializers.SerializerMethodField()
+    sku_desc = serializers.SerializerMethodField()
+
+    def get_sku_code(self, obj):
+        try:
+            goods = GoodsListModel.objects.get(goods_code=obj.goods_code, is_delete=False)
+            return goods.sku_code
+        except GoodsListModel.DoesNotExist:
+            return ''
+
+    def get_sku_desc(self, obj):
+        try:
+            goods = GoodsListModel.objects.get(goods_code=obj.goods_code, is_delete=False)
+            return goods.goods_desc
+        except GoodsListModel.DoesNotExist:
+            return ''
+
     class Meta:
         model = DnDetailModel
         exclude = ['openid', 'is_delete', ]
