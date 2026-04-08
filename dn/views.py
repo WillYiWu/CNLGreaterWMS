@@ -576,7 +576,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                 account_name = detail_list[i].account_name
                 detail_list[i].save()
 
-                stock_list = stocklist.objects.filter(sku_code=detail_list[i].sku_code).first()
+                stock_list = stocklist.objects.filter(sku_code=detail_list[i].goods_code).first()
 
                 if DnListModel.objects.filter(dn_code=dn_code, is_delete=False).exists():
                     dn_list = DnListModel.objects.filter(dn_code=dn_code, is_delete=False).first()
