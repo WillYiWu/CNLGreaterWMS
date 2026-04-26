@@ -33,6 +33,7 @@ from django.utils import timezone
 from .files import FileListRenderCN, FileListRenderEN, FileDetailRenderCN, FileDetailRenderEN
 from rest_framework.settings import api_settings
 from staff.models import ListModel as staff
+from django.db import transaction
 #[Will] Add library requests in order to obtain data from BOL Restful API
 import requests
 import json
@@ -1837,8 +1838,12 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
         else:
             return self.http_method_not_allowed(request=self.request)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0, is_delete=False)
+        pick_list = PickingListModel.objects.select_for_update().filter(openid=self.request.auth.openid,picking_status=0, is_delete=False)
+        
+        if not pick_list.exists():
+            return Response({"detail": "No picking list to process"}, status=200)
 
         for i in range(len(pick_list)):
             pick_list[i].picking_status = 1
@@ -1846,7 +1851,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             tobe_picked = pick_list[i].picked_qty
             pick_list[i].intransit_qty = pick_list[i].pick_qty
             pick_list[i].save()
-            stockbin_list = stockbin.objects.filter(bin_name=pick_list[i].bin_name, sku_code=get_sku_by_ean(str(pick_list[i].goods_code)))
+            stockbin_list = stockbin.objects.select_for_update().filter(bin_name=pick_list[i].bin_name, sku_code=get_sku_by_ean(str(pick_list[i].goods_code)))
             for stockbin_item in stockbin_list:
                 if stockbin_item.goods_qty >= tobe_picked:
                     stockbin_item.goods_qty = stockbin_item.goods_qty - tobe_picked
@@ -1856,13 +1861,14 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
                     tobe_picked = tobe_picked - stockbin_item.goods_qty
                     stockbin_item.goods_qty = 0
                     stockbin_item.save()
-            stocklist_list = stocklist.objects.filter(sku_code=get_sku_by_ean(str(pick_list[i].goods_code))).first()
-            stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
-            import logging
-            logger = logging.getLogger('django')
-            logger.info(f"Onhand Stock Modified | Class: DnPickingListFilterViewSet | Function: update | Order: {pick_list[i].dn_code} | SKU: {stocklist_list.sku_code} | EAN: {pick_list[i].goods_code} | Before: {stocklist_list.onhand_stock} | After: {stocklist_list.onhand_stock - pick_list[i].picked_qty}")
-            stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
-            stocklist_list.save()
+            stocklist_list = stocklist.objects.select_for_update().filter(sku_code=get_sku_by_ean(str(pick_list[i].goods_code))).first()
+            if stocklist_list:
+                stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
+                import logging
+                logger = logging.getLogger('django')
+                logger.info(f"Onhand Stock Modified | Class: DnPickingListFilterViewSet | Function: update | Order: {pick_list[i].dn_code} | SKU: {stocklist_list.sku_code} | EAN: {pick_list[i].goods_code} | Before: {stocklist_list.onhand_stock} | After: {stocklist_list.onhand_stock - pick_list[i].picked_qty}")
+                stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
+                stocklist_list.save()
             orderItems = []
             orderItems.append({'orderItemId': pick_list[i].orderitem_id, 'quantity': pick_list[i].pick_qty})
             shipment_data = {"orderItems": orderItems,"shippingLabelId": pick_list[i].label_id }
