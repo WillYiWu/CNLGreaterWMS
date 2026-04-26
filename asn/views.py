@@ -794,6 +794,9 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                         if move_qty > 0:
                             qs.sorted_qty = qs.sorted_qty + int(data['goods_actual_qty'])
                             goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['goods_actual_qty'])
+                            import logging
+                            logger = logging.getLogger('django')
+                            logger.info(f"Onhand Stock Modified | Class: MoveToBinViewSet | Function: create | Order: {data['asn_code']} | SKU: {goods_qty_change.sku_code} | EAN: {data['sku_code']} | Before: {goods_qty_change.onhand_stock} | After: {goods_qty_change.onhand_stock + int(data['goods_actual_qty'])}")
                             goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['goods_actual_qty'])
                             if bin_detail.bin_property == 'Damage':
                                 goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['goods_actual_qty'])
@@ -855,6 +858,9 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             qs.sorted_qty = qs.sorted_qty + int(data['goods_actual_qty'])
                             qs.asn_status = 5
                             goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['goods_actual_qty'])
+                            import logging
+                            logger = logging.getLogger('django')
+                            logger.info(f"Onhand Stock Modified | Class: MoveToBinViewSet | Function: create | Order: {data['asn_code']} | SKU: {goods_qty_change.sku_code} | EAN: {data['sku_code']} | Before: {goods_qty_change.onhand_stock} | After: {goods_qty_change.onhand_stock + int(data['goods_actual_qty'])}")
                             goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['goods_actual_qty'])
                             if bin_detail.bin_property == 'Damage':
                                 goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['goods_actual_qty'])
@@ -952,6 +958,9 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                         if move_qty > 0:
                             qs.sorted_qty = qs.sorted_qty + int(data['res_data'][i]['qty'])
                             goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['res_data'][i]['qty'])
+                            import logging
+                            logger = logging.getLogger('django')
+                            logger.info(f"Onhand Stock Modified | Class: MoveToBinViewSet | Function: update | Order: {data['asn_code']} | SKU: {goods_qty_change.sku_code} | EAN: {data['res_data'][i]['sku_code']} | Before: {goods_qty_change.onhand_stock} | After: {goods_qty_change.onhand_stock + int(data['res_data'][i]['qty'])}")
                             goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['res_data'][i]['qty'])
                             if bin_detail.bin_property == 'Damage':
                                 goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['res_data'][i]['qty'])
@@ -1011,6 +1020,9 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             qs.sorted_qty = qs.sorted_qty + int(data['res_data'][i]['qty'])
                             qs.asn_status = 5
                             goods_qty_change.sorted_stock = goods_qty_change.sorted_stock - int(data['res_data'][i]['qty'])
+                            import logging
+                            logger = logging.getLogger('django')
+                            logger.info(f"Onhand Stock Modified | Class: MoveToBinViewSet | Function: update | Order: {data['asn_code']} | SKU: {goods_qty_change.sku_code} | EAN: {data['res_data'][i]['sku_code']} | Before: {goods_qty_change.onhand_stock} | After: {goods_qty_change.onhand_stock + int(data['res_data'][i]['qty'])}")
                             goods_qty_change.onhand_stock = goods_qty_change.onhand_stock + int(data['res_data'][i]['qty'])
                             if bin_detail.bin_property == 'Damage':
                                 goods_qty_change.damage_stock = goods_qty_change.damage_stock + int(data['res_data'][i]['qty'])

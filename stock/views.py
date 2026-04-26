@@ -73,6 +73,9 @@ class StockCorrectionViewSet(viewsets.ModelViewSet):
                 stock_list.hold_stock = int(stock_list.hold_stock) - (old_qty - goods_qty)
             elif stock_bin.bin_property == "Damage":
                 stock_list.damage_stock = int(stock_list.damage_stock) - (old_qty - goods_qty)
+            import logging
+            logger = logging.getLogger('django')
+            logger.info(f"Onhand Stock Modified | Class: StockCorrectionViewSet | Function: update | Order: N/A | SKU: {sku_code} | EAN: {sku_code} | Before: {int(stock_list.onhand_stock)} | After: {int(stock_list.onhand_stock) - (old_qty - goods_qty)}")
             stock_list.onhand_stock = int(stock_list.onhand_stock) - (old_qty - goods_qty)
             stock_list.save()
             serializer = self.get_serializer(qs, data=data, partial=True)

@@ -830,6 +830,9 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                                 stockbin_each.save()
                                 break
                         stocklist_list.can_order_stock = stocklist_list.can_order_stock - goods_qty
+                        import logging
+                        logger = logging.getLogger('django')
+                        logger.info(f"Onhand Stock Modified | Class: DnDetailViewSet | Function: create | Order: {data['dn_code']} | SKU: {stocklist_list.sku_code} | EAN: {data['goods_code'][j]} | Before: {stocklist_list.onhand_stock} | After: {stocklist_list.onhand_stock - goods_qty}")
                         stocklist_list.onhand_stock = stocklist_list.onhand_stock - goods_qty
                         stocklist_list.save()
                     else:
@@ -1855,6 +1858,9 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
                     stockbin_item.save()
             stocklist_list = stocklist.objects.filter(sku_code=get_sku_by_ean(str(pick_list[i].goods_code))).first()
             stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
+            import logging
+            logger = logging.getLogger('django')
+            logger.info(f"Onhand Stock Modified | Class: DnPickingListFilterViewSet | Function: update | Order: {pick_list[i].dn_code} | SKU: {stocklist_list.sku_code} | EAN: {pick_list[i].goods_code} | Before: {stocklist_list.onhand_stock} | After: {stocklist_list.onhand_stock - pick_list[i].picked_qty}")
             stocklist_list.onhand_stock = stocklist_list.onhand_stock - pick_list[i].picked_qty
             stocklist_list.save()
             orderItems = []
@@ -2145,6 +2151,9 @@ class DnDispatchViewSet(viewsets.ModelViewSet):
                     goods_qty_change = stocklist.objects.filter(openid=self.request.auth.openid,
                                                                 sku_code=mapped_sku).first()
                     goods_qty_change.goods_qty = goods_qty_change.goods_qty - dn_detail[i].picked_qty
+                    import logging
+                    logger = logging.getLogger('django')
+                    logger.info(f"Onhand Stock Modified | Class: DnDispatchViewSet | Function: update | Order: {data['dn_code']} | SKU: {mapped_sku} | EAN: {goods_code} | Before: {goods_qty_change.onhand_stock} | After: {goods_qty_change.onhand_stock - dn_detail[i].picked_qty}")
                     goods_qty_change.onhand_stock = goods_qty_change.onhand_stock - dn_detail[i].picked_qty
                     goods_qty_change.picked_stock = goods_qty_change.picked_stock - dn_detail[i].picked_qty
                     dn_detail[i].dn_status = 5
