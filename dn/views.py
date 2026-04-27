@@ -1840,7 +1840,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        pick_list = PickingListModel.objects.select_for_update().filter(openid=self.request.auth.openid,picking_status=0, is_delete=False)
+        pick_list = PickingListModel.objects.filter(openid=self.request.auth.openid,picking_status=0, is_delete=False)
         
         if not pick_list.exists():
             return Response({"detail": "No picking list to process"}, status=200)
@@ -1851,7 +1851,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
             tobe_picked = pick_list[i].picked_qty
             pick_list[i].intransit_qty = pick_list[i].pick_qty
             pick_list[i].save()
-            stockbin_list = stockbin.objects.select_for_update().filter(bin_name=pick_list[i].bin_name, sku_code=get_sku_by_ean(str(pick_list[i].goods_code)))
+            stockbin_list = stockbin.objects.filter(bin_name=pick_list[i].bin_name, sku_code=get_sku_by_ean(str(pick_list[i].goods_code)))
             for stockbin_item in stockbin_list:
                 if stockbin_item.goods_qty >= tobe_picked:
                     stockbin_item.goods_qty = stockbin_item.goods_qty - tobe_picked
@@ -1861,7 +1861,7 @@ class DnPickingListFilterViewSet(viewsets.ModelViewSet):
                     tobe_picked = tobe_picked - stockbin_item.goods_qty
                     stockbin_item.goods_qty = 0
                     stockbin_item.save()
-            stocklist_list = stocklist.objects.select_for_update().filter(sku_code=get_sku_by_ean(str(pick_list[i].goods_code))).first()
+            stocklist_list = stocklist.objects.filter(sku_code=get_sku_by_ean(str(pick_list[i].goods_code))).first()
             if stocklist_list:
                 stocklist_list.can_order_stock = stocklist_list.can_order_stock - pick_list[i].picked_qty
                 import logging
