@@ -58,15 +58,29 @@ import time
 from rest_framework.decorators import action
 
 # [Will]
-dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=OPEN"
-dnorder_url = "https://api.bol.com/retailer/orders/"
-cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
-shipment_url = "https://api.bol.com/retailer/shipments"
-createlabel_url = "https://api.bol.com/retailer/shipping-labels"
-deliveryoption_url = "https://api.bol.com/retailer/shipping-labels/delivery-options"
-getlabel_url = "https://api.bol.com/retailer/shipping-labels/"
-getlabelid_url = "https://api.bol.com/shared/process-status/"
-getreturn_url = "https://api.bol.com/retailer/returns?handled=true&fulfilment-method=FBR"
+USE_TEST_BOL_API = True
+TEST_BOL_API_BASE_URL = "http://192.168.3.123:8089"
+
+if USE_TEST_BOL_API:
+    dnlist_url = f"{TEST_BOL_API_BASE_URL}/retailer/orders?fulfilment-method=FBR&state=OPEN"
+    dnorder_url = f"{TEST_BOL_API_BASE_URL}/retailer/orders/"
+    cancelorder_url = f"{TEST_BOL_API_BASE_URL}/retailer/orders/cancellation"
+    shipment_url = f"{TEST_BOL_API_BASE_URL}/retailer/shipments"
+    createlabel_url = f"{TEST_BOL_API_BASE_URL}/retailer/shipping-labels"
+    deliveryoption_url = f"{TEST_BOL_API_BASE_URL}/retailer/shipping-labels/delivery-options"
+    getlabel_url = f"{TEST_BOL_API_BASE_URL}/retailer/shipping-labels/"
+    getlabelid_url = f"{TEST_BOL_API_BASE_URL}/shared/process-status/"
+    getreturn_url = f"{TEST_BOL_API_BASE_URL}/retailer/returns?handled=true&fulfilment-method=FBR"
+else:
+    dnlist_url = "https://api.bol.com/retailer/orders?fulfilment-method=FBR&state=OPEN"
+    dnorder_url = "https://api.bol.com/retailer/orders/"
+    cancelorder_url = "https://api.bol.com/retailer/orders/cancellation"
+    shipment_url = "https://api.bol.com/retailer/shipments"
+    createlabel_url = "https://api.bol.com/retailer/shipping-labels"
+    deliveryoption_url = "https://api.bol.com/retailer/shipping-labels/delivery-options"
+    getlabel_url = "https://api.bol.com/retailer/shipping-labels/"
+    getlabelid_url = "https://api.bol.com/shared/process-status/"
+    getreturn_url = "https://api.bol.com/retailer/returns?handled=true&fulfilment-method=FBR"
 
 # At the top of the file, with other imports and variables
 current_ship_date = datetime.today().strftime("%Y-%m-%d")
@@ -99,6 +113,9 @@ def merge_pdfs(pdf_files, output_file):
 
 
 def obtain_access_token(account_name):
+    if USE_TEST_BOL_API:
+        return "test_token_bypass"
+    
     account_info = account.objects.filter(account_name=account_name, is_delete=False).first()
     credential = account_info.client_id + ":" + account_info.client_secret
     credential_encoded = base64.b64encode(credential.encode())
@@ -345,6 +362,8 @@ class BolListViewSet(viewsets.ModelViewSet):
                 orderitem_quantity=orderitem["quantity"]+orderitem_quantity
                 ean = orderitem["ean"]
                 sku_desc = ''
+                goods_desc = ''
+                labeloffer_id = ''
                 sending_date = ''
                 can_order_stock = 0
 
