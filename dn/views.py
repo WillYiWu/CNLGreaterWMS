@@ -58,7 +58,7 @@ import time
 from rest_framework.decorators import action
 
 # [Will]
-USE_TEST_BOL_API = True
+USE_TEST_BOL_API = False
 TEST_BOL_API_BASE_URL = "http://192.168.3.123:8089"
 
 if USE_TEST_BOL_API:
@@ -1255,10 +1255,9 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
             label_id = normalorder_set[i].label_id
             
             ean = normalorder_set[i].goods_code
-            mapped_sku = ean
-            list_obj = goods.objects.filter(goods_code=ean, is_delete=False).first()
-            if list_obj and list_obj.sku_code:
-                mapped_sku = list_obj.sku_code
+            mapped_sku = get_sku_by_ean(str(ean))
+            sku_obj = sku.objects.filter(sku_code=mapped_sku, is_delete=False).first()
+            mapped_sku_desc = sku_obj.sku_desc if sku_obj else normalorder_set[i].goods_desc
 
             bin_set = stockbin.objects.filter(sku_code=mapped_sku, bin_property='Normal')
             tobepick_amount = normalorder_set[i].goods_qty
@@ -1272,8 +1271,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list = PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
                                                       is_delete=False).first()
                        pick_list.dn_code=normalorder_set[i].dn_code
-                       pick_list.goods_code=normalorder_set[i].goods_code
-                       pick_list.goods_desc=normalorder_set[i].goods_desc
+                       pick_list.goods_code=mapped_sku
+                       pick_list.goods_desc=mapped_sku_desc
                        pick_list.picking_status=0
                        pick_list.orderitem_id=normalorder_set[i].orderitem_id
                        pick_list.account_name=normalorder_set[i].account_name
@@ -1287,8 +1286,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                        pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
-                                                    goods_code=normalorder_set[i].goods_code,
-                                                    goods_desc=normalorder_set[i].goods_desc,
+                                                    goods_code=mapped_sku,
+                                                    goods_desc=mapped_sku_desc,
                                                     picking_status=0,
                                                     orderitem_id=normalorder_set[i].orderitem_id,
                                                     account_name=normalorder_set[i].account_name,
@@ -1314,8 +1313,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                         pick_list = PickingListModel.objects.filter(orderitem_id=normalorder_set[i].orderitem_id,
                                                                     is_delete=False).first()
                         pick_list.dn_code = normalorder_set[i].dn_code
-                        pick_list.goods_code = normalorder_set[i].goods_code
-                        pick_list.goods_desc = normalorder_set[i].goods_desc
+                        pick_list.goods_code = mapped_sku
+                        pick_list.goods_desc = mapped_sku_desc
                         pick_list.picking_status = 0
                         pick_list.orderitem_id = normalorder_set[i].orderitem_id
                         pick_list.account_name = normalorder_set[i].account_name
@@ -1331,8 +1330,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                         pick_list.save()
                     else:
                         PickingListModel.objects.create(dn_code=normalorder_set[i].dn_code,
-                                            goods_code=normalorder_set[i].goods_code,
-                                            goods_desc=normalorder_set[i].goods_desc,
+                                            goods_code=mapped_sku,
+                                            goods_desc=mapped_sku_desc,
                                             picking_status=0,
                                             orderitem_id=normalorder_set[i].orderitem_id,
                                             account_name=normalorder_set[i].account_name,
@@ -1388,6 +1387,7 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                     goods_detail = sku.objects.filter(openid=self.request.auth.openid,
                                                         sku_code=get_sku_by_ean(str(dn_detail_list[i].goods_code)),
                                                         is_delete=False).first()
+                    mapped_sku_desc = goods_detail.sku_desc if goods_detail else dn_detail_list[i].goods_desc
                     if stocklist.objects.filter(openid=self.request.auth.openid,
                                                 sku_code=get_sku_by_ean(str(dn_detail_list[i].goods_code))).exists():
                         pass
@@ -1424,8 +1424,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[
-                                                                                 j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1490,8 +1490,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[
-                                                                                 j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1553,7 +1553,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1569,7 +1570,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1605,7 +1607,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1623,7 +1626,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=bin_can_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
@@ -1644,7 +1648,8 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                         picking_list.append(PickingListModel(openid=self.request.auth.openid,
                                                                              dn_code=dn_detail_list[i].dn_code,
                                                                              bin_name=goods_bin_stock_list[j].bin_name,
-                                                                             sku_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_code=goods_bin_stock_list[j].sku_code,
+                                                                             goods_desc=mapped_sku_desc,
                                                                              pick_qty=dn_need_pick_qty,
                                                                              creater=str(staff_name),
                                                                              t_code=goods_bin_stock_list[j].t_code))
