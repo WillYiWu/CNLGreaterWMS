@@ -58,7 +58,7 @@ import time
 from rest_framework.decorators import action
 
 # [Will]
-USE_TEST_BOL_API = False
+USE_TEST_BOL_API = True
 TEST_BOL_API_BASE_URL = "http://192.168.3.123:8089"
 
 if USE_TEST_BOL_API:
@@ -504,6 +504,8 @@ class BolListViewSet(viewsets.ModelViewSet):
         #Create shipping label for all detailed orders with dn_complete = 2
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
         for order in dndetail_list:
+            if order.label_id:
+                continue
             labeloffer_id = order.labeloffer_id
             order_item = []
             order_item.append({'orderItemId': order.orderitem_id})
@@ -518,6 +520,8 @@ class BolListViewSet(viewsets.ModelViewSet):
         dndetail_list = DnDetailModel.objects.filter(dn_complete=2, dn_status__lte=2, is_delete=False)
         label_id_empty = False
         for order in dndetail_list:
+            if order.label_id:
+                continue
             labelprocess_id = order.labelprocess_id
             process_result = requests.get(getlabelid_url+labelprocess_id,headers=headers)
             if process_result.status_code == 200:
@@ -554,11 +558,20 @@ class BolListViewSet(viewsets.ModelViewSet):
 
 
         for order in dndetail_list:
+            if not order.label_id:
+                continue
+            
+            pdf_path = order.account_name + order.dn_code + '.pdf'
+            import os
+            if os.path.exists(pdf_path):
+                print(order.dn_code + ' PDF file already exists. Skipping download.')
+                continue
+
             # Retrieve pdf label file from BOL, name is by orderitem_id, store them locally
             response = requests.get(getlabel_url + order.label_id, headers=headers_label)
             if response.status_code == 200:
                 if 'application/vnd.retailer.v10+pdf' in response.headers['content-type']:
-                    with open(order.account_name + order.dn_code + '.pdf', 'wb') as file:
+                    with open(pdf_path, 'wb') as file:
                         file.write(response.content)
                     print(order.dn_code + 'PDF file saved successfully')
                 else:
