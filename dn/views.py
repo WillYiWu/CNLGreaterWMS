@@ -58,7 +58,7 @@ import time
 from rest_framework.decorators import action
 
 # [Will]
-USE_TEST_BOL_API = True
+USE_TEST_BOL_API = False
 TEST_BOL_API_BASE_URL = "http://192.168.3.123:8089"
 
 if USE_TEST_BOL_API:
