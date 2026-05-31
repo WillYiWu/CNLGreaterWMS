@@ -206,7 +206,7 @@ class SalesViewSet(viewsets.ModelViewSet):
 
         if self.request.user:
             if type == "Monthly":
-                start_date = (timezone.now().date() - relativedelta(months=11)).replace(day=1)
+                start_date = (timezone.now().date() - relativedelta(months=12)).replace(day=1)
                 finance_list = FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=start_date,
                                                     is_delete=False)
             else:
