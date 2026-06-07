@@ -16,5 +16,6 @@ node_modules/
 templates/dist/spa/css/
 templates/dist/spa/js/
 templates/dist/spa/media/
-templates/src/boot/axios_request.js
+templates/public/statics/baseurl.txt
+templates/dist/spa/statics/baseurl.txt
 token.json
