@@ -40,9 +40,12 @@ import json
 import base64
 import os
 
-def get_sku_by_ean(ean):
+def get_sku_by_ean(ean, openid=None):
     from goods.models import ListModel as goods
-    list_obj = goods.objects.filter(goods_code=ean, is_delete=False).first()
+    goods_list = goods.objects.filter(goods_code=ean, is_delete=False)
+    if openid is not None:
+        goods_list = goods_list.filter(openid=openid)
+    list_obj = goods_list.first()
     return list_obj.sku_code if list_obj and list_obj.sku_code else ean
 
 from staff.models import AccountListModel as account
@@ -218,52 +221,71 @@ def FillInReturnData():
         json_return_list = return_list.json()["returns"]
         for return_iterate in json_return_list:
             for return_item in return_iterate["returnItems"]:
-                if pd.to_datetime(return_item["processingResults"][0]["processingDateTime"]) <= timezone.now().date() - relativedelta(days=35):
+                processing_date = pd.to_datetime(
+                    return_item["processingResults"][0]["processingDateTime"]
+                ).date()
+                if processing_date <= timezone.now().date() - relativedelta(days=35):
                     continue
                 dn_code = return_item["orderId"]
-                sku_code = return_item["ean"]
-                quantity = return_item["expectedQuantity"]
-                if not FinanceListModel.objects.filter(dn_code=dn_code, goods_code=sku_code).exists():
+                ean = str(return_item["ean"])
+                sku_code = get_sku_by_ean(ean, accounts.openid)
+                candidate_codes = [sku_code]
+                if ean != sku_code:
+                    candidate_codes.append(ean)
+
+                finance_record = FinanceListModel.objects.filter(
+                    dn_code=dn_code,
+                    account_name=account_name,
+                    openid=accounts.openid,
+                    goods_code__in=candidate_codes,
+                    returned=False,
+                    is_delete=False,
+                ).first()
+                if finance_record is None:
                     continue
-                else:
-                    finance_record = FinanceListModel.objects.filter(dn_code=dn_code, goods_code=sku_code).first()
-                    if finance_record.returned == False:
-                        finance_record.returned = True
-                        finance_record.save()
-                        new_return = True
-                        new_selling_price = 0 - float(finance_record.selling_price)
-                        new_btw_cost = 0 - float(finance_record.btw_cost)
-                        new_bol_commission = 0 - float(finance_record.bol_commission)
-                        new_product_cost = 0 - float(finance_record.product_cost)
-                        transport_list = transportation.objects.filter(min_payment=float(finance_record.logistic_cost)).first()
-                        if transport_list is None:
-                            new_logistic_cost = 3.22
-                        else:
-                            if transport_list.receiver_city == "NL":
-                                new_logistic_cost = 2.93
-                            elif transport_list.receiver_city == "BE":
-                                new_logistic_cost = 3.22
-                            else:
-                                new_logistic_cost = 3.22
-                        new_profit = float(new_selling_price) - float(new_btw_cost) - \
-                                                   float(new_bol_commission) - float(new_product_cost) - \
-                                                    float(new_logistic_cost)
-                        new_shipped_qty = 0
-                        FinanceListModel.objects.create(dn_code=finance_record.dn_code,
-                                                        orderitem_id=finance_record.orderitem_id + '0',
-                                                        account_name=finance_record.account_name,
-                                                        shipped_qty=new_shipped_qty,
-                                                        goods_code=finance_record.goods_code,
-                                                        goods_desc=finance_record.goods_desc,
-                                                        selling_price=new_selling_price,
-                                                        btw_cost=new_btw_cost,
-                                                        bol_commission=new_bol_commission,
-                                                        logistic_cost=new_logistic_cost,
-                                                        product_cost=new_product_cost,
-                                                        profit = new_profit,
-                                                        selling_date=pd.to_datetime(return_item["processingResults"][0]["processingDateTime"]),
-                                                        returned=new_return,
-                                                        openid=finance_record.openid)
+
+                return_orderitem_id = finance_record.orderitem_id + '0'
+                with transaction.atomic():
+                    if FinanceListModel.objects.filter(orderitem_id=return_orderitem_id).exists():
+                        FinanceListModel.objects.filter(pk=finance_record.pk).update(returned=True)
+                        continue
+
+                    updated = FinanceListModel.objects.filter(
+                        pk=finance_record.pk,
+                        returned=False,
+                    ).update(returned=True)
+                    if not updated:
+                        continue
+
+                    new_selling_price = 0 - float(finance_record.selling_price)
+                    new_btw_cost = 0 - float(finance_record.btw_cost)
+                    new_bol_commission = 0 - float(finance_record.bol_commission)
+                    new_product_cost = 0 - float(finance_record.product_cost)
+                    transport_list = transportation.objects.filter(min_payment=float(finance_record.logistic_cost)).first()
+                    if transport_list is None:
+                        new_logistic_cost = 3.22
+                    elif transport_list.receiver_city == "NL":
+                        new_logistic_cost = 2.93
+                    else:
+                        new_logistic_cost = 3.22
+                    new_profit = float(new_selling_price) - float(new_btw_cost) - \
+                                               float(new_bol_commission) - float(new_product_cost) - \
+                                                float(new_logistic_cost)
+                    FinanceListModel.objects.create(dn_code=finance_record.dn_code,
+                                                    orderitem_id=return_orderitem_id,
+                                                    account_name=finance_record.account_name,
+                                                    shipped_qty=0,
+                                                    goods_code=finance_record.goods_code,
+                                                    goods_desc=finance_record.goods_desc,
+                                                    selling_price=new_selling_price,
+                                                    btw_cost=new_btw_cost,
+                                                    bol_commission=new_bol_commission,
+                                                    logistic_cost=new_logistic_cost,
+                                                    product_cost=new_product_cost,
+                                                    profit=new_profit,
+                                                    selling_date=processing_date,
+                                                    returned=True,
+                                                    openid=finance_record.openid)
                         
 
 
