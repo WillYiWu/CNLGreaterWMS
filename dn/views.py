@@ -40,12 +40,9 @@ import json
 import base64
 import os
 
-def get_sku_by_ean(ean, openid=None):
+def get_sku_by_ean(ean):
     from goods.models import ListModel as goods
-    goods_list = goods.objects.filter(goods_code=ean, is_delete=False)
-    if openid is not None:
-        goods_list = goods_list.filter(openid=openid)
-    list_obj = goods_list.first()
+    list_obj = goods.objects.filter(goods_code=ean, is_delete=False).first()
     return list_obj.sku_code if list_obj and list_obj.sku_code else ean
 
 from staff.models import AccountListModel as account
@@ -228,7 +225,7 @@ def FillInReturnData():
                     continue
                 dn_code = return_item["orderId"]
                 ean = str(return_item["ean"])
-                sku_code = get_sku_by_ean(ean, accounts.openid)
+                sku_code = get_sku_by_ean(ean)
                 candidate_codes = [sku_code]
                 if ean != sku_code:
                     candidate_codes.append(ean)
@@ -236,7 +233,6 @@ def FillInReturnData():
                 finance_record = FinanceListModel.objects.filter(
                     dn_code=dn_code,
                     account_name=account_name,
-                    openid=accounts.openid,
                     goods_code__in=candidate_codes,
                     returned=False,
                     is_delete=False,

@@ -138,8 +138,16 @@ class FillInReturnDataTests(TestCase):
         self.assertTrue(original.returned)
         self.assertEqual(FinanceListModel.objects.filter(dn_code="ORDER-001").count(), 2)
 
-    def test_ean_mapping_is_scoped_to_openid(self):
-        self.create_goods(sku_code="SKU-A", openid="tenant-a")
-        self.create_goods(sku_code="SKU-B", openid="tenant-b")
+    @patch("dn.views.obtain_access_token", return_value="token")
+    @patch("dn.views.requests.get")
+    def test_login_openid_does_not_affect_return_matching(self, mock_get, _mock_token):
+        self.create_goods(openid="goods-user")
+        original = self.create_finance(openid="order-user")
+        mock_get.return_value = self.return_response()
 
-        self.assertEqual(get_sku_by_ean("8712345678901", "tenant-b"), "SKU-B")
+        FillInReturnData()
+
+        original.refresh_from_db()
+        self.assertTrue(original.returned)
+        returned = FinanceListModel.objects.get(orderitem_id="ITEM-0010")
+        self.assertEqual(returned.openid, "order-user")
