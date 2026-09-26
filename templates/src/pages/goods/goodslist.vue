@@ -209,7 +209,7 @@
           </q-btn>
         </q-bar>
         <q-card-section style="max-height: 325px; width: 400px" class="scroll">
-          <q-input
+                    <q-input
             dense
             outlined
             square
@@ -217,6 +217,15 @@
             :label="$t('goods.view_goodslist.goods_code')"
             autofocus
             :rules="[val => (val && val.length > 0) || error1]"
+            @keyup.enter="newDataSubmit()"
+          />
+          <q-input
+            dense
+            outlined
+            square
+            v-model="newFormData.sku_code"
+            label="SKU ID"
+            @blur="fetchSkuDetails()"
             @keyup.enter="newDataSubmit()"
           />
           <q-input
@@ -240,20 +249,22 @@
             :rules="[val => (val && val.length > 0) || error3]"
             @keyup.enter="newDataSubmit()"
           />
-          <q-input
+                    <q-input
             dense
             outlined
             square
+            readonly
             v-model.number="newFormData.goods_cost"
             type="number"
             :label="$t('goods.view_goodslist.goods_cost')"
             :rules="[val => (val && val > 0) || error15]"
             @keyup.enter="newDataSubmit()"
           />
-          <q-input
+                    <q-input
             dense
             outlined
             square
+            readonly
             v-model.number="newFormData.goods_price"
             type="number"
             :label="$t('goods.view_goodslist.goods_price')"
@@ -406,6 +417,21 @@ export default {
     };
   },
   methods: {
+    fetchSkuDetails() {
+      var _this = this;
+      if (_this.newFormData.sku_code) {
+        getauth('goods/sku/?sku_code=' + _this.newFormData.sku_code, {})
+          .then(res => {
+            if (res.results && res.results.length > 0) {
+              _this.newFormData.goods_desc = res.results[0].sku_desc;
+              _this.newFormData.goods_cost = res.results[0].sku_cost;
+              // Set goods_price to the same as cost by default since sku model doesn't have price
+              _this.newFormData.goods_price = res.results[0].sku_cost;
+            }
+          })
+          .catch(err => {});
+      }
+    },
     getList() {
       var _this = this;
       getauth(_this.pathname, {})
@@ -568,14 +594,14 @@ export default {
       }
       goodscodes = [];
     },
-    newDataCancel() {
+        newDataCancel() {
       var _this = this;
       _this.newForm = false;
       _this.newFormData = {
         goods_code: '',
         sku_code: '',
         goods_desc: '',
-        goods_supplier: '',
+        goods_supplier: '阿里巴巴卖家',
         goods_weight: '',
         goods_w: '',
         goods_d: '',
