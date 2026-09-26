@@ -52,7 +52,7 @@ class SannerGoodsTagView(viewsets.ModelViewSet):
             else:
                 return ListModel.objects.filter(openid=self.request.auth.openid, bar_code=bar_code, is_delete=False)
         else:
-            return ListModel.objects.filter().none()
+            return ListModel.objects.filter(openid=self.request.auth.openid).none()
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve', 'destroy']:
@@ -130,7 +130,7 @@ class APIViewSet(viewsets.ModelViewSet):
                 else:
                     return ListModel.objects.filter(openid=self.request.auth.openid, id=id, is_delete=False)
         else:
-            return ListModel.objects.filter().none()
+            return ListModel.objects.filter(openid=self.request.auth.openid).none()
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve', 'destroy']:

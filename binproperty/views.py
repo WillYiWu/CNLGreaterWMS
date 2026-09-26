@@ -18,7 +18,7 @@ class APIViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user:
-            return ListModel.objects.filter(is_delete=False)
+            return ListModel.objects.filter(openid=self.request.auth.openid, is_delete=False)
         else:
             return ListModel.objects.none()
 

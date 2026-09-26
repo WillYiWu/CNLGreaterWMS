@@ -213,7 +213,7 @@ class SalesViewSet(viewsets.ModelViewSet):
                 finance_list = FinanceListModel.objects.filter(openid=self.request.auth.openid, selling_date__gte=timezone.now().date() - relativedelta(days=12),
                                                     is_delete=False)
 
-        customer_list = customer.objects.filter(is_delete=False)
+        customer_list = customer.objects.filter(openid=self.request.auth.openid, is_delete=False)
         for customer_data in customer_list:
             finance_list = finance_list.exclude(account_name=customer_data.customer_name)
 

@@ -809,7 +809,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                                 goods_qty_change.can_order_stock = goods_qty_change.can_order_stock + int(data['goods_actual_qty'])
                             qs.save()
                             goods_qty_change.save()
-                            sku_cost = goods.objects.filter(sku_code=str(data['sku_code'])).first().sku_cost
+                            sku_cost = goods.objects.filter(openid=self.request.auth.openid, sku_code=str(data[\'sku_code\'])).first().sku_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
                                                     sku_code=str(data['sku_code']),
@@ -912,7 +912,7 @@ class MoveToBinViewSet(viewsets.ModelViewSet):
                             else:
                                 asn_detail.asn_status = 5
                                 asn_detail.save()
-                            sku_cost = goods.objects.filter(sku_code=str(data['sku_code'])).first().sku_cost
+                            sku_cost = goods.objects.filter(openid=self.request.auth.openid, sku_code=str(data[\'sku_code\'])).first().sku_cost
                             stockbin.objects.create(openid=self.request.auth.openid,
                                                     bin_name=str(data['bin_name']),
                                                     sku_code=str(data['sku_code']),

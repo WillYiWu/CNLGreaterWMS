@@ -306,7 +306,7 @@ class GetGoodsCyclecountViewSet(StockBinViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         goods_code = self.request.GET.get('goods_code', '')
         for i in queryset:
-            if (d:=ManualCyclecountModeModel.objects.filter(cyclecount_status=0, bin_name=i.bin_name, goods_code=goods_code)).exists():
+            if (d:=ManualCyclecountModeModel.objects.filter(openid=self.request.auth.openid, cyclecount_status=0, bin_name=i.bin_name, goods_code=goods_code)).exists():
                 d.delete()
             data = {
                 'openid': self.request.auth.openid,
@@ -322,7 +322,7 @@ class GetGoodsCyclecountViewSet(StockBinViewSet):
             serializer = serializers.ManualCyclecountPostSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        queryset = ManualCyclecountModeModel.objects.filter(goods_code=goods_code, cyclecount_status=0)
+        queryset = ManualCyclecountModeModel.objects.filter(openid=self.request.auth.openid, goods_code=goods_code, cyclecount_status=0)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = serializers.ManualCyclecountGetSerializer(instance=page, many=True)
@@ -381,7 +381,7 @@ class ManualCyclecountViewSet(viewsets.ModelViewSet):
                 query_dict['openid'] = self.request.auth.openid
             if id is not None:
                 query_dict['id'] = id
-            return ManualCyclecountModeModel.objects.filter(**query_dict).order_by('bin_name', 'goods_code')
+            return ManualCyclecountModeModel.objects.filter(openid=self.request.auth.openid, **query_dict).order_by('bin_name', 'goods_code')
         else:
             return ManualCyclecountModeModel.objects.none().order_by('bin_name', 'goods_code')
 
@@ -456,7 +456,7 @@ class ManualCyclecountRecorderViewSet(viewsets.ModelViewSet):
                 query_dict['update_time__lte'] = str(cur_time) + ' 23:59:59'
             if id is not None:
                 query_dict['id'] = id
-            return ManualCyclecountModeModel.objects.filter(**query_dict)
+            return ManualCyclecountModeModel.objects.filter(openid=self.request.auth.openid, **query_dict)
         else:
             return ManualCyclecountModeModel.objects.none()
 
@@ -497,7 +497,7 @@ class ManualFileDownloadView(viewsets.ModelViewSet):
                 query_dict['openid'] = self.request.auth.openid
             if id is not None:
                 query_dict['id'] = id
-            return ManualCyclecountModeModel.objects.filter(**query_dict)
+            return ManualCyclecountModeModel.objects.filter(openid=self.request.auth.openid, **query_dict)
         else:
             return ManualCyclecountModeModel.objects.none()
 

@@ -35,7 +35,7 @@ class GoodlistfileViewSet(views.APIView):
         if self.request.user:
             return goodslist.objects.filter(openid=self.request.auth.openid)
         else:
-            return goodslist.objects.filter().none()
+            return goodslist.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -283,7 +283,7 @@ class SupplierfileViewSet(views.APIView):
         if self.request.user:
             return supplier.objects.filter(openid=self.request.auth.openid)
         else:
-            return supplier.objects.filter().none()
+            return supplier.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -361,7 +361,7 @@ class CustomerfileViewSet(views.APIView):
         if self.request.user:
             return customer.objects.filter(openid=self.request.auth.openid)
         else:
-            return customer.objects.filter().none()
+            return customer.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -439,7 +439,7 @@ class CapitalfileViewSet(views.APIView):
         if self.request.user:
             return capital.objects.filter(openid=self.request.auth.openid)
         else:
-            return capital.objects.filter().none()
+            return capital.objects.filter(openid=self.request.auth.openid).none()
 
     def post(self, request, *args, **kwargs):
         files = self.request.FILES.get('file')
@@ -493,7 +493,7 @@ class FreightfileViewSet(views.APIView):
         if self.request.user:
             return freight.objects.filter(openid=self.request.auth.openid)
         else:
-            return freight.objects.filter().none()
+            return freight.objects.filter(openid=self.request.auth.openid).none()
 
     def post(self, request, *args, **kwargs):
         files = self.request.FILES.get('file')
@@ -558,7 +558,7 @@ class GoodlistfileAddViewSet(views.APIView):
         if self.request.user:
             return goodslist.objects.filter(openid=self.request.auth.openid)
         else:
-            return goodslist.objects.filter().none()
+            return goodslist.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -800,7 +800,7 @@ class SupplierfileAddViewSet(views.APIView):
         if self.request.user:
             return supplier.objects.filter(openid=self.request.auth.openid)
         else:
-            return supplier.objects.filter().none()
+            return supplier.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -888,7 +888,7 @@ class CustomerfileAddViewSet(views.APIView):
         if self.request.user:
             return customer.objects.filter(openid=self.request.auth.openid)
         else:
-            return customer.objects.filter().none()
+            return customer.objects.filter(openid=self.request.auth.openid).none()
 
     def get_lang(self):
         if self.request.user:
@@ -975,7 +975,7 @@ class CapitalfileAddViewSet(views.APIView):
         if self.request.user:
             return capital.objects.filter(openid=self.request.auth.openid)
         else:
-            return capital.objects.filter().none()
+            return capital.objects.filter(openid=self.request.auth.openid).none()
 
     def post(self, request, *args, **kwargs):
         files = self.request.FILES.get('file')
@@ -1035,7 +1035,7 @@ class FreightfileAddViewSet(views.APIView):
         if self.request.user:
             return freight.objects.filter(openid=self.request.auth.openid)
         else:
-            return freight.objects.filter().none()
+            return freight.objects.filter(openid=self.request.auth.openid).none()
 
     def post(self, request, *args, **kwargs):
         files = self.request.FILES.get('file')

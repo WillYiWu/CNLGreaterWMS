@@ -215,9 +215,9 @@ class FinanceListDownloadView(viewsets.ModelViewSet):
         id = self.get_project()
         if self.request.user:
             if id is None:
-                return FinanceListModel.objects.filter()
+                return FinanceListModel.objects.filter(openid=self.request.auth.openid)
             else:
-                return FinanceListModel.objects.filter(id=id)
+                return FinanceListModel.objects.filter(openid=self.request.auth.openid, id=id)
         else:
             return FinanceListModel.objects.none()
 
