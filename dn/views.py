@@ -353,16 +353,16 @@ class BolListViewSet(viewsets.ModelViewSet):
         FillInStockDashboardData()
         account_name = data['account_name']
         headers = {
-            "Authorization": "Bearer " + obtain_access_token(account_name, accounts.openid),
+            "Authorization": "Bearer " + obtain_access_token(account_name, self.request.auth.openid),
             "Accept": "application/vnd.retailer.v10+json"
         }
         headers_deliveryoption = {
-            "Authorization": "Bearer " + obtain_access_token(account_name, accounts.openid),
+            "Authorization": "Bearer " + obtain_access_token(account_name, self.request.auth.openid),
             "Accept": "application/vnd.retailer.v10+json",
             "Content-Type": "application/vnd.retailer.v10+json"
         }
         headers_label = {
-            "Authorization": "Bearer " + obtain_access_token(account_name, accounts.openid),
+            "Authorization": "Bearer " + obtain_access_token(account_name, self.request.auth.openid),
             "Accept": "application/vnd.retailer.v10+pdf",
             "Content-Type": "application/vnd.retailer.v10+json"
         }
@@ -653,7 +653,7 @@ class BolListViewSet(viewsets.ModelViewSet):
                         finance_list[i].save()
 
             headers = {
-                "Authorization": "Bearer " + obtain_access_token(account_name, accounts.openid),
+                "Authorization": "Bearer " + obtain_access_token(account_name, self.request.auth.openid),
                 "Accept": "application/vnd.retailer.v10+json",
                 "Content-Type": "application/vnd.retailer.v10+json"
             }
@@ -1101,7 +1101,7 @@ class DnDetailViewSet(viewsets.ModelViewSet):
                 dn_list.save()
 
             headers = {
-                "Authorization": "Bearer " + obtain_access_token(account_name, accounts.openid),
+                "Authorization": "Bearer " + obtain_access_token(account_name, self.request.auth.openid),
                 "Accept": "application/vnd.retailer.v10+json",
                 "Content-Type": "application/vnd.retailer.v10+json"
             }
