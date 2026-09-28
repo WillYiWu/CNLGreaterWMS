@@ -143,6 +143,7 @@ def ObtainfinanceData():
             for j in range(len(response_list['orderItems'])):
                 orderitem = response_list['orderItems'][j]
                 if orderitem['orderItemId'] == dndetail_list[i].orderitem_id:
+                    openid = dndetail_list[i].openid
                     country = response_list['shipmentDetails']['countryCode']
                     transport_list = transportation.objects.filter(openid=openid, send_city=dndetail_list[i].account_name, receiver_city=country).first()
                     goods_list = sku.objects.filter(openid=openid, sku_code=orderitem['product']['ean']).first()
@@ -160,7 +161,6 @@ def ObtainfinanceData():
                     bol_commission = bol_commission_inc_tax - bol_commision_vat
                     product_cost = float(shipped_qty) * float(dndetail_list[i].goods_cost)
                     selling_date = dndetail_list[i].sending_date
-                    openid = dndetail_list[i].openid
 
                     if FinanceListModel.objects.filter(openid=openid, dn_code=dn_code, account_name=account_name).exists():
                         logistic_cost = 0
