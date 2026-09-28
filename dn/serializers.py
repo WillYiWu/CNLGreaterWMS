@@ -110,18 +110,16 @@ class DNDetailGetSerializer(serializers.ModelSerializer):
     sku_desc = serializers.SerializerMethodField()
 
     def get_sku_code(self, obj):
-        try:
-            goods = GoodsListModel.objects.get(goods_code=obj.goods_code, is_delete=False)
-            return goods.sku_code
-        except GoodsListModel.DoesNotExist:
-            return ''
+        goods = GoodsListModel.objects.filter(
+            openid=obj.openid, goods_code=obj.goods_code, is_delete=False
+        ).order_by('-id').first()
+        return goods.sku_code if goods else ''
 
     def get_sku_desc(self, obj):
-        try:
-            goods = GoodsListModel.objects.get(goods_code=obj.goods_code, is_delete=False)
-            return goods.goods_desc
-        except GoodsListModel.DoesNotExist:
-            return ''
+        goods = GoodsListModel.objects.filter(
+            openid=obj.openid, goods_code=obj.goods_code, is_delete=False
+        ).order_by('-id').first()
+        return goods.goods_desc if goods else ''
 
     class Meta:
         model = DnDetailModel
