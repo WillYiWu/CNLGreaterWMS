@@ -307,9 +307,10 @@ def FillInReturnData():
 
 class ShippinglabelViewSet(View):
     def get(self, request, dn_code="ALL", *args, **kwargs):
+        openid = request.META.get('HTTP_TOKEN') or request.GET.get('openid')
+        file_name = None
+
         if dn_code == "ALL":
-            openid = request.META.get('HTTP_TOKEN') or request.GET.get('openid')
-            file_name = None
             if openid and os.path.exists(f"latest_merged_filename_{openid}.txt"):
                 try:
                     with open(f"latest_merged_filename_{openid}.txt", "r") as f:
@@ -332,13 +333,92 @@ class ShippinglabelViewSet(View):
                     file_name = latest_merged_filename
                 elif os.path.exists("merged.pdf"):
                     file_name = "merged.pdf"
+
+            # If merged pdf still doesn't exist on disk, attempt to generate it on-the-fly from picking list
+            if not file_name or not os.path.exists(file_name):
+                pick_qs = PickingListModel.objects.filter(is_delete=False, picking_status=0)
+                if openid:
+                    pick_qs = pick_qs.filter(openid=openid)
+                if not pick_qs.exists():
+                    pick_qs = PickingListModel.objects.filter(is_delete=False)
+                    if openid:
+                        pick_qs = pick_qs.filter(openid=openid)
+                    pick_qs = pick_qs.order_by('-id')[:100]
+
+                if pick_qs.exists():
+                    pdf_list = []
+                    account_names = []
+                    for pick in pick_qs:
+                        single_pdf = pick.account_name + pick.dn_code + ".pdf"
+                        if not os.path.exists(single_pdf) and pick.label_id:
+                            try:
+                                token = obtain_access_token(pick.account_name, pick.openid)
+                                headers_label = {
+                                    "Authorization": "Bearer " + token,
+                                    "Accept": "application/vnd.retailer.v10+pdf",
+                                    "Content-Type": "application/vnd.retailer.v10+json"
+                                }
+                                resp = requests.get(getlabel_url + pick.label_id, headers=headers_label, timeout=10)
+                                if resp.status_code == 200 and 'application/vnd.retailer.v10+pdf' in resp.headers.get('content-type', ''):
+                                    with open(single_pdf, 'wb') as sf:
+                                        sf.write(resp.content)
+                            except Exception as ex:
+                                print(f"[Warning] On-the-fly fetch single label failed: {ex}")
+                        if os.path.exists(single_pdf):
+                            pdf_list.append(single_pdf)
+                        if pick.account_name and pick.account_name not in account_names:
+                            account_names.append(pick.account_name)
+
+                    if pdf_list:
+                        generated_name = generate_merged_pdf_name(account_names)
+                        merge_pdfs(pdf_list, generated_name)
+                        if os.path.exists(generated_name):
+                            file_name = generated_name
+                            latest_merged_filename = generated_name
         else:
             if dn_code.lower().endswith(".pdf"):
                 file_name = dn_code
             else:
                 file_name = dn_code + ".pdf"
 
-        import os
+            # If single label file does not exist on disk, attempt to fetch from BOL using label_id
+            if not os.path.exists(file_name):
+                clean_code = dn_code[:-4] if dn_code.lower().endswith(".pdf") else dn_code
+                detail = DnDetailModel.objects.filter(is_delete=False).filter(
+                    Q(dn_code=clean_code) | Q(orderitem_id=clean_code)
+                ).first()
+                if not detail:
+                    for d in DnDetailModel.objects.filter(is_delete=False).order_by('-id')[:200]:
+                        if (d.account_name + d.dn_code) == clean_code:
+                            detail = d
+                            break
+                if not detail:
+                    pick_item = PickingListModel.objects.filter(is_delete=False).filter(
+                        Q(dn_code=clean_code) | Q(orderitem_id=clean_code)
+                    ).first()
+                    if not pick_item:
+                        for p in PickingListModel.objects.filter(is_delete=False).order_by('-id')[:200]:
+                            if (p.account_name + p.dn_code) == clean_code:
+                                pick_item = p
+                                break
+                    if pick_item and getattr(pick_item, 'label_id', None):
+                        detail = pick_item
+
+                if detail and getattr(detail, 'label_id', None):
+                    try:
+                        token = obtain_access_token(detail.account_name, detail.openid)
+                        headers_label = {
+                            "Authorization": "Bearer " + token,
+                            "Accept": "application/vnd.retailer.v10+pdf",
+                            "Content-Type": "application/vnd.retailer.v10+json"
+                        }
+                        resp = requests.get(getlabel_url + detail.label_id, headers=headers_label, timeout=10)
+                        if resp.status_code == 200 and 'application/vnd.retailer.v10+pdf' in resp.headers.get('content-type', ''):
+                            with open(file_name, 'wb') as sf:
+                                sf.write(resp.content)
+                    except Exception as ex:
+                        print(f"[Warning] On-the-fly fetch label from BOL failed: {ex}")
+
         if not file_name or not os.path.exists(file_name):
             return HttpResponseNotFound("Shipping label not found or not generated")
 
