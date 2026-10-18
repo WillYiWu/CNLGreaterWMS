@@ -327,6 +327,10 @@ CORS_ALLOW_HEADERS = (
     'event-sign'
 )
 
+CORS_EXPOSE_HEADERS = (
+    'content-disposition',
+)
+
 CRONJOBS = [
     ('55 11 * * *', 'payment.crontask.ObtainfinanceData')
 ]

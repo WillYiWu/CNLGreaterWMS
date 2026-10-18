@@ -3,6 +3,7 @@ from . import views
 
 
 urlpatterns = [
+path('shippinglabel/', views.ShippinglabelViewSet.as_view(), {'dn_code': 'ALL'}, name='shippinglabel_all'),
 path('shippinglabel/<str:dn_code>/', views.ShippinglabelViewSet.as_view(), name='shippinglabel'),
 #[Will] add new router to link request from frontend to obtain order data from BOL
 path(r'bollist/', views.BolListViewSet.as_view({"get": "list", "post": "create"}), name="bollist"),

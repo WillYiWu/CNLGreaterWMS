@@ -230,13 +230,44 @@ export default {
         const axios = require("axios")
         const instance = axios.create({
           baseURL: baseurl,
+          headers: {
+            token: (_this.$q.localStorage.getItem('openid') || '')
+          }
         })
         const res = await instance.get('dn/shippinglabel/' + account_name+dn_code, {responseType: 'blob' });
         const downloadUrl = window.URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
         const link = document.createElement('a');
         link.href = downloadUrl
         if (dn_code === 'ALL'){
-          file_name = new Date().toLocaleDateString()
+          let disposition = res.headers ? (res.headers['content-disposition'] || res.headers['Content-Disposition']) : ''
+          let matchedName = ''
+          if (disposition) {
+            let matches = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+            if (matches && matches[1]) {
+              matchedName = matches[1].replace(/['"]/g, '').trim()
+            }
+          }
+          if (matchedName) {
+            file_name = matchedName.toLowerCase().endsWith('.pdf') ? matchedName.slice(0, -4) : matchedName
+          } else {
+            let accountNames = []
+            for (let i = 0; i < _this.table_list.length; i++) {
+              let acc = _this.table_list[i].account_name
+              if (acc && !accountNames.includes(acc)) {
+                accountNames.push(acc)
+              }
+            }
+            let today = new Date()
+            let yyyy = today.getFullYear()
+            let mm = String(today.getMonth() + 1).padStart(2, '0')
+            let dd = String(today.getDate()).padStart(2, '0')
+            let dateStr = `${yyyy}${mm}${dd}`
+            if (accountNames.length > 0) {
+              file_name = accountNames.join('_') + '_' + dateStr
+            } else {
+              file_name = 'merged_' + dateStr
+            }
+          }
         }else{
           file_name = account_name+dn_code
         }
@@ -256,14 +287,36 @@ export default {
     DownloadPickLabel2(orderitem_id){
       var _this = this
       if (_this.$q.localStorage.has('auth')){
-        getfile('dn/shippinglabel/')
+        getfile('dn/shippinglabel/ALL/')
           .then(res=>{
             const blob = new Blob([res.data], {type: 'application/pdf;base64'});
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
-            //link.setAttribute('href', 'data:"application/pdf;base64,' + res.data.base64PDF);
-            link.setAttribute('download', 'merged.pdf');
+            let disposition = res.headers ? (res.headers['content-disposition'] || res.headers['Content-Disposition']) : ''
+            let matchedName = ''
+            if (disposition) {
+              let matches = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+              if (matches && matches[1]) {
+                matchedName = matches[1].replace(/['"]/g, '').trim()
+              }
+            }
+            if (!matchedName) {
+              let accountNames = []
+              for (let i = 0; i < _this.table_list.length; i++) {
+                let acc = _this.table_list[i].account_name
+                if (acc && !accountNames.includes(acc)) {
+                  accountNames.push(acc)
+                }
+              }
+              let today = new Date()
+              let yyyy = today.getFullYear()
+              let mm = String(today.getMonth() + 1).padStart(2, '0')
+              let dd = String(today.getDate()).padStart(2, '0')
+              let dateStr = `${yyyy}${mm}${dd}`
+              matchedName = accountNames.length > 0 ? (accountNames.join('_') + '_' + dateStr + '.pdf') : ('merged_' + dateStr + '.pdf')
+            }
+            link.setAttribute('download', matchedName);
             document.body.appendChild(link);
             link.click();
             link.remove();

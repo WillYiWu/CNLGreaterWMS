@@ -84,6 +84,21 @@ else:
 
 # At the top of the file, with other imports and variables
 current_ship_date = datetime.today().strftime("%Y-%m-%d")
+latest_merged_filename = "merged.pdf"
+
+def generate_merged_pdf_name(account_names, target_date=None):
+    if target_date is None:
+        target_date = datetime.today()
+    date_str = target_date.strftime("%Y%m%d")
+    clean_accounts = []
+    for acc in account_names:
+        acc_str = str(acc).strip() if acc else ""
+        if acc_str and acc_str not in clean_accounts:
+            clean_accounts.append(acc_str)
+    if clean_accounts:
+        merged_base = "_".join(clean_accounts)
+        return f"{merged_base}_{date_str}.pdf"
+    return f"merged_{date_str}.pdf"
 
 def parse_date(date_str):
     """Parse date string in either YYYY-MM-DD or YYYY/MM/DD format"""
@@ -102,14 +117,17 @@ def merge_pdfs(pdf_files, output_file):
     import os
     # Creating PDF object using the first pdf file
     pdf_merger = PyPDF2.PdfMerger()
+    has_files = False
     for filename in pdf_files:
         if os.path.exists(filename):
             with open(filename, 'rb') as file:
                 pdf_merger.append(file)
+            has_files = True
 
     # Writing all the data into the output file
-    with open(output_file, 'wb') as file:
-        pdf_merger.write(file)
+    if has_files:
+        with open(output_file, 'wb') as file:
+            pdf_merger.write(file)
 
 
 def obtain_access_token(account_name, openid):
@@ -288,20 +306,47 @@ def FillInReturnData():
 
 
 class ShippinglabelViewSet(View):
-    def get(self, request, dn_code, *args, **kwargs):
+    def get(self, request, dn_code="ALL", *args, **kwargs):
         if dn_code == "ALL":
-            file_name = "merged.pdf"
+            openid = request.META.get('HTTP_TOKEN') or request.GET.get('openid')
+            file_name = None
+            if openid and os.path.exists(f"latest_merged_filename_{openid}.txt"):
+                try:
+                    with open(f"latest_merged_filename_{openid}.txt", "r") as f:
+                        candidate = f.read().strip()
+                        if candidate and os.path.exists(candidate):
+                            file_name = candidate
+                except Exception:
+                    pass
+            if not file_name and os.path.exists("latest_merged_filename.txt"):
+                try:
+                    with open("latest_merged_filename.txt", "r") as f:
+                        candidate = f.read().strip()
+                        if candidate and os.path.exists(candidate):
+                            file_name = candidate
+                except Exception:
+                    pass
+            if not file_name:
+                global latest_merged_filename
+                if 'latest_merged_filename' in globals() and latest_merged_filename and os.path.exists(latest_merged_filename):
+                    file_name = latest_merged_filename
+                elif os.path.exists("merged.pdf"):
+                    file_name = "merged.pdf"
         else:
-            file_name = dn_code + ".pdf"
+            if dn_code.lower().endswith(".pdf"):
+                file_name = dn_code
+            else:
+                file_name = dn_code + ".pdf"
 
         import os
-        if not os.path.exists(file_name):
+        if not file_name or not os.path.exists(file_name):
             return HttpResponseNotFound("Shipping label not found or not generated")
 
         file = open(file_name, 'rb')
         response = FileResponse(file)
         response['Content-Type'] = 'application/pdf'
-        response['Content-Disposition'] = 'attachment; filename=' + file_name
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_name)}"'
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
 
 #[Will] Add new model class to handle request fetching data from BOL
@@ -1385,10 +1430,25 @@ class DnOrderReleaseViewSet(viewsets.ModelViewSet):
                                                  sending_date__lte=parse_date(current_ship_date).replace(hour=23,minute=59,second=59)).order_by('account_name','dn_code')
         try:
             pdf_list = []
+            account_names = []
             for dnlist in dnlist_list:
                 pdf_list.append(dnlist.account_name+dnlist.dn_code+".pdf")
-            output_file = 'merged.pdf'
+                if dnlist.account_name and dnlist.account_name not in account_names:
+                    account_names.append(dnlist.account_name)
+            output_file = generate_merged_pdf_name(account_names)
             merge_pdfs(pdf_list, output_file)
+            if os.path.exists(output_file):
+                global latest_merged_filename
+                latest_merged_filename = output_file
+                try:
+                    with open("latest_merged_filename.txt", "w") as f:
+                        f.write(output_file)
+                    openid = getattr(getattr(self.request, 'auth', None), 'openid', None)
+                    if openid:
+                        with open(f"latest_merged_filename_{openid}.txt", "w") as f:
+                            f.write(output_file)
+                except Exception as fe:
+                    print(f"[Warning] Failed to save latest_merged_filename: {fe}")
         except Exception as e:
             print(f"[Warning] PDF merge skipped: {e}")
         return Response({'detail': 'success'}, status=200)
