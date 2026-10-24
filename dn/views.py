@@ -305,6 +305,25 @@ def FillInReturnData():
                         
 
 
+def find_shipping_label_record(clean_code, openid=None):
+    from django.db.models.functions import Concat
+
+    for model in (DnDetailModel, PickingListModel):
+        records = model.objects.filter(is_delete=False).exclude(label_id='')
+        if openid:
+            records = records.filter(openid=openid)
+        detail = records.filter(
+            Q(dn_code=clean_code) | Q(orderitem_id=clean_code)
+        ).first()
+        if not detail:
+            detail = records.annotate(
+                prefixed_dn_code=Concat('account_name', 'dn_code')
+            ).filter(prefixed_dn_code=clean_code).first()
+        if detail:
+            return detail
+    return None
+
+
 class ShippinglabelViewSet(View):
     def get(self, request, dn_code="ALL", *args, **kwargs):
         openid = request.META.get('HTTP_TOKEN') or request.GET.get('openid')
@@ -384,25 +403,7 @@ class ShippinglabelViewSet(View):
             # If single label file does not exist on disk, attempt to fetch from BOL using label_id
             if not os.path.exists(file_name):
                 clean_code = dn_code[:-4] if dn_code.lower().endswith(".pdf") else dn_code
-                detail = DnDetailModel.objects.filter(is_delete=False).filter(
-                    Q(dn_code=clean_code) | Q(orderitem_id=clean_code)
-                ).first()
-                if not detail:
-                    for d in DnDetailModel.objects.filter(is_delete=False).order_by('-id')[:200]:
-                        if (d.account_name + d.dn_code) == clean_code:
-                            detail = d
-                            break
-                if not detail:
-                    pick_item = PickingListModel.objects.filter(is_delete=False).filter(
-                        Q(dn_code=clean_code) | Q(orderitem_id=clean_code)
-                    ).first()
-                    if not pick_item:
-                        for p in PickingListModel.objects.filter(is_delete=False).order_by('-id')[:200]:
-                            if (p.account_name + p.dn_code) == clean_code:
-                                pick_item = p
-                                break
-                    if pick_item and getattr(pick_item, 'label_id', None):
-                        detail = pick_item
+                detail = find_shipping_label_record(clean_code, openid)
 
                 if detail and getattr(detail, 'label_id', None):
                     try:
