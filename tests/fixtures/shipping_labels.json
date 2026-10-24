@@ -1,0 +1,6 @@
+{
+  "primary": {"openid": "regression-tenant-a", "account_name": "RegressionStore", "dn_code": "REG-0001", "orderitem_id": "reg-item-a", "label_id": "reg-label-a"},
+  "other_tenant": "regression-tenant-b",
+  "newer_record_count": 201,
+  "upstream_errors": [400, 401, 404, 429, 500]
+}

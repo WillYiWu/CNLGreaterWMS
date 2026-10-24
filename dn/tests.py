@@ -140,14 +140,14 @@ class FillInReturnDataTests(TestCase):
 
     @patch("dn.views.obtain_access_token", return_value="token")
     @patch("dn.views.requests.get")
-    def test_login_openid_does_not_affect_return_matching(self, mock_get, _mock_token):
-        self.create_goods(openid="goods-user")
+    def test_same_account_name_cannot_match_another_openid(self, mock_get, _mock_token):
+        self.create_goods()
         original = self.create_finance(openid="order-user")
         mock_get.return_value = self.return_response()
 
         FillInReturnData()
 
         original.refresh_from_db()
-        self.assertTrue(original.returned)
-        returned = FinanceListModel.objects.get(orderitem_id="ITEM-0010")
-        self.assertEqual(returned.openid, "order-user")
+        self.assertFalse(original.returned)
+        self.assertEqual(FinanceListModel.objects.count(), 1)
+        self.assertFalse(FinanceListModel.objects.filter(orderitem_id="ITEM-0010").exists())
