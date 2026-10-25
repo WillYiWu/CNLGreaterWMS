@@ -42,3 +42,11 @@ python3.11 -m venv .venv
 此为首版后端回归基线，尚不覆盖完整库存出入库、权限体系、前端操作、真实 Bol.com 服务及生产部署。面单文件缓存的跨租户访问授权也不在当前隔离断言内；这里验证的是数据库查询隔离。生产部署后仍需复查实际问题订单。不能把自动测试通过等同于全项目所有功能或线上恢复已验证。
 
 最终本地执行：`.venv/bin/python scripts/regression.py`，29 项全部通过，退出码 0。CI 配置已编写，尚未推送触发或进行云端验证。
+
+## 发货管理每页 120 行（2026-10-25）
+
+- 发货模块分页默认及上限均为 120，其他模块分页不变；所有 10 个发货表格统一使用数值型 `rowsPerPage: 120`。
+- `dn/test_pagination.py` 新增 2 项测试（含参数化场景）：默认分页、超限请求截到 120、合法较小分页、241 条记录连续翻页无丢失。
+- 测试机执行 `.venv/bin/python scripts/regression.py`：31 项通过。
+- 前端执行 `NODE_OPTIONS=--openssl-legacy-provider ./node_modules/.bin/quasar build`：通过。
+- 本地 Chrome 使用实际 Vue/Quasar 和 10 个页面的 QTable 配置，分别注入 241 条合成记录，均只渲染 120 行；未连接生产服务。完整页面业务操作与生产部署未验证。

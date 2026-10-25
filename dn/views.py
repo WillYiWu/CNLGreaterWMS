@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from .models import DnListModel, DnDetailModel, PickingListModel
 from . import serializers
 from .page import MyPageNumberPaginationDNList
-from utils.page import MyPageNumberPagination
+from .page import OutboundPagination as MyPageNumberPagination
 from utils.datasolve import sumOfList, transportation_calculate
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend

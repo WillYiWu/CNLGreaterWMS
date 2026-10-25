@@ -11,6 +11,7 @@
         :columns="columns"
         hide-bottom
         :pagination.sync="pagination"
+        :rows-per-page-options="[120]"
         no-data-label="No data"
         no-results-label="No data you want"
         :table-style="{ height: height }"
@@ -152,7 +153,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '120'
+        rowsPerPage: 120
       }
     }
   },

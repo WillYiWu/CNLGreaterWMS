@@ -11,6 +11,7 @@
         :columns="columns"
         hide-bottom
         :pagination.sync="pagination"
+        :rows-per-page-options="[120]"
         no-data-label="No data"
         no-results-label="No data you want"
         :table-style="{ height: height }"
@@ -149,7 +150,7 @@ export default {
       filter: '',
       pagination: {
         page: 1,
-        rowsPerPage: '120'
+        rowsPerPage: 120
       },
       createDate1: '',
       createDate2: '',
@@ -201,7 +202,7 @@ export default {
     getSearchList () {
       var _this = this
       if (_this.$q.localStorage.has('auth')) {
-        getauth(_this.searchUrl + '&dn_status=4&dn_complete=2&page_size=120', {
+        getauth(_this.searchUrl + '&dn_status=4&dn_complete=2&max_page=120', {
         }).then(res => {
           _this.table_list = res.results
           _this.pathname_previous = res.previous
